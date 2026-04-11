@@ -1,4 +1,4 @@
-# Engineering Foundations: MathPath Oregon
+# Engineering Foundations: PADI.AI
 
 > **Document ID:** ENG-000  
 > **Status:** Living Document  
@@ -6,7 +6,7 @@
 > **Owner:** Engineering Lead  
 > **Audience:** Every engineer, every AI coding agent, every contributor — read this FIRST.
 
-MathPath Oregon is an AI-powered adaptive math learning application aligned with Oregon's K–8 mathematics standards. It combines Bayesian Knowledge Tracing (BKT) with frontier LLM tutoring to deliver personalized diagnostic assessments, learning plans, and practice sessions for students.
+PADI.AI is an AI-powered adaptive math learning application aligned with Oregon's K–8 mathematics standards. It combines Bayesian Knowledge Tracing (BKT) with frontier LLM tutoring to deliver personalized diagnostic assessments, learning plans, and practice sessions for students.
 
 This document defines how ALL code is written, reviewed, tested, and deployed across all 5 development stages. No code is merged that violates these standards — whether written by a human or an AI model.
 
@@ -19,7 +19,7 @@ We use a **pnpm workspaces + Turborepo** monorepo. Turborepo handles task orches
 ### 1.1 Full Directory Tree
 
 ```
-mathpath/
+padi-ai/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml                      # PR checks: lint, type, test, build
@@ -553,7 +553,7 @@ Every significant technical decision is documented as an ADR. File naming: `ADR-
 
 #### Context
 
-MathPath Oregon consists of a Next.js frontend, a FastAPI backend, three Python microservices (agent-engine, question-generator, bkt-engine), shared TypeScript packages, and infrastructure-as-code. The codebase will be developed by a solo developer (or tiny team of 1–2) using Claude Code as the primary development tool. We need a repository strategy that maximizes developer velocity, simplifies cross-cutting changes, and minimizes operational overhead.
+PADI.AI consists of a Next.js frontend, a FastAPI backend, three Python microservices (agent-engine, question-generator, bkt-engine), shared TypeScript packages, and infrastructure-as-code. The codebase will be developed by a solo developer (or tiny team of 1–2) using Claude Code as the primary development tool. We need a repository strategy that maximizes developer velocity, simplifies cross-cutting changes, and minimizes operational overhead.
 
 #### Decision
 
@@ -641,7 +641,7 @@ Use **FastAPI 0.115** as the backend framework with **SQLAlchemy 2.0** (async) f
 
 #### Context
 
-MathPath Oregon needs to store and query vector embeddings for: (a) semantic search over math questions to find similar problems, (b) embedding-based clustering of student misconceptions, and (c) potential RAG over Oregon math standards documentation. We need a vector storage and similarity search solution.
+PADI.AI needs to store and query vector embeddings for: (a) semantic search over math questions to find similar problems, (b) embedding-based clustering of student misconceptions, and (c) potential RAG over Oregon math standards documentation. We need a vector storage and similarity search solution.
 
 #### Decision
 
@@ -690,7 +690,7 @@ Use **PostgreSQL 17 with the pgvector 0.7 extension** for all vector operations,
 
 #### Context
 
-MathPath Oregon's AI layer requires multi-step agent workflows: diagnostic assessment flow (select question → present → evaluate response → update mastery → decide next action), tutoring flow (classify intent → generate hint → scaffold explanation), and learning plan generation. These workflows have conditional branching, cycles (retry with different hint), and side effects (DB writes). We need an agent orchestration framework.
+PADI.AI's AI layer requires multi-step agent workflows: diagnostic assessment flow (select question → present → evaluate response → update mastery → decide next action), tutoring flow (classify intent → generate hint → scaffold explanation), and learning plan generation. These workflows have conditional branching, cycles (retry with different hint), and side effects (DB writes). We need an agent orchestration framework.
 
 #### Decision
 
@@ -740,7 +740,7 @@ Use **LangGraph 0.2** for all multi-step AI agent workflows, with LangChain 0.3 
 
 #### Context
 
-MathPath Oregon serves children under 13, making it subject to COPPA (Children's Online Privacy Protection Act). The FTC's 2025 COPPA Rule update (full compliance deadline: April 22, 2026) requires verifiable parental consent before collecting personal information from children, explicit data retention policies, a written information security program, and the ability for parents to review and delete their child's data. We need an authentication and authorization solution that supports COPPA-compliant workflows.
+PADI.AI serves children under 13, making it subject to COPPA (Children's Online Privacy Protection Act). The FTC's 2025 COPPA Rule update (full compliance deadline: April 22, 2026) requires verifiable parental consent before collecting personal information from children, explicit data retention policies, a written information security program, and the ability for parents to review and delete their child's data. We need an authentication and authorization solution that supports COPPA-compliant workflows.
 
 #### Decision
 
@@ -792,7 +792,7 @@ Use **Auth0** with their COPPA-compliant plan for authentication, authorization,
 
 #### Context
 
-MathPath Oregon uses Bayesian Knowledge Tracing (BKT) to estimate student mastery of math skills. BKT has four core parameters per skill: P(L₀) prior knowledge, P(T) learn rate, P(G) guess rate, P(S) slip rate. We need an implementation that supports standard BKT plus extensions for individual student priors, multi-guess/slip, and forgetting.
+PADI.AI uses Bayesian Knowledge Tracing (BKT) to estimate student mastery of math skills. BKT has four core parameters per skill: P(L₀) prior knowledge, P(T) learn rate, P(G) guess rate, P(S) slip rate. We need an implementation that supports standard BKT plus extensions for individual student priors, multi-guess/slip, and forgetting.
 
 #### Decision
 
@@ -836,7 +836,7 @@ Use **pyBKT** as the core BKT library, wrapped in a custom service layer that ad
 
 #### Context
 
-MathPath Oregon has two distinct deployment concerns: (a) a Next.js 15 frontend that benefits from edge rendering, ISR, and automatic preview deployments, and (b) a Python backend with GPU-free ML services that need persistent connections to PostgreSQL and Redis. We need an infrastructure strategy that optimizes for both workloads.
+PADI.AI has two distinct deployment concerns: (a) a Next.js 15 frontend that benefits from edge rendering, ISR, and automatic preview deployments, and (b) a Python backend with GPU-free ML services that need persistent connections to PostgreSQL and Redis. We need an infrastructure strategy that optimizes for both workloads.
 
 #### Decision
 
@@ -885,7 +885,7 @@ Deploy the **Next.js frontend on Vercel** and the **Python backend + services on
 
 #### Context
 
-MathPath Oregon is built in 5 stages with progressive feature rollout. We need feature flags for: (a) stage-gating features (don't expose Stage 3 features until Stage 2 is stable), (b) A/B testing of tutoring strategies, (c) gradual rollout of new question types, (d) kill switches for LLM features if costs spike, and (e) COPPA-compliant user segmentation (never flag children into experimental cohorts without parental consent).
+PADI.AI is built in 5 stages with progressive feature rollout. We need feature flags for: (a) stage-gating features (don't expose Stage 3 features until Stage 2 is stable), (b) A/B testing of tutoring strategies, (c) gradual rollout of new question types, (d) kill switches for LLM features if costs spike, and (e) COPPA-compliant user segmentation (never flag children into experimental cohorts without parental consent).
 
 #### Decision
 
@@ -936,7 +936,7 @@ Use **Unleash (open-source, self-hosted)** deployed as a Docker container on ECS
 
 #### Context
 
-MathPath requires three distinct LLM use cases with different COPPA sensitivity levels:
+PADI.AI requires three distinct LLM use cases with different COPPA sensitivity levels:
 
 1. **Student-facing inference** (tutor hints, error feedback): Involves student session data and behavioral responses. Under COPPA, transmitting this data to a third-party LLM API requires a Data Processing Agreement (DPA) confirming zero data retention. Anthropic and OpenAI standard API terms are not automatically COPPA-sufficient vendor agreements. Risk: high.
 
@@ -1136,10 +1136,10 @@ ANTHROPIC_BASE_URL=http://localhost:11434/v1 ANTHROPIC_API_KEY=ollama claude --m
 This is the most important file in the repository for AI-assisted development. Claude reads it at the start of every session.
 
 ```markdown
-# MathPath Oregon — Project Context for Claude Code
+# PADI.AI — Project Context for Claude Code
 
 ## What This Is
-MathPath Oregon is an AI-powered adaptive math learning app for K-8 students
+PADI.AI is an AI-powered adaptive math learning app for K-8 students
 aligned with Oregon math standards. It uses Bayesian Knowledge Tracing (pyBKT)
 for mastery estimation and LLM-powered tutoring (Claude Sonnet, GPT-4o) for
 personalized hints and explanations.
@@ -1217,7 +1217,7 @@ personalized hints and explanations.
 - Hooks: camelCase files, prefix with "use"
 - API client: src/lib/api-client.ts — always use typed fetch wrapper
 - Forms: React Hook Form + Zod schema validation
-- Math: Import from @mathpath/math-renderer, never use KaTeX directly
+- Math: Import from @padi-ai/math-renderer, never use KaTeX directly
 
 ## DO NOT
 - Use `any` type — strict TypeScript
@@ -1398,8 +1398,8 @@ Create a new React component in apps/web/:
 
 Requirements:
 - Use Tailwind CSS for styling
-- Use components from @mathpath/ui for primitives
-- Use @mathpath/math-renderer for any math notation
+- Use components from @padi-ai/ui for primitives
+- Use @padi-ai/math-renderer for any math notation
 - Include aria labels and keyboard navigation
 - Write a Jest + RTL test covering the primary user interaction
 - {Server Component | Client Component} — justify the choice
@@ -1962,7 +1962,7 @@ logger = structlog.get_logger()
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="MathPath Oregon API", version="1.0.0")
+    app = FastAPI(title="PADI.AI API", version="1.0.0")
 
     @app.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
@@ -2205,8 +2205,8 @@ def fit_bkt_model(responses: list[StudentResponse]) -> SkillParameters:
 "use client"; // Only if this is a Client Component
 
 import { type FC } from "react";
-import { MathDisplay } from "@mathpath/math-renderer";
-import { Card, Badge } from "@mathpath/ui";
+import { MathDisplay } from "@padi-ai/math-renderer";
+import { Card, Badge } from "@padi-ai/ui";
 
 // 1. Props interface — always exported, always named {Component}Props
 export interface QuestionCardProps {
@@ -2333,7 +2333,7 @@ Tier 4: Local State (useState)
 // apps/web/src/stores/assessment-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { Question, AssessmentSession, SubmitResult } from "@mathpath/types";
+import type { Question, AssessmentSession, SubmitResult } from "@padi-ai/types";
 
 interface AssessmentState {
   // State
@@ -2419,7 +2419,7 @@ import type {
   SubmitResult,
   PaginatedResponse,
   StudentProfile,
-} from "@mathpath/types";
+} from "@padi-ai/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -3380,7 +3380,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe, toHaveNoViolations } from "jest-axe";
 import QuestionCard from "@/components/assessment/QuestionCard";
-import type { Question } from "@mathpath/types";
+import type { Question } from "@padi-ai/types";
 
 expect.extend(toHaveNoViolations);
 
@@ -3642,7 +3642,7 @@ from src.db.base import Base
 def postgres_container():
     """Spin up a real PostgreSQL container for integration tests."""
     with PostgresContainer("postgres:17-alpine") as pg:
-        pg.with_env("POSTGRES_DB", "mathpath_test")
+        pg.with_env("POSTGRES_DB", "padi_ai_test")
         yield pg
 
 
@@ -3759,8 +3759,8 @@ SEED_BKT_PARAMS = {
 |-------------|---------|------|------|---------------|-----|
 | **Local** | Developer workstation | Docker Compose Postgres + Redis; seeded test data | Mock LLM client OR local Ollama models | All flags ON (dev override) | `localhost:3000` / `localhost:8000` |
 | **CI** | GitHub Actions | Testcontainers (ephemeral Postgres per run) | Mock LLM client only (no real API calls) | All flags ON | N/A (headless) |
-| **Staging** | Pre-production validation | Copy of production schema with synthetic data; never real student data | Real LLM APIs (Claude, GPT-4o) with lower rate limits | Flags mirror production + unreleased features enabled | `staging.mathpath.org` |
-| **Production** | Live users | Real student data (encrypted, COPPA-compliant) | Real LLM APIs with production rate limits and cost alerts | Controlled rollout per flag | `app.mathpath.org` |
+| **Staging** | Pre-production validation | Copy of production schema with synthetic data; never real student data | Real LLM APIs (Claude, GPT-4o) with lower rate limits | Flags mirror production + unreleased features enabled | `staging.padi.ai` |
+| **Production** | Live users | Real student data (encrypted, COPPA-compliant) | Real LLM APIs with production rate limits and cost alerts | Controlled rollout per flag | `app.padi.ai` |
 
 **12-Factor Config — all config via environment variables:**
 
@@ -3775,7 +3775,7 @@ APP_LOG_LEVEL=DEBUG                    # DEBUG | INFO | WARNING | ERROR
 APP_SECRET_KEY=CHANGE_ME               # Random 64-char hex string
 
 # === Database ===
-DATABASE_URL=postgresql+asyncpg://mathpath:mathpath@localhost:5432/mathpath
+DATABASE_URL=postgresql+asyncpg://padi:padi-ai@localhost:5432/padi-ai
 DATABASE_POOL_SIZE=5
 DATABASE_MAX_OVERFLOW=10
 
@@ -3783,10 +3783,10 @@ DATABASE_MAX_OVERFLOW=10
 REDIS_URL=redis://localhost:6379/0
 
 # === Auth0 ===
-AUTH0_DOMAIN=mathpath-dev.us.auth0.com
+AUTH0_DOMAIN=padi-ai-dev.us.auth0.com
 AUTH0_CLIENT_ID=CHANGE_ME
 AUTH0_CLIENT_SECRET=CHANGE_ME
-AUTH0_AUDIENCE=https://api.mathpath.org
+AUTH0_AUDIENCE=https://api.padi.ai
 AUTH0_CALLBACK_URL=http://localhost:3000/api/auth/callback
 
 # === LLM APIs ===
@@ -3798,7 +3798,7 @@ LLM_MAX_DAILY_COST_USD=50.0
 # === Feature Flags (Unleash) ===
 UNLEASH_URL=http://localhost:4242/api
 UNLEASH_API_KEY=CHANGE_ME
-UNLEASH_APP_NAME=mathpath
+UNLEASH_APP_NAME=padi-ai
 UNLEASH_ENVIRONMENT=development
 
 # === Monitoring ===
@@ -3816,7 +3816,7 @@ AWS_ENDPOINT_URL=http://localhost:4566     # LocalStack
 
 # === Vercel (frontend only) ===
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_AUTH0_DOMAIN=mathpath-dev.us.auth0.com
+NEXT_PUBLIC_AUTH0_DOMAIN=padi-ai-dev.us.auth0.com
 NEXT_PUBLIC_AUTH0_CLIENT_ID=CHANGE_ME
 NEXT_PUBLIC_POSTHOG_KEY=CHANGE_ME
 ```
@@ -3861,11 +3861,11 @@ repos:
 # For a solo developer, 1Password CLI provides a simple sync mechanism:
 # Install: brew install 1password-cli
 
-# Store secrets in 1Password vault "MathPath Dev"
+# Store secrets in 1Password vault "PADI.AI Dev"
 # Populate .env.local from 1Password:
 op inject -i .env.example -o .env.local
 
-# This replaces {{ op://MathPath Dev/Database/password }} style references
+# This replaces {{ op://PADI.AI Dev/Database/password }} style references
 # with actual values from your 1Password vault
 ```
 
@@ -3889,8 +3889,8 @@ op inject -i .env.example -o .env.local
 #### One-Command Setup
 
 ```bash
-git clone git@github.com:your-org/mathpath.git
-cd mathpath
+git clone git@github.com:your-org/padi.git
+cd padi-ai
 make setup
 ```
 
@@ -3920,14 +3920,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: mathpath
-      POSTGRES_USER: mathpath
-      POSTGRES_PASSWORD: mathpath
+      POSTGRES_DB: padi-ai
+      POSTGRES_USER: padi-ai
+      POSTGRES_PASSWORD: padi-ai
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mathpath"]
+      test: ["CMD-SHELL", "pg_isready -U padi-ai"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -3957,7 +3957,7 @@ services:
     ports:
       - "4242:4242"
     environment:
-      DATABASE_URL: postgres://mathpath:mathpath@postgres:5432/unleash
+      DATABASE_URL: postgres://padi:padi-ai@postgres:5432/unleash
       DATABASE_SSL: "false"
     depends_on:
       postgres:
@@ -3990,7 +3990,7 @@ ollama serve
 - API docs (Swagger): http://localhost:8000/docs
 - API docs (ReDoc): http://localhost:8000/redoc
 - Unleash dashboard: http://localhost:4242
-- PostgreSQL: `localhost:5432` (user: mathpath, password: mathpath)
+- PostgreSQL: `localhost:5432` (user: padi-ai, password: padi-ai)
 - Redis: `localhost:6379`
 
 #### Common Troubleshooting
@@ -4011,7 +4011,7 @@ ollama serve
 ### 6.4 Makefile Reference
 
 ```makefile
-# Makefile — MathPath Oregon Developer Commands
+# Makefile — PADI.AI Developer Commands
 # Run `make help` to see all available targets
 
 .PHONY: help setup install dev dev-api dev-web test test-unit test-integration \
@@ -4028,7 +4028,7 @@ help: ## Show this help message
 # ============================================================
 
 setup: ## One-command project setup (first time)
-	@echo "🔧 Setting up MathPath Oregon..."
+	@echo "🔧 Setting up PADI.AI..."
 	@./infrastructure/scripts/setup.sh
 
 install: ## Install all dependencies (pnpm + Python)
@@ -4063,21 +4063,21 @@ test-unit: ## Run unit tests only (fast)
 	cd apps/api && pytest tests/unit -v --tb=short
 	cd services/bkt-engine && pytest tests/unit -v --tb=short
 	cd services/agent-engine && pytest tests/unit -v --tb=short
-	pnpm --filter @mathpath/web test -- --watchAll=false
+	pnpm --filter @padi-ai/web test -- --watchAll=false
 
 test-integration: ## Run integration tests (requires Docker services)
 	cd apps/api && pytest tests/integration -v --tb=short
-	pnpm --filter @mathpath/web test:integration
+	pnpm --filter @padi-ai/web test:integration
 
 test-e2e: ## Run E2E tests with Playwright
-	pnpm --filter @mathpath/web exec playwright test
+	pnpm --filter @padi-ai/web exec playwright test
 
 test-e2e-ui: ## Run E2E tests with Playwright UI mode
-	pnpm --filter @mathpath/web exec playwright test --ui
+	pnpm --filter @padi-ai/web exec playwright test --ui
 
 test-coverage: ## Run tests with coverage report
 	cd apps/api && pytest --cov=src --cov-report=html --cov-report=term-missing
-	pnpm --filter @mathpath/web test -- --coverage --watchAll=false
+	pnpm --filter @padi-ai/web test -- --coverage --watchAll=false
 
 test-llm-connection: ## Verify LLM API keys and connectivity
 	cd apps/api && python -c "from src.clients.llm_client import LLMClient; import asyncio; asyncio.run(LLMClient.health_check())"
@@ -4129,7 +4129,7 @@ seed: ## Seed database with test data
 	cd apps/api && python -m scripts.seed_data
 
 shell-db: ## Open psql shell to local database
-	docker exec -it $$(docker ps -qf "name=postgres") psql -U mathpath -d mathpath
+	docker exec -it $$(docker ps -qf "name=postgres") psql -U padi-ai -d padi-ai
 
 # ============================================================
 # DOCKER
@@ -4157,8 +4157,8 @@ docker-reset: ## Reset Docker (remove volumes, fresh start)
 
 build: ## Build all services for production
 	pnpm turbo build
-	docker build -f infrastructure/docker/api.Dockerfile -t mathpath-api:latest apps/api/
-	docker build -f infrastructure/docker/agent-engine.Dockerfile -t mathpath-agent:latest services/agent-engine/
+	docker build -f infrastructure/docker/api.Dockerfile -t padi-ai-api:latest apps/api/
+	docker build -f infrastructure/docker/agent-engine.Dockerfile -t padi-ai-agent:latest services/agent-engine/
 
 deploy-staging: ## Deploy to staging (requires AWS credentials)
 	@echo "Deploying to staging..."
@@ -4267,7 +4267,7 @@ def sanitize_for_prompt(user_input: str) -> str:
 #### A05:2021 — Security Misconfiguration
 
 **Mitigations:**
-- CORS configured to allow only the frontend domain (`app.mathpath.org`, `localhost:3000` in dev)
+- CORS configured to allow only the frontend domain (`app.padi.ai`, `localhost:3000` in dev)
 - Security headers set via middleware: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`, `Content-Security-Policy`, `Referrer-Policy: strict-origin-when-cross-origin`
 - Debug mode disabled in staging/production (`APP_DEBUG=false`)
 - Default credentials never used — Docker Compose uses non-default passwords even locally

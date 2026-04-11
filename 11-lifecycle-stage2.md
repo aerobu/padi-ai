@@ -1,4 +1,4 @@
-# MathPath Oregon — SDLC Lifecycle Document
+# PADI.AI — SDLC Lifecycle Document
 ## Stage 2: Personalized Learning Plan Generator + AI Question Generation Pipeline
 ### Months 4–6 | Document Version 1.0 | Status: Final
 
@@ -59,7 +59,7 @@ Stage 2 introduces four major subsystems layered on top of Stage 1's standards d
         │ HTTPS       │ HTTPS       │ HTTPS          │ HTTPS
         ▼             ▼             ▼                ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│            MATHPATH OREGON SYSTEM BOUNDARY (Stage 2)              │
+│            PADI.AI SYSTEM BOUNDARY (Stage 2)              │
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────────┐  │
 │  │            Next.js 15 Web App (Vercel)                      │  │
@@ -159,7 +159,7 @@ LearningPlanService.generate_learning_plan(student_id)
     │
     ├─► [9] SET Redis `plan:{student_id}:current` → serialized plan JSON (TTL 3600s)
     │
-    └─► [10] XADD `mathpath:events` plan_generated → badge worker + notification worker
+    └─► [10] XADD `padi:events` plan_generated → badge worker + notification worker
 ```
 
 #### Flow B: AI Question Generation Pipeline (LangGraph 0.2)
@@ -169,7 +169,7 @@ Admin → POST /admin/generation-jobs  { standard_code, count, difficulties }
                 │
                 ▼
         INSERT generation_jobs (status='queued')
-        LPUSH Redis queue `mathpath:gen:queue` job_id
+        LPUSH Redis queue `padi:gen:queue` job_id
                 │
                 ▼
      LangGraph Worker (ECS Task) — BLPOP queue
@@ -223,7 +223,7 @@ Admin → POST /admin/generation-jobs  { standard_code, count, difficulties }
 #### Flow C: Badge Award (Event-Driven, < 2 seconds)
 
 ```
-practice_session.completed event (Redis Stream `mathpath:events`)
+practice_session.completed event (Redis Stream `padi:events`)
           │
           ▼
     BadgeWorker.check_and_award(student_id, event_payload)
@@ -239,7 +239,7 @@ practice_session.completed event (Redis Stream `mathpath:events`)
     ON CONFLICT (student_id, badge_type) DO NOTHING   ← idempotent
           │
           ▼
-    XADD `mathpath:events` badge_earned
+    XADD `padi:events` badge_earned
     SET Redis `badges:{student_id}:pending` badge_ids (TTL 3600s)
 ```
 
@@ -633,10 +633,10 @@ Stories derived from PRD Section 2.2 (FR-6 through FR-10). Priority levels: P0 =
 
 **Acceptance Criteria:**
 - Worker is deployed as a separate ECS Fargate task defined in `infrastructure/terraform/environments/staging/main.tf`.
-- Worker polls Redis queue `mathpath:gen:queue` using BLPOP with 30-second timeout (no busy-waiting).
+- Worker polls Redis queue `padi:gen:queue` using BLPOP with 30-second timeout (no busy-waiting).
 - Worker health endpoint `GET /health` returns `200 OK` with current job count.
 - Worker auto-restarts on crash (ECS task restart policy).
-- Datadog monitors `mathpath.gen.worker.heartbeat` metric; alert fires if no heartbeat for 5 minutes.
+- Datadog monitors `padi.gen.worker.heartbeat` metric; alert fires if no heartbeat for 5 minutes.
 - Multiple worker instances can process jobs concurrently without conflict (Celery worker model).
 
 ---
@@ -659,7 +659,7 @@ Stories derived from PRD Section 2.2 (FR-6 through FR-10). Priority levels: P0 =
 - Every generated question includes: `question_text`, `answer_options[4]` (for MC), `correct_answer`, `solution_python_code`, `solution_steps[1-5]`, `difficulty_level`, `dok_level`, `reading_level_estimate`.
 - The prompt is loaded from `apps/api/prompts/question_gen_v1.0.jinja2` (versioned file — not hardcoded).
 - On JSON parse failure, the worker retries once with an adjusted prompt; on second failure, the question is discarded and `generation_jobs.failed_validation` incremented.
-- o3-mini API latency P95 < 8 seconds per call, tracked in `mathpath.gen.llm.latency_ms`.
+- o3-mini API latency P95 < 8 seconds per call, tracked in `padi.gen.llm.latency_ms`.
 - Each API call records `input_tokens`, `output_tokens`, and `estimated_cost_usd` to `generation_jobs` table.
 
 ---
@@ -1351,7 +1351,7 @@ async def test_generation_job_queued_in_redis(db_container, redis_container, adm
     assert response.status_code == 201
     job_id = response.json()['job_id']
     # Job should be in Redis queue
-    queued = await redis_container.lrange('mathpath:gen:queue', 0, -1)
+    queued = await redis_container.lrange('padi:gen:queue', 0, -1)
     assert job_id.encode() in queued
 
 # TC-I-LP-006: pgvector dedup detects near-duplicate
@@ -1633,7 +1633,7 @@ async def test_rate_limit_backoff(mock_llm):
 
 # TC-R-004: Daily budget hard stop blocks new jobs
 async def test_daily_budget_hardstop(redis_client):
-    await redis_client.set('mathpath:llm:daily_spend_cents', 1001)  # Over $10
+    await redis_client.set('padi:llm:daily_spend_cents', 1001)  # Over $10
     with pytest.raises(BudgetExceededError):
         await generate_question(standard='4.OA.A.1', difficulty=3)
 
@@ -2275,7 +2275,7 @@ All Stage 2 infrastructure resources are tagged consistently:
 # infrastructure/terraform/environments/staging/main.tf
 locals {
   common_tags = {
-    Project     = "mathpath-oregon"
+    Project     = "padi-ai"
     Stage       = "stage2"
     Environment = var.environment  # "dev" | "staging" | "production"
     Team        = "engineering"
@@ -2309,7 +2309,7 @@ locals {
 ```python
 # In Celery worker, before every o3-mini call:
 async def check_daily_budget_gate():
-    spend_cents = int(await redis.get('mathpath:llm:daily_spend_cents') or 0)
+    spend_cents = int(await redis.get('padi:llm:daily_spend_cents') or 0)
     if spend_cents >= 1000:  # $10 hard stop
         raise BudgetExceededError(f"Daily LLM budget exhausted (${spend_cents/100:.2f} spent)")
     if spend_cents >= 500:   # $5 warning
@@ -2326,7 +2326,7 @@ async def check_daily_budget_gate():
 
 #### 4.2.3 Resource Right-Sizing
 
-- **LangGraph Worker ECS task**: Start with 1 task (1 vCPU, 2 GB). Auto-scale to 4 tasks during active generation campaigns based on Redis queue depth (CloudWatch custom metric: `mathpath.gen.queue.depth > 10` → scale out).
+- **LangGraph Worker ECS task**: Start with 1 task (1 vCPU, 2 GB). Auto-scale to 4 tasks during active generation campaigns based on Redis queue depth (CloudWatch custom metric: `padi.gen.queue.depth > 10` → scale out).
 - **API Server ECS tasks**: 2 tasks minimum for HA; auto-scale on CPU > 70%.
 - **RDS PostgreSQL**: `db.t4g.medium` during Stage 2 (small pilot). Upgrade to `db.t4g.large` if p_mastered query becomes slow (monitor `pg_stat_statements`).
 - **ElastiCache Redis**: `cache.t4g.medium` — single node (Stage 2 pilot; add replica in Stage 3 for production reliability).
@@ -2358,7 +2358,7 @@ Stage 2 introduces new data flows involving student learning data. Compliance ch
 
 **COPPA 2025 Final Rule Updates (Effective April 22, 2026):**
 - Strengthened data minimization: Stage 2 audit confirms `plan_modules.bkt_history` contains only mathematical state (no behavioral/interest data).
-- New security requirements: Redis keys containing student data use separate keyspace (`mathpath:student:*`) with Redis AUTH; LangGraph Worker has read-only access to student-adjacent tables.
+- New security requirements: Redis keys containing student data use separate keyspace (`padi:student:*`) with Redis AUTH; LangGraph Worker has read-only access to student-adjacent tables.
 - Expanded PII definition: `plan_modules` timestamps (e.g., `started_at`) could infer behavioral patterns; these are restricted to parent/admin access only (student API responses omit timestamps).
 
 #### 4.3.2 Incident Response Plan
@@ -2424,13 +2424,13 @@ jobs:
       - name: Trivy — API image
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: mathpath-api:${{ github.sha }}
+          image-ref: padi-ai-api:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: 1
       - name: Trivy — LangGraph Worker image
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: mathpath-gen-worker:${{ github.sha }}
+          image-ref: padi-ai-gen-worker:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: 1
 
@@ -2438,7 +2438,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate SBOM (CycloneDX)
-        run: trivy image --format cyclonedx --output sbom-stage2.json mathpath-api:${{ github.sha }}
+        run: trivy image --format cyclonedx --output sbom-stage2.json padi-ai-api:${{ github.sha }}
       - uses: actions/upload-artifact@v4
         with:
           name: sbom-stage2
@@ -2675,5 +2675,5 @@ Manual QA covers the test categories that cannot be fully automated: mathematica
 
 ---
 
-*End of Document — MathPath Oregon Stage 2 SDLC Lifecycle Document*
+*End of Document — PADI.AI Stage 2 SDLC Lifecycle Document*
 *Generated: 2026-04-04 | Next Review: Start of Stage 3 (Month 7)*

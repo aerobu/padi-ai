@@ -1,4 +1,4 @@
-# MathPath Oregon — SDLC Lifecycle Document
+# PADI.AI — SDLC Lifecycle Document
 ## Stage 5: MMP — Monetization, Polish & School Onboarding (Months 15–20)
 
 **Document ID:** LCD-005  
@@ -300,15 +300,15 @@ District (e.g., "Portland Public Schools")
 #### 1.5.2 Clever SSO Integration Flow
 
 ```
-School Admin Browser ──1. Click "Connect Clever"──► MathPath School Mgmt Service
+School Admin Browser ──1. Click "Connect Clever"──► PADI.AI School Mgmt Service
                      ◄──2. Redirect to Clever OAuth─────────────────────────────
                      ──3. Authenticate with district IDP──► Clever Login
                      ◄──4. Redirect with auth code──────────────────────────────
-MathPath Callback ──5. Exchange code for tokens──► Clever Token API
+PADI.AI Callback ──5. Exchange code for tokens──► Clever Token API
                   ◄──6. {access_token, id_token}────────────────────────────────
                   ──7. Fetch district data (schools, teachers, sections, students)
                        via Clever Data API /v3.0/*
-                  ──8. Create/update MathPath entities (district, schools, teachers,
+                  ──8. Create/update PADI.AI entities (district, schools, teachers,
                        students, classrooms) in PostgreSQL
                   ──9. Store refresh_token (encrypted via AWS Secrets Manager)
 ```
@@ -325,13 +325,13 @@ Step 2  DPA displayed inline — must scroll to bottom (no click-through bypass)
 Step 3  DPA signed: official name, title, typed signature, date captured
 Step 4  dpa_agreements record created with SHA-256 content hash + S3-archived PDF
 Step 5  DPA PDF emailed to school admin via SES
-Step 6  MathPath co-signed DPA returned within 2 business days (manual; automated in MMP+)
+Step 6  PADI.AI co-signed DPA returned within 2 business days (manual; automated in MMP+)
 Step 7  Student data access UNLOCKED — before Step 6, roster import and Clever sync are blocked
 ```
 
 **FERPA data usage constraints (enforced in application layer + RLS):**
 
-| Data Field | MathPath CAN | MathPath CANNOT |
+| Data Field | PADI.AI CAN | PADI.AI CANNOT |
 |------------|-------------|-----------------|
 | Student first/last name | Display to teacher/parent, reports | Share externally, marketing |
 | Assessment responses | BKT algorithm, progress reports | Sell, non-educational use |
@@ -380,10 +380,10 @@ CREATE POLICY parent_isolation ON student_profiles
 
 **URL strategy:**
 ```
-https://mathpath.app/en/practice   → English practice
-https://mathpath.app/es/practice   → Spanish practice
-https://mathpath.app/en/dashboard  → English parent dashboard
-https://mathpath.app/es/dashboard  → Spanish parent dashboard
+https://padi.ai/en/practice   → English practice
+https://padi.ai/es/practice   → Spanish practice
+https://padi.ai/en/dashboard  → English parent dashboard
+https://padi.ai/es/dashboard  → Spanish parent dashboard
 ```
 
 **Locale detection priority:** (1) User preference stored in DB → (2) URL path prefix → (3) `Accept-Language` header.
@@ -465,7 +465,7 @@ Student Browser ──(no cookies, memory-only PostHog)──► /ingest proxy (
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Payment processor | Stripe (Stripe Elements, no card data on server) | PCI-DSS SAQ-A compliance; eliminates PCI scope for MathPath servers |
+| Payment processor | Stripe (Stripe Elements, no card data on server) | PCI-DSS SAQ-A compliance; eliminates PCI scope for PADI.AI servers |
 | Webhook idempotency mechanism | Unique constraint on `stripe_event_id` in PostgreSQL | Atomic, crash-safe; no distributed lock needed |
 | Subscription state machine location | Billing Service only (single source of truth) | Prevents state drift from multiple writers |
 | School SSO provider | Clever (primary) + Google Workspace | Clever covers 95% of US K-12; GWS covers Google-native districts |
@@ -531,7 +531,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 *As a parent, I want to start a subscription by entering my payment details through a secure checkout so that I can unlock premium features for my child.*
 
 **Acceptance Criteria:**
-- Stripe Elements checkout embedded at `/settings/billing/upgrade` — no card data transmitted to MathPath servers
+- Stripe Elements checkout embedded at `/settings/billing/upgrade` — no card data transmitted to PADI.AI servers
 - Parent selects plan (Individual/Family) and billing period (monthly/annual) before checkout
 - 14-day free trial applied automatically for first-time subscribers (`trial_period_days=14`)
 - Checkout completion creates subscription record in `subscriptions` table with `state=TRIAL`
@@ -546,7 +546,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-503 — Stripe Webhook State Machine**  
-*As the system, I want all Stripe webhook events to reliably drive subscription state transitions so that billing state in MathPath always reflects Stripe's source of truth.*
+*As the system, I want all Stripe webhook events to reliably drive subscription state transitions so that billing state in PADI.AI always reflects Stripe's source of truth.*
 
 **Acceptance Criteria:**
 - All 8 webhook event types handled: `checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.created`, `invoice.finalized`, `payment_intent.payment_failed`
@@ -575,7 +575,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 - Reactivate: one-click from `/settings/subscription` when in `canceled` state; retains all student progress
 - Change billing period: monthly → annual shows proration credit; annual → monthly shows next cycle date
 - All actions confirmed via explicit modal with consequences described in plain language
-- Subscription portal powered by Stripe Customer Portal for payment method updates (no raw card data in MathPath UI)
+- Subscription portal powered by Stripe Customer Portal for payment method updates (no raw card data in PADI.AI UI)
 
 **Priority:** P1 | **Points:** 8 | **Dependencies:** MATH-503
 
@@ -594,7 +594,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 - Reactivation link included in all dunning emails; one-click reactivation restores previous tier
 - In-app banner dismissible but re-shown at next login until resolved
 - All dunning emails translated in Spanish when parent locale is `es`
-- Stripe Smart Retries used (not fixed schedule); MathPath emails align to actual retry events
+- Stripe Smart Retries used (not fixed schedule); PADI.AI emails align to actual retry events
 
 **Priority:** P0 | **Points:** 5 | **Dependencies:** MATH-503
 
@@ -608,7 +608,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 - Invoice form collects: PO number (optional), billing contact name, billing email, billing address
 - Stripe Invoice object generated; invoice PDF emailed to billing contact via SES within 5 minutes
 - Payment terms: Net 30 displayed on invoice
-- Invoice status tracked in MathPath (`pending`, `paid`, `overdue`)
+- Invoice status tracked in PADI.AI (`pending`, `paid`, `overdue`)
 - Renewal invoice sent 45 days before contract expiry via SES
 - School admin can download invoice PDF from `/admin/billing` at any time
 - `subscriptions.po_number` stored and displayed in school admin billing view
@@ -643,7 +643,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-512 — FERPA DPA Flow**  
-*As a school district official, I want to review and electronically sign a FERPA Data Processing Agreement so that my school's use of MathPath Oregon is legally compliant.*
+*As a school district official, I want to review and electronically sign a FERPA Data Processing Agreement so that my school's use of PADI.AI is legally compliant.*
 
 **Acceptance Criteria:**
 - DPA displayed inline at school onboarding step 2 — must scroll to bottom (progress indicator shown)
@@ -651,7 +651,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 - Signing captures: official name, title, typed signature, timestamp, IP address
 - `dpa_agreements` record created with SHA-256 hash of signed DPA content
 - Signed DPA PDF generated (via async job) and emailed to school admin within 10 minutes
-- PDF archived in S3 at `s3://mathpath-dpa/{district_id}/{agreement_id}.pdf`
+- PDF archived in S3 at `s3://padi-ai-dpa/{district_id}/{agreement_id}.pdf`
 - Student data access BLOCKED until DPA is fully executed (signed and countersigned)
 - DPA version tracked (`dpa_version` field); legal team controls version bumps
 - Existing schools notified 60 days before DPA expiration with renewal link
@@ -680,7 +680,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-514 — Clever SSO Integration**  
-*As a district IT administrator, I want to connect MathPath Oregon to our Clever instance so that teachers and students log in with their existing school credentials and rosters sync automatically.*
+*As a district IT administrator, I want to connect PADI.AI to our Clever instance so that teachers and students log in with their existing school credentials and rosters sync automatically.*
 
 **Acceptance Criteria:**
 - Clever OAuth 2.0 authorization code flow implemented at `/auth/clever/callback`
@@ -700,7 +700,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-515 — Google Workspace for Education SSO**  
-*As a teacher at a Google Workspace school, I want to log in to MathPath Oregon using my school Google account so that I don't need a separate password.*
+*As a teacher at a Google Workspace school, I want to log in to PADI.AI using my school Google account so that I don't need a separate password.*
 
 **Acceptance Criteria:**
 - Google OAuth 2.0 flow configured with scopes: `email`, `profile` only (no Drive, Classroom API)
@@ -834,7 +834,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-526 — Dark Mode & Accessibility Theme**  
-*As a student or parent, I want a dark mode and high-contrast accessibility options so that MathPath is comfortable to use in different lighting conditions and for users with visual needs.*
+*As a student or parent, I want a dark mode and high-contrast accessibility options so that PADI.AI is comfortable to use in different lighting conditions and for users with visual needs.*
 
 **Acceptance Criteria:**
 - Dark mode triggered by `prefers-color-scheme: dark` (automatic) or manual toggle in settings
@@ -852,7 +852,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-527 — Full Spanish Language Support**  
-*As a Spanish-speaking parent or student, I want to use MathPath Oregon entirely in Spanish so that language is not a barrier to accessing math support.*
+*As a Spanish-speaking parent or student, I want to use PADI.AI entirely in Spanish so that language is not a barrier to accessing math support.*
 
 **Acceptance Criteria:**
 - All UI strings (menus, buttons, labels, notifications, error messages) translated to Spanish in `es.json`
@@ -918,7 +918,7 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-541 — COPPA Safe Harbor Certification**  
-*As the company, I want COPPA Safe Harbor certification from kidSAFE (or equivalent) so that MathPath Oregon can be legally marketed to children and schools have third-party privacy assurance.*
+*As the company, I want COPPA Safe Harbor certification from kidSAFE (or equivalent) so that PADI.AI can be legally marketed to children and schools have third-party privacy assurance.*
 
 **Acceptance Criteria:**
 - kidSAFE application submitted by Month 15 Week 2
@@ -936,14 +936,14 @@ Stories are organized by epic, derived from FR-21 through FR-26. Dependencies ar
 ---
 
 **MATH-542 — Data Minimization & Privacy Audit**  
-*As the privacy officer, I want a formal data minimization audit so that MathPath Oregon collects only what is necessary for educational function and can demonstrate COPPA compliance.*
+*As the privacy officer, I want a formal data minimization audit so that PADI.AI collects only what is necessary for educational function and can demonstrate COPPA compliance.*
 
 **Acceptance Criteria:**
 - Data inventory document completed: every data field with where stored, why collected, retention period
 - Confirmed NOT collected: student last name, student photos, location data (IP-to-city disabled), contacts, calendar
 - Confirmed NOT used: third-party advertising trackers, behavioral profiling for ads
-- PostHog confirmed self-hosted (student data never leaves MathPath infrastructure)
-- Every third-party subprocessor signed a DPA with MathPath (AWS, Auth0, Anthropic, OpenAI, Stripe documented)
+- PostHog confirmed self-hosted (student data never leaves PADI.AI infrastructure)
+- Every third-party subprocessor signed a DPA with PADI.AI (AWS, Auth0, Anthropic, OpenAI, Stripe documented)
 - Annual privacy review process defined: October audit checklist, output = Privacy Review Report
 - Data deletion workflow tested: parent deletion request processed within 48 hours
 - IP address retention: session IPs retained 30 days only; EOG assessment IPs 1 year (assessment integrity)
@@ -1287,7 +1287,7 @@ class TestCleverTokenExchange:
     async def test_role_mapping_district_admin_to_school_admin(self, mock_clever_api):
         """UT-SSO-005"""
         mock_clever_api.get_user.return_value = {"type": "district_admin", "id": "123"}
-        role = map_clever_role_to_mathpath({"type": "district_admin"})
+        role = map_clever_role_to_padi_ai({"type": "district_admin"})
         assert role == "SCHOOL_ADMIN"
 ```
 
@@ -1573,7 +1573,7 @@ class TestCleverSSOIntegration:
     async def test_IT_SSO_002_nightly_sync_unenrolls_removed_student(
         self, db_session, clever_api_mock
     ):
-        """Student removed from Clever → soft-unenrolled in MathPath; data preserved."""
+        """Student removed from Clever → soft-unenrolled in PADI.AI; data preserved."""
         student = await create_test_clever_student(db_session, clever_id="st2")
         clever_api_mock.configure(students=[])  # Student removed from Clever
 
@@ -2012,7 +2012,7 @@ Feature: Subscription Billing Lifecycle
 ```gherkin
 Feature: School Admin Onboarding
   As a school technology director, I want to onboard my school
-  so that my teachers and students can use MathPath Oregon.
+  so that my teachers and students can use PADI.AI.
 
   Scenario: BDD-SCHOOL-001 — FERPA DPA required before roster access
     Given a new school admin "Dr. Patel" at "Woodstock Elementary"
@@ -2234,16 +2234,16 @@ def test_ab_assignment_stable_across_1000_calls():
 
 #### 3.7.1 PCI-DSS Compliance (Stripe Elements)
 
-**TC-SEC-001: No Card Data on MathPath Servers**  
-Verify: network inspection of checkout form submission shows zero credit card data in any HTTP request body to `*.mathpath.app`. All card data flows directly from browser to Stripe via Stripe.js. MathPath servers only receive Stripe's `PaymentMethod` token.  
+**TC-SEC-001: No Card Data on PADI.AI Servers**  
+Verify: network inspection of checkout form submission shows zero credit card data in any HTTP request body to `*.padi.ai`. All card data flows directly from browser to Stripe via Stripe.js. PADI.AI servers only receive Stripe's `PaymentMethod` token.  
 **Tool:** Playwright network interception + payload inspection.
 
 ```typescript
-test('TC-SEC-001: no card data transmitted to MathPath servers', async ({ page }) => {
-  const mathpathRequests: string[] = []
+test('TC-SEC-001: no card data transmitted to PADI.AI servers', async ({ page }) => {
+  const padiAiRequests: string[] = []
   page.on('request', req => {
-    if (req.url().includes('mathpath.app')) {
-      mathpathRequests.push(req.postData() || '')
+    if (req.url().includes('padi.ai')) {
+      padiAiRequests.push(req.postData() || '')
     }
   })
 
@@ -2252,9 +2252,9 @@ test('TC-SEC-001: no card data transmitted to MathPath servers', async ({ page }
   await stripeFrame.getByPlaceholder('Card number').fill('4242424242424242')
   await page.getByTestId('submit-payment').click()
 
-  // No mathpath.app request should contain card-like data
+  // No padi.ai request should contain card-like data
   const cardPattern = /\b4[0-9]{15}\b|\b4[0-9]{12}(?:[0-9]{3})?\b/
-  for (const body of mathpathRequests) {
+  for (const body of padiAiRequests) {
     expect(body).not.toMatch(cardPattern)
   }
 })
@@ -2710,15 +2710,15 @@ Per COPPA 2025 Final Rule (effective June 23, 2025, compliance by April 22, 2026
 
 #### 4.3.5 PCI-DSS Compliance Posture (Stripe Elements — SAQ-A)
 
-MathPath Oregon uses Stripe Elements exclusively for card data capture. This qualifies for PCI-DSS SAQ-A (minimal scope) because:
-- Card data never touches MathPath servers
+PADI.AI uses Stripe Elements exclusively for card data capture. This qualifies for PCI-DSS SAQ-A (minimal scope) because:
+- Card data never touches PADI.AI servers
 - Stripe handles all PCI-compliant infrastructure
 - TLS 1.2+ enforced on all payment pages (HSTS enabled)
 
 **Annual SAQ-A tasks:**
 - Complete and submit SAQ-A self-assessment questionnaire
 - Verify Stripe's PCI compliance certificate (updated annually)
-- Verify no PAN, CVV, or track data in MathPath logs (automated log scan)
+- Verify no PAN, CVV, or track data in PADI.AI logs (automated log scan)
 - Confirm Stripe Elements JavaScript loaded from `js.stripe.com` (not self-hosted)
 
 #### 4.3.6 Audit Log Retention and Review
@@ -2772,7 +2772,7 @@ security-scan:
     - name: Trivy Container Scan
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: mathpath/billing-service:${{ github.sha }}
+        image-ref: padi-ai/billing-service:${{ github.sha }}
         format: sarif
         severity: HIGH,CRITICAL
         exit-code: 1
@@ -2795,7 +2795,7 @@ dast:
     - name: OWASP ZAP Full Scan
       uses: zaproxy/action-full-scan@v0.9.0
       with:
-        target: 'https://staging.mathpath.app'
+        target: 'https://staging.padi.ai'
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
 
@@ -2808,12 +2808,12 @@ audit:
     - name: Generate SBOM
       run: trivy sbom --format cyclonedx -o sbom.json .
     - name: Upload SBOM to S3
-      run: aws s3 cp sbom.json s3://mathpath-sbom/$(date +%Y-%m-%d)-sbom.json
+      run: aws s3 cp sbom.json s3://padi-ai-sbom/$(date +%Y-%m-%d)-sbom.json
 ```
 
 #### 4.4.3 SBOM (Software Bill of Materials)
 
-Generated weekly via Trivy in CycloneDX format; stored in S3 at `s3://mathpath-sbom/`. Required for:
+Generated weekly via Trivy in CycloneDX format; stored in S3 at `s3://padi-ai-sbom/`. Required for:
 - School district procurement offices (some districts require SBOM)
 - Supply chain security incident response (identify affected packages rapidly)
 - COPPA Safe Harbor audit evidence

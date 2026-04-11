@@ -337,7 +337,7 @@ Per [SchoolAI compliance guide](https://schoolai.com/blog/ensuring-ferpa-coppa-c
 
 ### Claim
 
-> MathPath Oregon will improve student math proficiency rates by **15–25 percentage points** among engaged students (defined as ≥10 completed sessions), compared to the ~5% real-world improvement documented for current platforms (Holt, 2024).
+> PADI.AI will improve student math proficiency rates by **15–25 percentage points** among engaged students (defined as ≥10 completed sessions), compared to the ~5% real-world improvement documented for current platforms (Holt, 2024).
 
 ### Why Existing Platforms Achieve Only ~5%
 
@@ -345,11 +345,11 @@ Holt (2024) analyzed 14 studies of platforms including i-Ready, DreamBox, Khan A
 
 The root cause: these are **answer-level feedback systems**. VanLehn (2011) showed answer-level systems achieve only d = 0.30 regardless of sophistication. Reaching d = 0.76 (near-equivalent to human tutoring) requires step-level feedback — which requires an AI tutoring agent.
 
-### MathPath's Four Evidence-Backed Mechanisms
+### PADI.AI's Four Evidence-Backed Mechanisms
 
 **Mechanism 1 — Prerequisite Gap Remediation First**
 
-Existing platforms place students into grade-level content regardless of foundational mastery. MathPath diagnoses and remediates 3rd-grade prerequisite skills *before* exposing students to 4th-grade content. The What Works Clearinghouse practice guide on elementary math intervention (Fuchs et al., 2021) rates prerequisite-grounded instruction as its highest-evidence recommendation for students struggling with math. Fuchs et al. (2008) demonstrated that unaddressed foundational skill gaps are the primary driver of persistent difficulty across elementary grades.
+Existing platforms place students into grade-level content regardless of foundational mastery. PADI.AI diagnoses and remediates 3rd-grade prerequisite skills *before* exposing students to 4th-grade content. The What Works Clearinghouse practice guide on elementary math intervention (Fuchs et al., 2021) rates prerequisite-grounded instruction as its highest-evidence recommendation for students struggling with math. Fuchs et al. (2008) demonstrated that unaddressed foundational skill gaps are the primary driver of persistent difficulty across elementary grades.
 
 **Mechanism 2 — Step-Level Socratic Feedback (d = 0.76 vs. d = 0.30)**
 
@@ -358,19 +358,19 @@ VanLehn (2011) compared tutoring modalities across 62 studies:
 - Step-level intelligent tutoring systems (ITS with Socratic guidance): effect size **d = 0.76**
 - Human tutors: effect size **d = 0.79**
 
-MathPath's Tutor Agent guides students through reasoning steps rather than simply marking answers right or wrong — moving from the d = 0.30 to the d = 0.76 band.
+PADI.AI's Tutor Agent guides students through reasoning steps rather than simply marking answers right or wrong — moving from the d = 0.30 to the d = 0.76 band.
 
 **Mechanism 3 — BKT Mastery Gating + Spaced Practice**
 
-MathPath prevents students from advancing past a skill until BKT probability of mastery reaches P(mastered) ≥ 0.85. This operationalizes Bloom's (1984) mastery learning approach, which meta-analyses show produces effect sizes of d = 0.5–1.0 (Ma et al., 2014; Kulik & Fletcher, 2016). Combined with spaced re-exposure to previously mastered skills — Cepeda et al. (2006) synthesized 839 assessments showing spaced practice outperforms massed practice in 95% of cases — this creates durable retention rather than shallow fluency.
+PADI.AI prevents students from advancing past a skill until BKT probability of mastery reaches P(mastered) ≥ 0.85. This operationalizes Bloom's (1984) mastery learning approach, which meta-analyses show produces effect sizes of d = 0.5–1.0 (Ma et al., 2014; Kulik & Fletcher, 2016). Combined with spaced re-exposure to previously mastered skills — Cepeda et al. (2006) synthesized 839 assessments showing spaced practice outperforms massed practice in 95% of cases — this creates durable retention rather than shallow fluency.
 
 **Mechanism 4 — Error-Type Classification**
 
-MathPath's Assessment Agent classifies error types (procedural vs. conceptual, specific misconception categories) rather than marking responses as correct/incorrect. The IES spaced practice guide (Pashler et al., 2007) identifies targeted error correction as one of the highest-evidence instructional strategies. Different error types require different instructional interventions; MathPath routes each error type to a different hint strategy.
+PADI.AI's Assessment Agent classifies error types (procedural vs. conceptual, specific misconception categories) rather than marking responses as correct/incorrect. The IES spaced practice guide (Pashler et al., 2007) identifies targeted error correction as one of the highest-evidence instructional strategies. Different error types require different instructional interventions; PADI.AI routes each error type to a different hint strategy.
 
 ### Why We Expect to Beat the 2-Sigma Ceiling
 
-Bloom (1984) identified that one-to-one mastery tutoring produces d ≈ 2.0 vs. conventional classroom instruction — the "2 sigma problem." MathPath approximates the components of 1-on-1 tutoring: step-level feedback, error-specific guidance, prerequisite-aware sequencing, and mastery-gated advancement. Recent meta-analyses of intelligent tutoring systems show mean effect sizes of g = 0.42–0.66 vs. conventional instruction (Ma et al., 2014; Kulik & Fletcher, 2016) — well above the ~5% threshold.
+Bloom (1984) identified that one-to-one mastery tutoring produces d ≈ 2.0 vs. conventional classroom instruction — the "2 sigma problem." PADI.AI approximates the components of 1-on-1 tutoring: step-level feedback, error-specific guidance, prerequisite-aware sequencing, and mastery-gated advancement. Recent meta-analyses of intelligent tutoring systems show mean effect sizes of g = 0.42–0.66 vs. conventional instruction (Ma et al., 2014; Kulik & Fletcher, 2016) — well above the ~5% threshold.
 
 ### Measurement Plan
 

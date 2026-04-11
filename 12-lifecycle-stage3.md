@@ -1,4 +1,4 @@
-# MathPath Oregon — SDLC Lifecycle Document
+# PADI.AI — SDLC Lifecycle Document
 ## Stage 3: Adaptive Practice Engine & Multi-Agent AI Tutoring (Months 7–10)
 
 **Document ID:** LC-003  
@@ -32,7 +32,7 @@
 
 ### 1.1 Stage Overview
 
-Stage 3 is the most architecturally complex stage of MathPath Oregon. It transforms the platform from a content-delivery system into a fully adaptive, real-time AI learning engine. The central artifact is a **LangGraph StateGraph** orchestrating four specialized agents connected via persistent WebSocket channels, backed by a dual-memory system (Redis working memory + PostgreSQL long-term memory) and a real-time Bayesian Knowledge Tracing (BKT) engine.
+Stage 3 is the most architecturally complex stage of PADI.AI. It transforms the platform from a content-delivery system into a fully adaptive, real-time AI learning engine. The central artifact is a **LangGraph StateGraph** orchestrating four specialized agents connected via persistent WebSocket channels, backed by a dual-memory system (Redis working memory + PostgreSQL long-term memory) and a real-time Bayesian Knowledge Tracing (BKT) engine.
 
 The system adapts along six simultaneous dimensions per student:
 
@@ -1678,7 +1678,7 @@ test.describe('Practice Session — Critical Path', () => {
   test.beforeEach(async ({ page }) => {
     wsServer = await mockWebSocket(page, '/ws/sessions/*');
     await page.goto('/login');
-    await page.fill('[name="email"]', 'test.student@mathpath.test');
+    await page.fill('[name="email"]', 'test.student@padi.test');
     await page.fill('[name="password"]', 'TestPass123!');
     await page.click('[type="submit"]');
     await page.waitForURL('/dashboard');
@@ -2713,7 +2713,7 @@ export default function () {
   const studentId = `stu_load_test_${__VU}`;
   const sessionId = `ses_load_${__VU}_${__ITER}`;
 
-  const url = `wss://api.staging.mathpath.app/ws/sessions/${sessionId}?token=${getTestToken(studentId)}`;
+  const url = `wss://api.staging.padi.ai/ws/sessions/${sessionId}?token=${getTestToken(studentId)}`;
 
   const res = ws.connect(url, {}, function (socket) {
     socket.on('open', function () {
@@ -2870,7 +2870,7 @@ class TestCOPPACompliance:
         # This test queries AWS API to verify encryption-at-rest configuration
         import boto3
         rds = boto3.client('rds', region_name='us-west-2')
-        instance = rds.describe_db_instances(DBInstanceIdentifier='mathpath-staging')
+        instance = rds.describe_db_instances(DBInstanceIdentifier='padi-ai-staging')
         assert instance['DBInstances'][0]['StorageEncrypted'] is True
 
     async def test_no_pii_in_llm_prompt_content(
@@ -2916,7 +2916,7 @@ SAST runs on every PR:
   run: cd apps/web && npx eslint --ext .ts,.tsx src/components/practice/ --rulesdir ../config/eslint/security-rules/
 
 - name: Trivy container scan — api ECS image
-  run: trivy image mathpath-api:${GITHUB_SHA} --severity CRITICAL,HIGH --exit-code 1
+  run: trivy image padi-ai-api:${GITHUB_SHA} --severity CRITICAL,HIGH --exit-code 1
 ```
 
 ---
@@ -2964,7 +2964,7 @@ Every LLM call in Stage 3 is monitored via `agent_interaction_logs` and Datadog 
 | Answer leakage rate (L1/L2 hints) | Tutor Agent | > 0% | `tutor.hint.answer_leak_rate` |
 | Contract test pass rate | All agents | < 90% | `llm.contract.pass_rate` |
 
-**Dashboard:** Datadog dashboard `MathPath-Stage3-AgentMonitoring` created with the above metrics. Link: `https://app.datadoghq.com/dashboard/mathpath-stage3-agents`
+**Dashboard:** Datadog dashboard `PADI.AI-Stage3-AgentMonitoring` created with the above metrics. Link: `https://app.datadoghq.com/dashboard/padi-ai-stage3-agents`
 
 #### 4.1.2 BKT Engine Monitoring and Drift Detection
 
@@ -3125,7 +3125,7 @@ Per lifecycle-brief.md FinOps standards:
 # infrastructure/terraform/modules/cost_alerts/main.tf
 
 resource "aws_budgets_budget" "stage3_llm_monthly" {
-  name         = "mathpath-stage3-llm-monthly"
+  name         = "padi-ai-stage3-llm-monthly"
   budget_type  = "COST"
   limit_amount = "500"
   limit_unit   = "USD"
@@ -3136,7 +3136,7 @@ resource "aws_budgets_budget" "stage3_llm_monthly" {
     threshold           = 75
     threshold_type      = "PERCENTAGE"
     notification_type   = "ACTUAL"
-    subscriber_email_addresses = ["engineering-lead@mathpath.app"]
+    subscriber_email_addresses = ["engineering-lead@padi.ai"]
   }
 
   notification {
@@ -3144,7 +3144,7 @@ resource "aws_budgets_budget" "stage3_llm_monthly" {
     threshold           = 90
     threshold_type      = "PERCENTAGE"
     notification_type   = "ACTUAL"
-    subscriber_email_addresses = ["engineering-lead@mathpath.app", "cto@mathpath.app"]
+    subscriber_email_addresses = ["engineering-lead@padi.ai", "cto@padi.ai"]
   }
 
   notification {
@@ -3152,14 +3152,14 @@ resource "aws_budgets_budget" "stage3_llm_monthly" {
     threshold           = 100
     threshold_type      = "PERCENTAGE"
     notification_type   = "FORECASTED"
-    subscriber_email_addresses = ["engineering-lead@mathpath.app", "cto@mathpath.app", "cfo@mathpath.app"]
+    subscriber_email_addresses = ["engineering-lead@padi.ai", "cto@padi.ai", "cfo@padi.ai"]
   }
 }
 ```
 
 #### 4.2.4 Real-Time Cost Anomaly Detection
 
-**Datadog monitor:** `mathpath.llm.cost_per_session` — alert if rolling 1-hour average cost per session exceeds $0.20.
+**Datadog monitor:** `padi.llm.cost_per_session` — alert if rolling 1-hour average cost per session exceeds $0.20.
 
 ```python
 # ops/monitoring/cost_anomaly.py
@@ -3169,7 +3169,7 @@ COST_PER_SESSION_THRESHOLD = 0.20  # Alert threshold (33% over $0.15 target)
 def check_realtime_cost_anomaly():
     """Check rolling 1h average cost per session. Alert if above threshold."""
     avg_cost = datadog_query(
-        "avg(last_1h):avg:mathpath.session.llm_cost{env:production}"
+        "avg(last_1h):avg:padi.session.llm_cost{env:production}"
     )
     if avg_cost > COST_PER_SESSION_THRESHOLD:
         alert(
@@ -3315,7 +3315,7 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: mathpath_test
+          POSTGRES_DB: padi_ai_test
           POSTGRES_PASSWORD: testpass
       redis:
         image: redis:7
@@ -3360,11 +3360,11 @@ jobs:
     name: Trivy Container Scan
     steps:
       - name: Build API image
-        run: docker build -t mathpath-api:test apps/api/
+        run: docker build -t padi-ai-api:test apps/api/
       - name: Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: mathpath-api:test
+          image-ref: padi-ai-api:test
           severity: CRITICAL,HIGH
           exit-code: 1
 
@@ -3386,7 +3386,7 @@ jobs:
   run: |
     pip install cyclonedx-bom
     cyclonedx-py environment > sbom-agent-engine.json
-    aws s3 cp sbom-agent-engine.json s3://mathpath-sbom/stage3/agent-engine-${GITHUB_SHA}.json
+    aws s3 cp sbom-agent-engine.json s3://padi-ai-sbom/stage3/agent-engine-${GITHUB_SHA}.json
 ```
 
 #### 4.4.3 Weekly Security Scans
@@ -3405,7 +3405,7 @@ jobs:
       - name: ZAP Scan — Practice WebSocket endpoint
         uses: zaproxy/action-full-scan@v0.9.0
         with:
-          target: 'https://staging.mathpath.app'
+          target: 'https://staging.padi.ai'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-z "-config replacer.full_list(0).matchtype=REQ_HEADER
                           -config replacer.full_list(0).matchstr=Authorization
@@ -3610,7 +3610,7 @@ Stage 3 introduces new data collection (chat transcripts, LLM interactions). The
 
 ---
 
-*End of Document — MathPath Oregon SDLC Lifecycle Document: Stage 3*
+*End of Document — PADI.AI SDLC Lifecycle Document: Stage 3*
 
 **Document version control:** This document is maintained in the repository at `docs/12-lifecycle-stage3.md`. All changes require review from Engineering Lead and QA Lead. Prompt changes that affect behavioral contracts require re-running the golden set (≥90% pass rate required before promotion).
 

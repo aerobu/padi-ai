@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for MathPath Oregon
+about: Suggest an idea for PADI.AI
 title: "[FEATURE] "
 labels: enhancement
 assignees: ''

@@ -1,4 +1,4 @@
-# MathPath Oregon — Engineering Development Plan: Master Index
+# PADI.AI — Engineering Development Plan: Master Index
 
 > **Prepared:** April 2026  
 > **Scope:** Oregon Grade 4 Adaptive Math Learning App — Full SDLC  
@@ -9,7 +9,7 @@
 
 ## How to Use This Document Suite
 
-These seven documents collectively define **how to build** MathPath Oregon. They complement the Product Documentation Suite (PRDs, Product Plan, Strategy) with engineering-specific guidance: architecture, system design, algorithms, infrastructure-as-code, testing plans, QA checklists, and operational runbooks.
+These seven documents collectively define **how to build** PADI.AI. They complement the Product Documentation Suite (PRDs, Product Plan, Strategy) with engineering-specific guidance: architecture, system design, algorithms, infrastructure-as-code, testing plans, QA checklists, and operational runbooks.
 
 **Start here → ENG-000 (Foundations)**. Every developer (human or Claude Code) must read this before writing any code. It defines the monorepo structure, all coding standards, the Claude Code workflow, ADRs, and security baseline that all subsequent stages must conform to.
 
@@ -39,7 +39,7 @@ These seven documents collectively define **how to build** MathPath Oregon. They
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    MATHPATH OREGON — MMP ARCHITECTURE        │
+│                    PADI.AI — MMP ARCHITECTURE        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌─────────────┐    HTTPS     ┌─────────────────────────┐   │
@@ -82,7 +82,7 @@ These seven documents collectively define **how to build** MathPath Oregon. They
 
 Before starting any development session with Claude Code:
 
-1. **Always load the root CLAUDE.md** — located at `mathpath/CLAUDE.md` (template in ENG-006 §6.1)
+1. **Always load the root CLAUDE.md** — located at `padi-ai/CLAUDE.md` (template in ENG-006 §6.1)
 2. **Load the sub-package CLAUDE.md** for the area you're working in (`apps/api/CLAUDE.md`, `apps/web/CLAUDE.md`, `services/agent-engine/CLAUDE.md`)
 3. **Check the model routing table** (ENG-000 §3.1) to select the right model for your task
 4. **Reference the stage engineering plan** (ENG-001 through ENG-005) for the component you're building — feed the relevant section directly to Claude Code

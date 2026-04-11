@@ -1,5 +1,5 @@
 # PRD Stage 5: MMP — Monetization, Polish & School Onboarding
-## MathPath Oregon | Version 1.0 | Target Completion: Month 20
+## PADI.AI | Version 1.0 | Target Completion: Month 20
 
 **Document Status:** Draft  
 **Owner:** Product — Growth & Platform  
@@ -59,7 +59,7 @@ The MMP (Minimum Marketable Product) makes the product viable as a commercial of
 
 ### The MMP is the Commercial Launch Milestone
 
-Stage 5 completion signals that MathPath Oregon is ready for:
+Stage 5 completion signals that PADI.AI is ready for:
 - Public marketing and app store listing
 - School and district sales conversations
 - Influencer and parenting press outreach
@@ -76,7 +76,7 @@ Everything required to acquire, convert, retain, and monetize customers at scale
 
 #### FR-21.1: Freemium Model
 
-MathPath Oregon operates on a freemium model. The free tier is deliberately generous enough to demonstrate real value but constrained enough to drive upgrade.
+PADI.AI operates on a freemium model. The free tier is deliberately generous enough to demonstrate real value but constrained enough to drive upgrade.
 
 **Free Tier (no payment required, no time limit):**
 - Full diagnostic assessment (once per account)
@@ -104,19 +104,19 @@ MathPath Oregon operates on a freemium model. The free tier is deliberately gene
 
 #### FR-21.3: Stripe Integration
 
-All payment processing via Stripe. No card data touches MathPath Oregon servers (Stripe Elements for card input; Stripe.js on client).
+All payment processing via Stripe. No card data touches PADI.AI servers (Stripe Elements for card input; Stripe.js on client).
 
 **Stripe Products/Prices to configure:**
 ```
-Product: MathPath Oregon Individual
+Product: PADI.AI Individual
   Price: price_individual_monthly  → $14.99/month (recurring)
   Price: price_individual_annual   → $119.00/year (recurring)
 
-Product: MathPath Oregon Family
+Product: PADI.AI Family
   Price: price_family_monthly      → $24.99/month (recurring)
   Price: price_family_annual       → $199.00/year (recurring)
 
-Product: MathPath Oregon Classroom
+Product: PADI.AI Classroom
   Price: price_classroom_annual    → $299.00/year (recurring)
 ```
 
@@ -128,7 +128,7 @@ async def create_stripe_customer(user: User) -> str:
         email=user.email,
         name=user.display_name,
         metadata={
-            "mathpath_user_id": str(user.id),
+            "padi_user_id": str(user.id),
             "account_type": user.account_type
         }
     )
@@ -195,7 +195,7 @@ When `invoice.payment_failed` webhook received:
 - Day 14: Subscription canceled; downgrade to free tier; email: "Your subscription has ended"
 - Student data retained; no data deleted; reactivation available
 
-Stripe handles retry logic (Smart Retries). MathPath Oregon sends emails at days 0, 3, 7, 14.
+Stripe handles retry logic (Smart Retries). PADI.AI sends emails at days 0, 3, 7, 14.
 
 #### FR-21.7: Invoicing for Schools
 
@@ -251,7 +251,7 @@ Riley,Okafor,4,mbrown@hillcrest.k12.or.us,12347
 4. On confirm: student accounts created (no email required for students), teacher accounts invited via email
 5. Import results: success count, error rows with reason, downloadable error report
 
-**COPPA note:** Bulk import of student data by school admin is covered by FERPA (school official basis), not individual COPPA consent, provided the school has a signed DPA. The school asserts it has appropriate authority under FERPA to share this data with MathPath Oregon.
+**COPPA note:** Bulk import of student data by school admin is covered by FERPA (school official basis), not individual COPPA consent, provided the school has a signed DPA. The school asserts it has appropriate authority under FERPA to share this data with PADI.AI.
 
 **Error handling:**
 - Duplicate local student IDs: skip and report
@@ -276,7 +276,7 @@ Before any student data is accessible in the school admin account:
 3. DPA requires: school official name, title, signature (typed), date
 4. On signing: `dpa_agreements` record created with signed content hash
 5. DPA PDF generated and emailed to school admin for records
-6. MathPath Oregon cosigned DPA sent back within 2 business days (initially manual process; automated in MMP+)
+6. PADI.AI cosigned DPA sent back within 2 business days (initially manual process; automated in MMP+)
 7. Student data access unlocked only after DPA is fully executed
 
 **DPA content must include:**
@@ -299,12 +299,12 @@ Before any student data is accessible in the school admin account:
 
 **Clever Integration:**
 - Clever is the dominant EdTech SSO platform for K-12 schools
-- MathPath Oregon registers as a Clever application
+- PADI.AI registers as a Clever application
 - Implementation: Clever OAuth + Clever API for roster sync
 - Clever provides: student name, grade, teacher, school — pre-populates roster without CSV import
-- Clever sync is one-way: Clever → MathPath Oregon (not bidirectional)
+- Clever sync is one-way: Clever → PADI.AI (not bidirectional)
 - Sync runs nightly (2am PT) or on-demand via school admin button
-- Clever setup for school: school IT admin installs MathPath Oregon app from Clever Library
+- Clever setup for school: school IT admin installs PADI.AI app from Clever Library
 
 **Technical notes:**
 ```python
@@ -316,12 +316,12 @@ async def clever_callback(code: str, state: str):
     # Get user info from Clever
     clever_user = await clever_get_user(token_data['access_token'])
 
-    # Map Clever role to MathPath role
+    # Map Clever role to PADI.AI role
     role_map = {"student": "student", "teacher": "teacher", "district_admin": "school_admin"}
-    mathpath_role = role_map.get(clever_user['type'], 'student')
+    padi_role = role_map.get(clever_user['type'], 'student')
 
     # Find or create user
-    user = await find_or_create_clever_user(clever_user, mathpath_role)
+    user = await find_or_create_clever_user(clever_user, padi_role)
     return await create_session(user)
 ```
 
@@ -345,7 +345,7 @@ async def clever_callback(code: str, state: str):
 
 #### FR-22.7: Oregon DOE Compliance Reporting
 
-Oregon schools may need to report to the Oregon Department of Education. MathPath Oregon generates a pre-formatted report:
+Oregon schools may need to report to the Oregon Department of Education. PADI.AI generates a pre-formatted report:
 
 **Annual Standards Coverage Report (PDF + CSV):**
 - School name, academic year
@@ -375,7 +375,7 @@ Oregon schools may need to report to the Oregon Department of Education. MathPat
 
 #### FR-23.2: Pip — Named, Animated Mascot
 
-Pip is MathPath Oregon's mascot character. Pip design principles:
+Pip is PADI.AI's mascot character. Pip design principles:
 - Gender-neutral (design uses non-binary visual cues: no stereotypically gendered features)
 - Culturally neutral (not based on any human ethnicity; abstract friendly character — think similar to Duolingo Duo)
 - Oregon-themed: Pip wears a small rain hat (nod to Oregon weather) and occasionally holds a math symbol
@@ -754,7 +754,7 @@ Flagging criteria for question review:
 
 #### FR-25.1: COPPA Safe Harbor Program
 
-MathPath Oregon will pursue one of the following COPPA Safe Harbor programs (chosen by legal counsel recommendation):
+PADI.AI will pursue one of the following COPPA Safe Harbor programs (chosen by legal counsel recommendation):
 
 | Program | Cost | Timeline | Notes |
 |---|---|---|---|
@@ -775,7 +775,7 @@ MathPath Oregon will pursue one of the following COPPA Safe Harbor programs (cho
 
 Sign the Student Privacy Pledge (https://studentprivacypledge.org/):
 
-**Key commitments this requires MathPath Oregon to make:**
+**Key commitments this requires PADI.AI to make:**
 - We will not sell student personal information
 - We will not behaviorally target advertising to students
 - We will not use student data to build a profile to be shared with third parties for marketing purposes
@@ -828,12 +828,12 @@ A formal audit document (maintained in Notion or Confluence) cataloging every da
 
 #### FR-25.5: FERPA Compliance Documentation
 
-For school sales, MathPath Oregon maintains a FERPA compliance document available to school procurement offices:
+For school sales, PADI.AI maintains a FERPA compliance document available to school procurement offices:
 
 **FERPA Compliance Summary:**
-- **School official basis:** MathPath Oregon operates under the "school official" FERPA exception when contracted with a school, provided a signed DPA is in place
-- **Legitimate educational interest:** Student data is used solely for the educational function the school has contracted MathPath Oregon to provide
-- **No redisclosure:** MathPath Oregon does not disclose student educational records to any third party other than those listed as subprocessors in the DPA
+- **School official basis:** PADI.AI operates under the "school official" FERPA exception when contracted with a school, provided a signed DPA is in place
+- **Legitimate educational interest:** Student data is used solely for the educational function the school has contracted PADI.AI to provide
+- **No redisclosure:** PADI.AI does not disclose student educational records to any third party other than those listed as subprocessors in the DPA
 - **Parental access:** When accessed via direct parent account (Individual/Family plans), parents exercise their own FERPA rights directly; no school intermediary required
 - **Annual notification:** Schools who use the Classroom plan are notified annually of their FERPA obligations as the data controller
 
@@ -911,8 +911,8 @@ Parents and teachers can generate a printable PDF practice worksheet:
 - Student name line, date line, skill name(s) header
 - Questions numbered, with answer lines
 - Answer key on page 2 (parent-only; not shown if parent prints student copy)
-- MathPath Oregon branding + website URL
-- "Keep practicing on MathPath Oregon!" footer
+- PADI.AI branding + website URL
+- "Keep practicing on PADI.AI!" footer
 
 **Technical:** Questions selected from `practice_questions` bank (not live-generated), rendered to HTML via Jinja2, converted to PDF via Puppeteer.
 
@@ -1150,7 +1150,7 @@ CREATE TABLE dpa_agreements (
     content_hash    VARCHAR(64) NOT NULL,       -- SHA-256 of DPA text at time of signing
     dpa_version     VARCHAR(20) NOT NULL,       -- e.g., "1.2"
     pdf_s3_key      TEXT,                       -- S3 path to executed DPA PDF
-    mathpath_cosigned_at TIMESTAMPTZ,
+    padi_cosigned_at TIMESTAMPTZ,
     is_current      BOOLEAN NOT NULL DEFAULT TRUE
 );
 CREATE INDEX idx_dpa_school ON dpa_agreements(school_id);
@@ -1284,8 +1284,8 @@ POST   /webhooks/stripe                         Stripe webhook receiver
   "user_id": "usr_abc123",
   "plan_tier": "individual",
   "billing_period": "annual",
-  "success_url": "https://app.mathpathorgon.com/onboarding?success=true",
-  "cancel_url": "https://app.mathpathorgon.com/pricing"
+  "success_url": "https://app.padi.ai/onboarding?success=true",
+  "cancel_url": "https://app.padi.ai/pricing"
 }
 ```
 
@@ -1434,7 +1434,7 @@ GET    /api/v1/modules/{module_id}/video            Get video micro-lesson URL
 **When** they attempt their 4th practice session in the same calendar week  
 **Then**:
 - Session start is blocked
-- User sees: "You've completed your 3 free sessions this week. Upgrade to MathPath Oregon to practice every day."
+- User sees: "You've completed your 3 free sessions this week. Upgrade to PADI.AI to practice every day."
 - "See plans" CTA redirects to `/pricing`
 - Existing session data is not affected
 - Counter resets on Monday 12:00am PT (Pacific Time)
@@ -1487,7 +1487,7 @@ GET    /api/v1/modules/{module_id}/video            Get video micro-lesson URL
 **When** a student at that school clicks "Sign in with Google (School)"  
 **Then**:
 - Google OAuth flow completes successfully
-- Student is authenticated without entering a MathPath Oregon password
+- Student is authenticated without entering a PADI.AI password
 - If student's Google account email matches a roster-imported student record: they are logged in to that student account
 - If no match: new student account created with `display_name` from Google profile, `sso_provider = 'google'`
 - Session established; student lands on their practice dashboard
@@ -1497,7 +1497,7 @@ GET    /api/v1/modules/{module_id}/video            Get video micro-lesson URL
 **Given** a school has configured Clever SSO and the nightly sync runs  
 **When** the sync job completes  
 **Then**:
-- All students in Clever for that school who are Grade 4 are created or updated in MathPath Oregon
+- All students in Clever for that school who are Grade 4 are created or updated in PADI.AI
 - Students removed from Clever since last sync are marked inactive (not deleted)
 - `sso_connections.last_sync_at` updated; `last_sync_status = 'success'`
 - School admin sees "Last synced: [timestamp]" on the SSO settings page

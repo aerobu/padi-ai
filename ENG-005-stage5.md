@@ -30,7 +30,7 @@
 
 ### 1.1 System Evolution at MMP
 
-Stage 5 transforms MathPath Oregon from a functional MVP (Stage 4) into a commercially viable MMP. The system must now support real-money transactions, institutional customers (schools/districts), multilingual learners, and data-driven product decisions — all while maintaining COPPA compliance for children under 13.
+Stage 5 transforms PADI.AI from a functional MVP (Stage 4) into a commercially viable MMP. The system must now support real-money transactions, institutional customers (schools/districts), multilingual learners, and data-driven product decisions — all while maintaining COPPA compliance for children under 13.
 
 **Key changes from MVP → MMP:**
 
@@ -245,7 +245,7 @@ The webhook handler must be **idempotent**, **order-tolerant**, and **crash-resi
 | `invoice.payment_failed` | Update subscription to PAST_DUE, increment retry count, enqueue dunning email |
 | `customer.subscription.updated` | Handle plan changes, cancellation scheduling, reactivation |
 | `customer.subscription.deleted` | Update subscription to CANCELED, trigger feature revocation |
-| `invoice.created` | For school invoices: update invoice status in MathPath |
+| `invoice.created` | For school invoices: update invoice status in PADI.AI |
 | `invoice.finalized` | Send invoice PDF to school admin |
 | `payment_intent.payment_failed` | Log failure reason for debugging (card declined, insufficient funds) |
 
@@ -422,7 +422,7 @@ class StudentRepository:
 
 ```
 ┌──────────┐    1. District admin clicks     ┌──────────────┐
-│  School   │       "Connect Clever"          │  MathPath     │
+│  School   │       "Connect Clever"          │  PADI.AI     │
 │  Admin    │────────────────────────────────►│  School Mgmt  │
 │  Browser  │                                 │  Service      │
 └──────────┘                                  └──────┬───────┘
@@ -432,7 +432,7 @@ class StudentRepository:
       │       https://clever.com/oauth/authorize
       │       ?response_type=code
       │       &client_id={CLEVER_CLIENT_ID}
-      │       &redirect_uri={MATHPATH_CALLBACK}
+      │       &redirect_uri={PADI_AI_CALLBACK}
       │       &district_id={DISTRICT_CLEVER_ID}
       │       &state={CSRF_TOKEN}
       │
@@ -444,11 +444,11 @@ class StudentRepository:
 └──────┬───┘                                  └──────────────┘
        │
        │    4. Redirect back with auth code
-       │       {MATHPATH_CALLBACK}?code={AUTH_CODE}&state={CSRF_TOKEN}
+       │       {PADI_AI_CALLBACK}?code={AUTH_CODE}&state={CSRF_TOKEN}
        │
        ▼
 ┌──────────────┐    5. Exchange code for      ┌──────────────┐
-│  MathPath     │       tokens                 │  Clever       │
+│  PADI.AI     │       tokens                 │  Clever       │
 │  Callback     │─────────────────────────────►│  Token API    │
 │  Handler      │                              │               │
 │               │◄─────────────────────────────│  access_token │
@@ -464,7 +464,7 @@ class StudentRepository:
 │               │                              │   districts/  │
 └──────┬───────┘                              └──────────────┘
        │
-       │    9. Create/update MathPath entities
+       │    9. Create/update PADI.AI entities
        │       - District record
        │       - School records
        │       - Teacher user accounts
@@ -473,7 +473,7 @@ class StudentRepository:
        │
        ▼
 ┌──────────────┐
-│  MathPath DB  │
+│  PADI.AI DB  │
 └──────────────┘
 ```
 
@@ -495,7 +495,7 @@ async def sync_school_roster(connection: CleverConnection) -> SyncResult:
     clever_students = await clever_client.get_students(connection.district_id)
     clever_teachers = await clever_client.get_teachers(connection.district_id)
 
-    # 3. Reconcile with MathPath DB
+    # 3. Reconcile with PADI.AI DB
     result = SyncResult()
 
     for student in clever_students:
@@ -521,9 +521,9 @@ async def sync_school_roster(connection: CleverConnection) -> SyncResult:
                 result.students_created += 1
 
     # 4. Handle removed students (no longer in Clever roster)
-    mathpath_clever_ids = await db.get_clever_student_ids(connection.school_id)
+    padi_clever_ids = await db.get_clever_student_ids(connection.school_id)
     clever_student_ids = {s.clever_id for s in clever_students}
-    removed_ids = mathpath_clever_ids - clever_student_ids
+    removed_ids = padi_clever_ids - clever_student_ids
 
     for clever_id in removed_ids:
         # Soft-remove: unenroll from classrooms, don't delete data
@@ -543,7 +543,7 @@ async def sync_school_roster(connection: CleverConnection) -> SyncResult:
 
 **Conflict resolution — parent-created student vs. Clever import:**
 
-When a student already exists in MathPath (created by a parent) and Clever tries to add the same student:
+When a student already exists in PADI.AI (created by a parent) and Clever tries to add the same student:
 1. A `merge_request` record is created with both profiles
 2. The school admin receives a notification in their dashboard
 3. The school admin can: (a) merge the profiles (learning history is preserved), (b) keep them separate (school version + home version), or (c) dismiss the merge request
@@ -554,11 +554,11 @@ When a student already exists in MathPath (created by a parent) and Clever tries
 **DPA flow during school onboarding:**
 
 ```
-Step 1: District admin creates MathPath school account
-Step 2: District admin reviews DPA (pre-generated PDF based on MathPath template)
+Step 1: District admin creates PADI.AI school account
+Step 2: District admin reviews DPA (pre-generated PDF based on PADI.AI template)
 Step 3: DPA includes:
-  - What student data MathPath collects (name, grade, assessment responses, learning progress)
-  - What MathPath will NOT do (sell data, use for advertising, share with third parties)
+  - What student data PADI.AI collects (name, grade, assessment responses, learning progress)
+  - What PADI.AI will NOT do (sell data, use for advertising, share with third parties)
   - Data retention: student data deleted within 30 days of contract termination
   - Data security: encryption at rest + in transit, annual pen test, incident notification within 72 hours
   - Parent access: parents can request data export/deletion for their child
@@ -570,7 +570,7 @@ Step 6: School onboarding continues (Clever SSO setup, teacher invitations)
 
 **Data field restrictions once DPA is signed:**
 
-| Data Field | MathPath CAN | MathPath CANNOT |
+| Data Field | PADI.AI CAN | PADI.AI CANNOT |
 |-----------|-------------|-----------------|
 | Student first/last name | Display to teacher/parent, use in reports | Share with third parties, use in marketing |
 | Assessment responses | Power BKT algorithm, generate progress reports | Sell or monetize, use for non-educational purposes |
@@ -692,10 +692,10 @@ Math questions generated by o3-mini must also be available in Spanish. The trans
 **URL strategy:** Path prefix `/en/` and `/es/`:
 
 ```
-https://mathpath.app/en/practice          # English practice
-https://mathpath.app/es/practice          # Spanish practice
-https://mathpath.app/en/dashboard         # English parent dashboard
-https://mathpath.app/es/dashboard         # Spanish parent dashboard
+https://padi.ai/en/practice          # English practice
+https://padi.ai/es/practice          # Spanish practice
+https://padi.ai/en/dashboard         # English parent dashboard
+https://padi.ai/es/dashboard         # Spanish parent dashboard
 ```
 
 Locale is determined by: (1) user preference stored in DB, (2) URL path prefix, (3) browser `Accept-Language` header. User preference takes precedence. The `[locale]` dynamic segment in Next.js App Router handles routing automatically via next-intl middleware.
@@ -1287,8 +1287,8 @@ class BillingService:
         parent_id: UUID,
         plan: SubscriptionPlan,
         trial_days: int = 14,
-        success_url: str = "https://mathpath.app/billing/success",
-        cancel_url: str = "https://mathpath.app/billing/cancel",
+        success_url: str = "https://padi.ai/billing/success",
+        cancel_url: str = "https://padi.ai/billing/cancel",
     ) -> str:
         """
         Creates a Stripe Checkout Session for the given plan.
@@ -1463,7 +1463,7 @@ class BillingService:
         school_id: UUID,
         amount_cents: int,
         po_number: str,
-        description: str = "MathPath Oregon School License",
+        description: str = "PADI.AI School License",
     ) -> str:
         """
         Creates a Stripe Invoice for a school (net-30 terms).
@@ -1722,7 +1722,7 @@ class CleverSyncService:
 
 #### COPPA Constraints on Analytics
 
-The FTC's COPPA Rule prohibits collecting personal information from children under 13 without verifiable parental consent. For MathPath, this means:
+The FTC's COPPA Rule prohibits collecting personal information from children under 13 without verifiable parental consent. For PADI.AI, this means:
 
 1. **No cookies for student sessions** — Students (under 13) must not have tracking cookies, localStorage tokens, or any persistent client-side identifier.
 2. **No cross-site tracking** — No third-party analytics pixels, no Facebook/Google tracking snippets on student-facing pages.
@@ -1764,7 +1764,7 @@ def track_student_event(
         event=event_name,
         properties={
             **properties,
-            "$lib": "mathpath-server",  # Mark as server-side
+            "$lib": "padi-ai-server",  # Mark as server-side
             "actor_type": "student",
         },
     )
@@ -2325,7 +2325,7 @@ async def _enqueue_side_effects(
 
     for msg in messages:
         await sqs_client.send_message(
-            QueueUrl="https://sqs.us-west-2.amazonaws.com/.../mathpath-side-effects",
+            QueueUrl="https://sqs.us-west-2.amazonaws.com/.../padi-ai-side-effects",
             MessageBody=json.dumps(msg),
         )
 ```
@@ -2485,7 +2485,7 @@ origin_shield:
 
 # API Service: scales on CPU + request count
 api_scaling = {
-    "service": "mathpath-api",
+    "service": "padi-ai-api",
     "min_capacity": 2,
     "max_capacity": 20,
     "policies": [
@@ -2521,7 +2521,7 @@ api_scaling = {
 
 # Agent Engine: scales on WebSocket connection count
 agent_scaling = {
-    "service": "mathpath-agent-engine",
+    "service": "padi-ai-agent-engine",
     "min_capacity": 2,
     "max_capacity": 15,
     "policies": [
@@ -2679,7 +2679,7 @@ Eviction Policy:  allkeys-lru
 
 ```
 Distribution:
-  - Custom domain: cdn.mathpath.app (ACM certificate in us-east-1)
+  - Custom domain: cdn.padi.ai (ACM certificate in us-east-1)
   - Origin Shield: us-west-2 (reduce origin load)
   - HTTP/2 + HTTP/3 enabled
   - Minimum TLS: TLSv1.2
@@ -2741,7 +2741,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://us.i.posthog.com; "
             "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' https://cdn.mathpath.app data:; "
+            "img-src 'self' https://cdn.padi.ai data:; "
             "connect-src 'self' https://us.i.posthog.com https://api.stripe.com; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
@@ -2782,7 +2782,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 | # | Test Scenario | Type | Expected Result |
 |---|--------------|------|-----------------|
 | 1 | **Clever OAuth happy path** | Integration | District admin completes OAuth, connection created, district/schools discovered |
-| 2 | **Roster sync — new students** | Integration | Students from Clever created in MathPath with correct school_id and classroom assignments |
+| 2 | **Roster sync — new students** | Integration | Students from Clever created in PADI.AI with correct school_id and classroom assignments |
 | 3 | **Roster sync — student removed** | Integration | Student removed from Clever roster is soft-unenrolled (not deleted) — learning history preserved |
 | 4 | **Duplicate detection** | Integration | Parent-created student matching Clever import generates merge request, not duplicate |
 | 5 | **DPA agreement flow** | E2E | School admin reviews DPA, signs electronically, signed PDF archived in S3, timestamp recorded |
@@ -2993,7 +2993,7 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 
 ### Runbook 7.1: Stripe Webhook Failure Recovery
 
-**Trigger:** Alert fires for `mathpath.stripe.webhook.error_rate > 5%` or `mathpath.stripe.webhook.processing_lag > 60min`.
+**Trigger:** Alert fires for `padi.stripe.webhook.error_rate > 5%` or `padi.stripe.webhook.processing_lag > 60min`.
 
 **Severity:** P1 — Revenue and subscription state affected.
 
@@ -3007,11 +3007,11 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 1. **Check webhook endpoint health:**
    ```bash
    # Check if the billing service is running
-   aws ecs describe-services --cluster mathpath-prod --services mathpath-billing
+   aws ecs describe-services --cluster padi-ai-prod --services padi-ai-billing
    
    # Check recent logs for errors
    aws logs filter-log-events \
-     --log-group-name /ecs/mathpath-billing \
+     --log-group-name /ecs/padi-ai-billing \
      --filter-pattern "ERROR" \
      --start-time $(date -d '1 hour ago' +%s000)
    ```
@@ -3024,7 +3024,7 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 3. **Verify signature configuration:**
    ```bash
    # Compare webhook secret in AWS Secrets Manager with Stripe Dashboard
-   aws secretsmanager get-secret-value --secret-id mathpath/prod/stripe-webhook-secret
+   aws secretsmanager get-secret-value --secret-id padi-ai/prod/stripe-webhook-secret
    ```
 
 4. **Check for database issues:**
@@ -3072,12 +3072,12 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 
 ### Runbook 7.2: School Clever Sync Failure
 
-**Trigger:** Alert fires for `mathpath.clever.sync.status = failed` or school admin reports stale roster.
+**Trigger:** Alert fires for `padi.clever.sync.status = failed` or school admin reports stale roster.
 
 **Severity:** P2 — Students may not have correct classroom access but can still use the app.
 
 **Symptoms:**
-- New students added in Clever don't appear in teacher's MathPath classroom
+- New students added in Clever don't appear in teacher's PADI.AI classroom
 - Students transferred between classrooms still show in old classroom
 - `clever_sync_jobs` table shows `status = 'failed'` for recent runs
 
@@ -3106,7 +3106,7 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 4. **Check SQS queue for stuck messages:**
    ```bash
    aws sqs get-queue-attributes \
-     --queue-url https://sqs.../mathpath-clever-sync \
+     --queue-url https://sqs.../padi-ai-clever-sync \
      --attribute-names ApproximateNumberOfMessages,ApproximateNumberOfMessagesNotVisible
    ```
 
@@ -3132,7 +3132,7 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 
 ### Runbook 7.3: Subscription State Desync
 
-**Trigger:** Parent reports features are gated despite having paid, or features are available despite cancellation. Alert fires on `mathpath.billing.state_desync` custom metric.
+**Trigger:** Parent reports features are gated despite having paid, or features are available despite cancellation. Alert fires on `padi.billing.state_desync` custom metric.
 
 **Severity:** P1 — Directly impacts revenue and user trust.
 
@@ -3236,11 +3236,11 @@ The following checklist must be fully satisfied before declaring MMP. Each item 
 
 ```bash
 # 1. Disable billing feature flag (immediately stops new checkouts)
-aws ssm put-parameter --name /mathpath/prod/features/billing_enabled --value "false" --overwrite
+aws ssm put-parameter --name /padi-ai/prod/features/billing_enabled --value "false" --overwrite
 
 # 2. Revert ECS to previous task definition
-aws ecs update-service --cluster mathpath-prod --service mathpath-api \
-  --task-definition mathpath-api:PREVIOUS_VERSION
+aws ecs update-service --cluster padi-ai-prod --service padi-ai-api \
+  --task-definition padi-ai-api:PREVIOUS_VERSION
 
 # 3. If DB migration needs reversal:
 # Run the down migration script (pre-tested)

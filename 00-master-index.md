@@ -1,4 +1,4 @@
-# MathPath Oregon — Complete Product & Engineering Documentation Suite
+# PADI.AI — Complete Product & Engineering Documentation Suite
 
 > **Prepared:** April 2026  
 > **Scope:** Oregon Grades 1–5 Adaptive Math Learning App  
@@ -8,7 +8,7 @@
 
 ## Document Suite Overview
 
-This documentation suite covers the complete product strategy, detailed requirements, engineering implementation plan, full SDLC lifecycle documentation, multi-grade expansion plan, and Claude Code development environment specification for **MathPath Oregon** — an AI-powered adaptive math learning application for Oregon elementary students (Grades 1–5). It consists of seventeen product documents totaling ~45,000 lines of planning material, plus eight engineering documents.
+This documentation suite covers the complete product strategy, detailed requirements, engineering implementation plan, full SDLC lifecycle documentation, multi-grade expansion plan, and Claude Code development environment specification for **PADI.AI** — an AI-powered adaptive math learning application for Oregon elementary students (Grades 1–5). It consists of seventeen product documents totaling ~45,000 lines of planning material, plus eight engineering documents.
 
 ---
 
@@ -16,7 +16,7 @@ This documentation suite covers the complete product strategy, detailed requirem
 
 | # | Document | Stage | Purpose | Key Contents |
 |---|----------|-------|---------|-------------|
-| 01 | [Product Strategy](./01-strategy.md) | All | Why & How to build MathPath | Vision, GTM, competitive moat, risk register, OKRs |
+| 01 | [Product Strategy](./01-strategy.md) | All | Why & How to build PADI.AI | Vision, GTM, competitive moat, risk register, OKRs |
 | 02 | [Product Plan](./02-product-plan.md) | All | What to build and when | Milestones, feature roadmap, resource plan, investment summary |
 | 03 | [PRD Stage 1](./03-prd-stage1.md) | Months 1–3 | Standards DB & Diagnostic | COPPA flow, Oregon standards schema, 132+ question seed bank, CAT diagnostic |
 | 04 | [PRD Stage 2](./04-prd-stage2.md) | Months 4–6 | Learning Plan Generator | Skill dependency graph, AI question generation pipeline, student/parent dashboards |
@@ -69,7 +69,7 @@ Documents 10–15 provide the full software development lifecycle for each stage
 
 ## Claude Code Development Environment
 
-Document 17 defines the complete Claude Code customization layer — the configuration files, skills, hooks, commands, subagents, and MCP server integrations that transform Claude Code from a general-purpose assistant into a MathPath-aware development partner.
+Document 17 defines the complete Claude Code customization layer — the configuration files, skills, hooks, commands, subagents, and MCP server integrations that transform Claude Code from a general-purpose assistant into a PADI.AI-aware development partner.
 
 | Component | Count | Purpose |
 |-----------|-------|---------|

@@ -27,7 +27,7 @@
          │ HTTPS         │ HTTPS         │ HTTPS
          ▼               ▼               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                   MATHPATH OREGON SYSTEM BOUNDARY                       │
+│                   PADI.AI SYSTEM BOUNDARY                       │
 │                                                                         │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │                    Next.js Web App (Vercel)                     │   │
@@ -488,7 +488,7 @@ export const useAssessmentStore = create<AssessmentState>()(
           set({ timeElapsedMs: elapsedMs }),
       }),
       {
-        name: 'mathpath-assessment',
+        name: 'padi-ai-assessment',
         partialize: (state) => ({
           sessionId: state.sessionId,
           assessmentId: state.assessmentId,
@@ -649,7 +649,7 @@ Step  Actor/Component          Action                                Data
 
 ```sql
 -- =============================================================================
--- MathPath Oregon — Stage 1 Database Schema
+-- PADI.AI — Stage 1 Database Schema
 -- PostgreSQL 17 with extensions: pgcrypto, pgvector, ltree, pg_trgm
 -- =============================================================================
 
@@ -1285,7 +1285,7 @@ CREATE POLICY admin_full_access_skill_states ON student_skill_states
 
 ### 2.2 API Design (OpenAPI-level Detail)
 
-**Base URL:** `https://api.mathpath-oregon.com/v1`  
+**Base URL:** `https://api.padi-ai.com/v1`  
 **Auth:** All endpoints require `Authorization: Bearer <JWT>` unless marked `[Public]`.  
 **Rate Limiting:** Implemented via Redis sliding window. Limits noted per endpoint.  
 **Content Type:** `application/json` for all requests and responses.
@@ -1296,7 +1296,7 @@ CREATE POLICY admin_full_access_skill_states ON student_skill_states
 
 **Auth:** `[Public]` — called after Auth0 signup redirect  
 **Rate Limit:** 5 req/min per IP  
-**Purpose:** Create MathPath user record linked to Auth0 identity.
+**Purpose:** Create PADI.AI user record linked to Auth0 identity.
 
 ```python
 # Request
@@ -1374,7 +1374,7 @@ class LoginResponse(BaseModel):
 # Errors:
 # 401 Unauthorized: {"detail": "Auth0 token validation failed"}
 # 403 Forbidden:    {"detail": "Account deactivated"}
-# 404 Not Found:    {"detail": "No MathPath account for this Auth0 identity"}
+# 404 Not Found:    {"detail": "No PADI.AI account for this Auth0 identity"}
 ```
 
 **Side Effects:**
@@ -2574,7 +2574,7 @@ resource "aws_security_group" "redis" {
 #### database module
 ```hcl
 resource "aws_db_instance" "postgres" {
-  identifier        = "mathpath-${var.environment}"
+  identifier        = "padi-ai-${var.environment}"
   engine            = "postgres"
   engine_version    = "17.2"
   instance_class    = var.environment == "prod" ? "db.r6g.large" : "db.t4g.medium"
@@ -2624,8 +2624,8 @@ resource "aws_db_subnet_group" "main" {
 #### cache module
 ```hcl
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id = "mathpath-${var.environment}"
-  description          = "MathPath Redis cache"
+  replication_group_id = "padi-ai-${var.environment}"
+  description          = "PADI.AI Redis cache"
   engine               = "redis"
   engine_version       = "7.1"
   node_type            = var.environment == "prod" ? "cache.r6g.large" : "cache.t4g.medium"
@@ -2656,7 +2656,7 @@ resource "aws_elasticache_parameter_group" "redis7" {
 #### ecs module
 ```hcl
 resource "aws_ecs_cluster" "main" {
-  name = "mathpath-${var.environment}"
+  name = "padi-ai-${var.environment}"
   
   setting {
     name  = "containerInsights"
@@ -2665,7 +2665,7 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_ecs_task_definition" "api" {
-  family                   = "mathpath-api-${var.environment}"
+  family                   = "padi-ai-api-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.environment == "prod" ? 1024 : 512
@@ -2674,7 +2674,7 @@ resource "aws_ecs_task_definition" "api" {
   task_role_arn            = aws_iam_role.ecs_task.arn
   
   container_definitions = jsonencode([{
-    name  = "mathpath-api"
+    name  = "padi-ai-api"
     image = "${var.ecr_repository_url}:${var.image_tag}"
     portMappings = [{ containerPort = 8000, protocol = "tcp" }]
     environment = [
@@ -2688,7 +2688,7 @@ resource "aws_ecs_task_definition" "api" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = "/ecs/mathpath-api-${var.environment}"
+        "awslogs-group"         = "/ecs/padi-ai-api-${var.environment}"
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "api"
       }
@@ -2704,7 +2704,7 @@ resource "aws_ecs_task_definition" "api" {
 }
 
 resource "aws_ecs_service" "api" {
-  name            = "mathpath-api"
+  name            = "padi-ai-api"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = var.environment == "prod" ? 2 : 1
@@ -2718,7 +2718,7 @@ resource "aws_ecs_service" "api" {
   
   load_balancer {
     target_group_arn = aws_lb_target_group.api.arn
-    container_name   = "mathpath-api"
+    container_name   = "padi-ai-api"
     container_port   = 8000
   }
   
@@ -2729,7 +2729,7 @@ resource "aws_ecs_service" "api" {
 }
 
 resource "aws_lb" "api" {
-  name               = "mathpath-alb-${var.environment}"
+  name               = "padi-ai-alb-${var.environment}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -2793,18 +2793,18 @@ resource "aws_appautoscaling_policy" "cpu" {
 #### secrets module
 ```hcl
 resource "aws_secretsmanager_secret" "app" {
-  name       = "mathpath/${var.environment}/app"
+  name       = "padi-ai/${var.environment}/app"
   kms_key_id = aws_kms_key.app.arn
 }
 
 resource "aws_kms_key" "app" {
-  description             = "MathPath ${var.environment} encryption key"
+  description             = "PADI.AI ${var.environment} encryption key"
   deletion_window_in_days = 30
   enable_key_rotation     = true
 }
 
 resource "aws_kms_alias" "app" {
-  name          = "alias/mathpath-${var.environment}"
+  name          = "alias/padi-ai-${var.environment}"
   target_key_id = aws_kms_key.app.key_id
 }
 ```
@@ -2820,10 +2820,10 @@ version: '3.9'
 services:
   postgres:
     image: pgvector/pgvector:pg17
-    container_name: mathpath-postgres
+    container_name: padi-ai-postgres
     environment:
-      POSTGRES_DB: mathpath_dev
-      POSTGRES_USER: mathpath
+      POSTGRES_DB: padi_ai_dev
+      POSTGRES_USER: padi-ai
       POSTGRES_PASSWORD: devpassword123
     ports:
       - "5432:5432"
@@ -2831,14 +2831,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mathpath -d mathpath_dev"]
+      test: ["CMD-SHELL", "pg_isready -U padi-ai -d padi_ai_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: mathpath-redis
+    container_name: padi-ai-redis
     ports:
       - "6379:6379"
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -2850,7 +2850,7 @@ services:
 
   localstack:
     image: localstack/localstack:latest
-    container_name: mathpath-localstack
+    container_name: padi-ai-localstack
     ports:
       - "4566:4566"    # LocalStack gateway
     environment:
@@ -2865,14 +2865,14 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile.dev
-    container_name: mathpath-api
+    container_name: padi-ai-api
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://mathpath:devpassword123@postgres:5432/mathpath_dev
+      DATABASE_URL: postgresql+asyncpg://padi:devpassword123@postgres:5432/padi_ai_dev
       REDIS_URL: redis://redis:6379/0
-      AUTH0_DOMAIN: dev-mathpath.us.auth0.com
-      AUTH0_API_AUDIENCE: https://api.mathpath-oregon.dev
+      AUTH0_DOMAIN: dev-padi.us.auth0.com
+      AUTH0_API_AUDIENCE: https://api.padi-ai.dev
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_REGION: us-west-2
       AWS_ACCESS_KEY_ID: test
@@ -2902,12 +2902,12 @@ volumes:
 
 ```bash
 # ============================================================
-# MathPath Oregon — API Server Environment Variables
+# PADI.AI — API Server Environment Variables
 # Copy to .env and fill in values
 # ============================================================
 
 # ─── Database ─────────────────────────────────────────────────
-DATABASE_URL=postgresql+asyncpg://mathpath:password@localhost:5432/mathpath_dev
+DATABASE_URL=postgresql+asyncpg://padi:password@localhost:5432/padi_ai_dev
 DATABASE_POOL_SIZE=20
 DATABASE_MAX_OVERFLOW=10
 DATABASE_POOL_TIMEOUT=30
@@ -2917,8 +2917,8 @@ REDIS_URL=redis://localhost:6379/0
 REDIS_MAX_CONNECTIONS=50
 
 # ─── Auth0 ────────────────────────────────────────────────────
-AUTH0_DOMAIN=dev-mathpath.us.auth0.com
-AUTH0_API_AUDIENCE=https://api.mathpath-oregon.dev
+AUTH0_DOMAIN=dev-padi.us.auth0.com
+AUTH0_API_AUDIENCE=https://api.padi-ai.dev
 AUTH0_CLIENT_ID=your_client_id
 AUTH0_CLIENT_SECRET=your_client_secret
 AUTH0_MANAGEMENT_API_TOKEN=  # For user management (admin only)
@@ -2927,8 +2927,8 @@ AUTH0_MANAGEMENT_API_TOKEN=  # For user management (admin only)
 AWS_REGION=us-west-2
 AWS_ACCESS_KEY_ID=  # Leave blank for IAM role (ECS)
 AWS_SECRET_ACCESS_KEY=
-AWS_SES_FROM_EMAIL=noreply@mathpath-oregon.com
-AWS_SES_CONFIGURATION_SET=mathpath-emails
+AWS_SES_FROM_EMAIL=noreply@padi-ai.com
+AWS_SES_CONFIGURATION_SET=padi-ai-emails
 AWS_ENDPOINT_URL=  # Set to http://localhost:4566 for LocalStack
 
 # ─── Security ─────────────────────────────────────────────────
@@ -2963,7 +2963,7 @@ CAT_THETA_CONVERGENCE_SE=0.30
 
 ```bash
 # ============================================================
-# MathPath Oregon — Next.js Frontend Environment Variables
+# PADI.AI — Next.js Frontend Environment Variables
 # Copy to .env.local and fill in values
 # ============================================================
 
@@ -2972,11 +2972,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/v1
 API_SERVER_URL=http://localhost:8000/v1   # Server-side only (RSC)
 
 # ─── Auth0 ────────────────────────────────────────────────────
-NEXT_PUBLIC_AUTH0_DOMAIN=dev-mathpath.us.auth0.com
+NEXT_PUBLIC_AUTH0_DOMAIN=dev-padi.us.auth0.com
 NEXT_PUBLIC_AUTH0_CLIENT_ID=your_client_id
 AUTH0_CLIENT_SECRET=your_client_secret
 AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://dev-mathpath.us.auth0.com
+AUTH0_ISSUER_BASE_URL=https://dev-padi.us.auth0.com
 
 # ─── Analytics ────────────────────────────────────────────────
 NEXT_PUBLIC_POSTHOG_KEY=phc_xxx
@@ -3009,9 +3009,9 @@ concurrency:
 
 env:
   AWS_REGION: us-west-2
-  ECR_REPOSITORY: mathpath-api
-  ECS_CLUSTER: mathpath
-  ECS_SERVICE: mathpath-api
+  ECR_REPOSITORY: padi-ai-api
+  ECS_CLUSTER: padi-ai
+  ECS_SERVICE: padi-ai-api
   PYTHON_VERSION: "3.12"
   NODE_VERSION: "20"
 
@@ -3089,8 +3089,8 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg17
         env:
-          POSTGRES_DB: mathpath_test
-          POSTGRES_USER: mathpath
+          POSTGRES_DB: padi_ai_test
+          POSTGRES_USER: padi-ai
           POSTGRES_PASSWORD: testpassword
         ports:
           - 5432:5432
@@ -3125,7 +3125,7 @@ jobs:
           cd backend
           alembic upgrade head
         env:
-          DATABASE_URL: postgresql+asyncpg://mathpath:testpassword@localhost:5432/mathpath_test
+          DATABASE_URL: postgresql+asyncpg://padi:testpassword@localhost:5432/padi_ai_test
 
       - name: Run pytest with coverage
         run: |
@@ -3138,7 +3138,7 @@ jobs:
             -v \
             --timeout=60
         env:
-          DATABASE_URL: postgresql+asyncpg://mathpath:testpassword@localhost:5432/mathpath_test
+          DATABASE_URL: postgresql+asyncpg://padi:testpassword@localhost:5432/padi_ai_test
           REDIS_URL: redis://localhost:6379/0
           ENVIRONMENT: test
           SECRET_KEY: test-secret-key-min-32-characters-long
@@ -3268,21 +3268,21 @@ jobs:
       - name: Update ECS service (rolling deployment)
         run: |
           aws ecs update-service \
-            --cluster mathpath-staging \
-            --service mathpath-api \
+            --cluster padi-ai-staging \
+            --service padi-ai-api \
             --force-new-deployment \
-            --task-definition mathpath-api-staging
+            --task-definition padi-ai-api-staging
 
       - name: Wait for deployment stability
         run: |
           aws ecs wait services-stable \
-            --cluster mathpath-staging \
-            --services mathpath-api \
+            --cluster padi-ai-staging \
+            --services padi-ai-api \
             --timeout 600
 
       - name: Run smoke tests
         run: |
-          curl -f https://api-staging.mathpath-oregon.com/health || exit 1
+          curl -f https://api-staging.padi-ai.com/health || exit 1
 
   # ─────────────────────────────────────────────────────────────
   deploy-prod:
@@ -3301,23 +3301,23 @@ jobs:
       - name: Deploy with CodeDeploy (Blue-Green)
         run: |
           aws deploy create-deployment \
-            --application-name mathpath-prod \
-            --deployment-group-name mathpath-api-prod \
-            --revision revisionType=AppSpecContent,content='{"version":0.0,"Resources":[{"TargetService":{"Type":"AWS::ECS::Service","Properties":{"TaskDefinition":"arn:aws:ecs:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/mathpath-api-prod","LoadBalancerInfo":{"ContainerName":"mathpath-api","ContainerPort":8000}}}}]}' \
+            --application-name padi-ai-prod \
+            --deployment-group-name padi-ai-api-prod \
+            --revision revisionType=AppSpecContent,content='{"version":0.0,"Resources":[{"TargetService":{"Type":"AWS::ECS::Service","Properties":{"TaskDefinition":"arn:aws:ecs:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/padi-ai-api-prod","LoadBalancerInfo":{"ContainerName":"padi-ai-api","ContainerPort":8000}}}}]}' \
             --deployment-config-name CodeDeployDefault.ECSLinear10PercentEvery1Minutes
 
       - name: Wait for deployment completion
         run: |
           DEPLOY_ID=$(aws deploy list-deployments \
-            --application-name mathpath-prod \
-            --deployment-group-name mathpath-api-prod \
+            --application-name padi-ai-prod \
+            --deployment-group-name padi-ai-api-prod \
             --query 'deployments[0]' --output text)
           aws deploy wait deployment-successful --deployment-id ${DEPLOY_ID}
 
       - name: Run production smoke tests
         run: |
-          curl -f https://api.mathpath-oregon.com/health || exit 1
-          curl -f https://api.mathpath-oregon.com/v1/standards?grade=4 || exit 1
+          curl -f https://api.padi-ai.com/health || exit 1
+          curl -f https://api.padi-ai.com/v1/standards?grade=4 || exit 1
 ```
 
 
@@ -3534,7 +3534,7 @@ test('assessment can be paused and resumed', async ({ page }) => {
 test('admin can create and edit questions', async ({ page }) => {
   // Login as admin
   await page.goto('/login');
-  await page.fill('[name="email"]', 'admin@mathpath-oregon.com');
+  await page.fill('[name="email"]', 'admin@padi-ai.com');
   await page.fill('[name="password"]', 'AdminP@ss123!');
   await page.click('button[type="submit"]');
   
@@ -3630,7 +3630,7 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.API_URL || 'https://api-staging.mathpath-oregon.com/v1';
+const BASE_URL = __ENV.API_URL || 'https://api-staging.padi-ai.com/v1';
 
 export default function () {
   const token = getAuthToken(); // Pre-generated test tokens
@@ -3852,7 +3852,7 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 
 ### 6.3 Bug Triage Severity Levels
 
-| Severity | Definition | Example (MathPath) | Response SLA | Escalation |
+| Severity | Definition | Example (PADI.AI) | Response SLA | Escalation |
 |----------|-----------|---------------------|-------------|------------|
 | **P0 — Critical** | System down, data loss, or COPPA/legal violation. Affects all users. | COPPA consent bypass discovered; student PII exposed in logs; database corruption; production 5xx for all users | **Acknowledge: 15 min**. Fix or mitigate: 4 hours. Postmortem: 24 hours. | Immediate page to on-call + engineering lead. CEO notification for COPPA issues. |
 | **P1 — High** | Core feature broken for subset of users. Data integrity risk. | Assessment cannot complete (stuck at question 35); BKT calculations produce NaN; parent cannot register; emails not sending | **Acknowledge: 1 hour**. Fix: 24 hours. | Engineering lead + PM notified. Hotfix branch if needed. |
@@ -3869,14 +3869,14 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 
 | Step | Action | Command / Detail | Rollback |
 |------|--------|-----------------|----------|
-| 1 | **Create RDS snapshot** | `aws rds create-db-snapshot --db-instance-identifier mathpath-prod --db-snapshot-identifier pre-migration-$(date +%Y%m%d-%H%M)` | N/A |
+| 1 | **Create RDS snapshot** | `aws rds create-db-snapshot --db-instance-identifier padi-ai-prod --db-snapshot-identifier pre-migration-$(date +%Y%m%d-%H%M)` | N/A |
 | 2 | **Wait for snapshot completion** | `aws rds wait db-snapshot-available --db-snapshot-identifier pre-migration-...` | N/A |
 | 3 | **Apply migration to staging** | SSH into staging bastion → `cd /app && alembic upgrade head` | `alembic downgrade -1` on staging |
 | 4 | **Run integration tests on staging** | `pytest tests/integration/ -v --timeout=120` | If tests fail: rollback staging and abort |
 | 5 | **Verify staging data integrity** | Manual spot-check: query key tables, verify row counts, check constraints | Abort if anomalies found |
 | 6 | **Schedule maintenance window** | Post in #engineering Slack: "DB migration starting at HH:MM UTC. Expected duration: X min." | N/A |
 | 7 | **Apply migration to production** | Via bastion: `alembic upgrade head` on prod connection | `alembic downgrade -1` within 30 min |
-| 8 | **Verify production** | Query `alembic_version` table. Run health check: `curl https://api.mathpath-oregon.com/health`. Verify API responses for key endpoints. | Restore from snapshot if downgrade fails |
+| 8 | **Verify production** | Query `alembic_version` table. Run health check: `curl https://api.padi-ai.com/health`. Verify API responses for key endpoints. | Restore from snapshot if downgrade fails |
 | 9 | **Monitor for 30 minutes** | Watch CloudWatch metrics: error rate, latency, DB connections. Check Sentry for new errors. | Trigger Runbook 5 (DB Restore) if needed |
 | 10 | **Announce completion** | Post in #engineering: "Migration complete. All clear." | N/A |
 
@@ -3888,9 +3888,9 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 |------|--------|-----------------|
 | 1 | **Identify the issue** | Check Sentry for new errors. Check CloudWatch ALB 5xx metrics. Check ECS deployment events. |
 | 2 | **Determine rollback scope** | If API only: rollback ECS task definition. If DB migration involved: see Runbook 1 rollback. If frontend: rollback Vercel deployment. |
-| 3 | **Rollback ECS task definition** | `aws ecs update-service --cluster mathpath-prod --service mathpath-api --task-definition mathpath-api-prod:PREVIOUS_REVISION --force-new-deployment` |
-| 4 | **Wait for rollback deployment** | `aws ecs wait services-stable --cluster mathpath-prod --services mathpath-api` |
-| 5 | **Verify rollback** | `curl https://api.mathpath-oregon.com/health` — verify version header matches previous release. Run smoke tests. |
+| 3 | **Rollback ECS task definition** | `aws ecs update-service --cluster padi-ai-prod --service padi-ai-api --task-definition padi-ai-api-prod:PREVIOUS_REVISION --force-new-deployment` |
+| 4 | **Wait for rollback deployment** | `aws ecs wait services-stable --cluster padi-ai-prod --services padi-ai-api` |
+| 5 | **Verify rollback** | `curl https://api.padi-ai.com/health` — verify version header matches previous release. Run smoke tests. |
 | 6 | **Rollback Vercel (if needed)** | Vercel Dashboard → Deployments → find previous stable deployment → Promote to Production |
 | 7 | **Communicate** | Post in #engineering and #incidents: "Production rollback complete. Investigating root cause." |
 | 8 | **Trigger postmortem** | Create postmortem document from template. Schedule review meeting within 48 hours. |
@@ -3902,9 +3902,9 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 | Step | Action | Command / Detail |
 |------|--------|-----------------|
 | 1 | **Generate new API key** | OpenAI: dashboard.openai.com → API Keys → Create new. Anthropic: console.anthropic.com → API Keys → Create new. |
-| 2 | **Update AWS Secrets Manager** | `aws secretsmanager update-secret --secret-id mathpath/prod/app --secret-string '{"OPENAI_API_KEY":"sk-new-key...", ...}'` |
-| 3 | **Restart ECS tasks** (rolling) | `aws ecs update-service --cluster mathpath-prod --service mathpath-api --force-new-deployment` |
-| 4 | **Wait for new tasks healthy** | `aws ecs wait services-stable --cluster mathpath-prod --services mathpath-api` |
+| 2 | **Update AWS Secrets Manager** | `aws secretsmanager update-secret --secret-id padi-ai/prod/app --secret-string '{"OPENAI_API_KEY":"sk-new-key...", ...}'` |
+| 3 | **Restart ECS tasks** (rolling) | `aws ecs update-service --cluster padi-ai-prod --service padi-ai-api --force-new-deployment` |
+| 4 | **Wait for new tasks healthy** | `aws ecs wait services-stable --cluster padi-ai-prod --services padi-ai-api` |
 | 5 | **Verify new key works** | Trigger a test API call (Stage 2: generate a test question). Check CloudWatch logs for successful LLM API calls. |
 | 6 | **Revoke old API key** | OpenAI/Anthropic dashboard: delete old key. Do NOT revoke before new tasks are confirmed healthy. |
 | 7 | **Update staging/dev** | Repeat steps 2-5 for staging and dev environments. |
@@ -3916,7 +3916,7 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 
 | Step | Action | Detail |
 |------|--------|--------|
-| 1 | **Receive request** | Via email to privacy@mathpath-oregon.com, or in-app settings. Log request in issue tracker with timestamp. |
+| 1 | **Receive request** | Via email to privacy@padi-ai.com, or in-app settings. Log request in issue tracker with timestamp. |
 | 2 | **Verify parent identity** | Require parent to authenticate via Auth0. If via email: send verification link. Confirm `parent_id` matches the requesting email. |
 | 3 | **Identify all student data** | Query: `SELECT id FROM students WHERE parent_id = :parent_id` → list all student_ids. |
 | 4 | **Export data (parent copy)** | Generate JSON export of child's assessment results (if parent requests). Send via secure link (24-hour expiry). |
@@ -3930,7 +3930,7 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 | 7 | **Delete parent account** (if requested) | `DELETE FROM users WHERE id = :parent_id` |
 | 8 | **Purge Redis cache** | `redis-cli KEYS "assessment:*" | xargs redis-cli DEL` (for relevant keys). `redis-cli DEL "session:{user_id}"` |
 | 9 | **Create deletion audit record** | INSERT into `audit_log`: action='COPPA_DELETION', record_id=parent_id, new_data=JSON with list of deleted record counts. This audit record is retained for compliance (records that deletion occurred, not the deleted data). |
-| 10 | **Send confirmation** | Email parent: "Your child's data has been permanently deleted from MathPath Oregon as of [date]. Deletion reference: [audit_id]." |
+| 10 | **Send confirmation** | Email parent: "Your child's data has been permanently deleted from PADI.AI as of [date]. Deletion reference: [audit_id]." |
 | 11 | **Verify deletion** | Run verification queries to confirm zero rows remain for the parent_id and student_ids in all tables (except audit_log). |
 
 ### Runbook 5: Production Database Restore from Backup
@@ -3939,16 +3939,16 @@ def test_cat_selection_100_questions_under_100ms(benchmark, bkt_service):
 
 | Step | Action | Command / Detail |
 |------|--------|-----------------|
-| 1 | **Identify recovery point** | Determine the last known good timestamp. Check RDS automated backups and manual snapshots. `aws rds describe-db-snapshots --db-instance-identifier mathpath-prod --query 'sort_by(DBSnapshots, &SnapshotCreateTime)[-5:].[DBSnapshotIdentifier,SnapshotCreateTime]'` |
+| 1 | **Identify recovery point** | Determine the last known good timestamp. Check RDS automated backups and manual snapshots. `aws rds describe-db-snapshots --db-instance-identifier padi-ai-prod --query 'sort_by(DBSnapshots, &SnapshotCreateTime)[-5:].[DBSnapshotIdentifier,SnapshotCreateTime]'` |
 | 2 | **Put application in maintenance mode** | Update ALB listener rule to return 503 with maintenance page. OR: set ECS desired count to 0. Communicate in #incidents. |
-| 3 | **Restore RDS to point-in-time** | `aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier mathpath-prod --target-db-instance-identifier mathpath-prod-restored --restore-time "2026-04-04T18:00:00Z" --db-subnet-group-name mathpath-prod --vpc-security-group-ids sg-xxx` |
-| 4 | **Wait for restore** | `aws rds wait db-instance-available --db-instance-identifier mathpath-prod-restored` (may take 15-60 min) |
+| 3 | **Restore RDS to point-in-time** | `aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier padi-ai-prod --target-db-instance-identifier padi-ai-prod-restored --restore-time "2026-04-04T18:00:00Z" --db-subnet-group-name padi-ai-prod --vpc-security-group-ids sg-xxx` |
+| 4 | **Wait for restore** | `aws rds wait db-instance-available --db-instance-identifier padi-ai-prod-restored` (may take 15-60 min) |
 | 5 | **Verify restored data** | Connect to restored instance via bastion. Spot-check: row counts, recent timestamps, data integrity. |
-| 6 | **Update connection strings** | Update Secrets Manager: `aws secretsmanager update-secret --secret-id mathpath/prod/app --secret-string '{"DATABASE_URL":"...new-endpoint..."}'` |
-| 7 | **Restart ECS tasks** | `aws ecs update-service --cluster mathpath-prod --service mathpath-api --force-new-deployment` |
+| 6 | **Update connection strings** | Update Secrets Manager: `aws secretsmanager update-secret --secret-id padi-ai/prod/app --secret-string '{"DATABASE_URL":"...new-endpoint..."}'` |
+| 7 | **Restart ECS tasks** | `aws ecs update-service --cluster padi-ai-prod --service padi-ai-api --force-new-deployment` |
 | 8 | **Verify application** | Health check. Run smoke tests. Verify key API endpoints return expected data. |
-| 9 | **Rename instances** | Rename old corrupt instance: `aws rds modify-db-instance --db-instance-identifier mathpath-prod --new-db-instance-identifier mathpath-prod-corrupt`. Rename restored: `...mathpath-prod-restored ... --new-db-instance-identifier mathpath-prod` |
+| 9 | **Rename instances** | Rename old corrupt instance: `aws rds modify-db-instance --db-instance-identifier padi-ai-prod --new-db-instance-identifier padi-ai-prod-corrupt`. Rename restored: `...padi-ai-prod-restored ... --new-db-instance-identifier padi-ai-prod` |
 | 10 | **Resume traffic** | Restore ALB listener rule. Set ECS desired count to normal. |
-| 11 | **Delete corrupt instance** (after verification period) | Keep for 72 hours for investigation, then: `aws rds delete-db-instance --db-instance-identifier mathpath-prod-corrupt --skip-final-snapshot` |
+| 11 | **Delete corrupt instance** (after verification period) | Keep for 72 hours for investigation, then: `aws rds delete-db-instance --db-instance-identifier padi-ai-prod-corrupt --skip-final-snapshot` |
 | 12 | **Postmortem** | Trigger incident postmortem. Document: what went wrong, data loss window, recovery time, prevention measures. |
 

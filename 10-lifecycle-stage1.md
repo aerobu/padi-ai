@@ -1,4 +1,4 @@
-# MathPath Oregon — SDLC Lifecycle Document
+# PADI.AI — SDLC Lifecycle Document
 ## Stage 1: Standards Database & Diagnostic Assessment Engine
 ### Months 1–3 | Document ID: LC-001 | Version 1.0 | Status: Approved
 
@@ -41,7 +41,7 @@
 
 ### 1.1 Component Overview
 
-Stage 1 establishes the entire foundational layer of MathPath Oregon. All five subsequent stages depend on the accuracy and stability of the components delivered here. The architecture spans three tiers: a Next.js 15 frontend on Vercel, a FastAPI backend on AWS ECS Fargate, and a PostgreSQL 17 + Redis data tier on AWS RDS and ElastiCache.
+Stage 1 establishes the entire foundational layer of PADI.AI. All five subsequent stages depend on the accuracy and stability of the components delivered here. The architecture spans three tiers: a Next.js 15 frontend on Vercel, a FastAPI backend on AWS ECS Fargate, and a PostgreSQL 17 + Redis data tier on AWS RDS and ElastiCache.
 
 #### Backend Components (apps/api/src/)
 
@@ -106,7 +106,7 @@ Stage 1 establishes the entire foundational layer of MathPath Oregon. All five s
 └────────┼────────────────┼───────────────┼────────────────────┘
          ▼                ▼               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               MATHPATH OREGON SYSTEM BOUNDARY               │
+│               PADI.AI SYSTEM BOUNDARY               │
 │                                                              │
 │   Next.js 15 (Vercel) ──HTTPS/REST──▶ FastAPI (ECS)         │
 │                                             │                │
@@ -337,7 +337,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.1 — Parent Email Registration**
 
-> As a **parent**, I want to **create an account with my email address and password** so that **I can access MathPath Oregon on behalf of my child**.
+> As a **parent**, I want to **create an account with my email address and password** so that **I can access PADI.AI on behalf of my child**.
 
 **Acceptance Criteria:**
 
@@ -355,7 +355,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.2 — Email Verification Flow**
 
-> As a **parent**, I want to **verify my email address by clicking a link** so that **MathPath can confirm I control this email before storing any child data**.
+> As a **parent**, I want to **verify my email address by clicking a link** so that **PADI.AI can confirm I control this email before storing any child data**.
 
 **Acceptance Criteria:**
 
@@ -371,12 +371,12 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.3 — COPPA Consent Multi-Step Form**
 
-> As a **parent**, I want to **provide verifiable parental consent through a clearly explained, multi-step process** so that **my child can legally use MathPath Oregon and I understand exactly what data is collected and how it is used**.
+> As a **parent**, I want to **provide verifiable parental consent through a clearly explained, multi-step process** so that **my child can legally use PADI.AI and I understand exactly what data is collected and how it is used**.
 
 **Acceptance Criteria:**
 
 1. Given I have verified my email, when I navigate to `/onboarding/consent`, then I see a plain-language privacy summary above the full Privacy Policy and Terms of Service (which are linked and openable in-place).
-2. Given the consent form is displayed, then I see two separate checkboxes: (a) "I have read and agree to the Privacy Policy" and (b) "I provide verifiable parental consent for my child to use MathPath Oregon." Neither checkbox is pre-checked.
+2. Given the consent form is displayed, then I see two separate checkboxes: (a) "I have read and agree to the Privacy Policy" and (b) "I provide verifiable parental consent for my child to use PADI.AI." Neither checkbox is pre-checked.
 3. Given I click "Submit Consent" without checking both boxes, when the form is validated, then I see an error: "Please check both boxes to continue." The form is not submitted.
 4. Given I submit valid consent, when the consent is recorded, then a confirmation email is sent within 60 seconds informing me of a 24-hour revocation window.
 5. Given the consent is recorded, then the `consent_records` table stores: consent_type, privacy_policy_version, tos_version, consented=true, consented_at (ISO 8601 UTC), ip_address_hash (SHA-256), user_agent, consent_text_hash (SHA-256 of shown text).
@@ -390,7 +390,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.4 — Privacy Policy Versioning & Re-Acceptance**
 
-> As a **parent**, I want to **be notified and prompted when the Privacy Policy changes** so that **I can make an informed decision about continued use of MathPath**.
+> As a **parent**, I want to **be notified and prompted when the Privacy Policy changes** so that **I can make an informed decision about continued use of PADI.AI**.
 
 **Acceptance Criteria:**
 
@@ -405,7 +405,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.5 — Child Profile Creation**
 
-> As a **parent**, I want to **create a profile for my child** so that **MathPath can track their diagnostic results and future learning progress separately from my account**.
+> As a **parent**, I want to **create a profile for my child** so that **PADI.AI can track their diagnostic results and future learning progress separately from my account**.
 
 **Acceptance Criteria:**
 
@@ -439,7 +439,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-1.7 — Data Deletion Request (COPPA Right-to-Delete)**
 
-> As a **parent**, I want to **permanently delete my account and all associated child data** so that **I can exercise my COPPA data rights and remove my family's information from MathPath**.
+> As a **parent**, I want to **permanently delete my account and all associated child data** so that **I can exercise my COPPA data rights and remove my family's information from PADI.AI**.
 
 **Acceptance Criteria:**
 
@@ -910,7 +910,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-4.9 — Completion Screen and Parent Notification**
 
-> As a **student**, I want to **see a celebratory completion screen after finishing the diagnostic** so that **I feel rewarded for completing the assessment and motivated to continue with MathPath**.
+> As a **student**, I want to **see a celebratory completion screen after finishing the diagnostic** so that **I feel rewarded for completing the assessment and motivated to continue with PADI.AI**.
 
 **Acceptance Criteria:**
 
@@ -939,7 +939,7 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-5.1 — Student-Facing Results Summary**
 
-> As a **student**, I want to **see an encouraging, easy-to-understand summary of my diagnostic results** so that **I feel good about the effort I made and understand what MathPath will help me with next**.
+> As a **student**, I want to **see an encouraging, easy-to-understand summary of my diagnostic results** so that **I feel good about the effort I made and understand what PADI.AI will help me with next**.
 
 **Acceptance Criteria:**
 
@@ -956,11 +956,11 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 
 **US-5.2 — Parent-Facing Detailed Results**
 
-> As a **parent**, I want to **see a detailed, plain-language report of my child's diagnostic results** so that **I understand their strengths, gaps, and what MathPath will do to help, without needing to understand educational jargon**.
+> As a **parent**, I want to **see a detailed, plain-language report of my child's diagnostic results** so that **I understand their strengths, gaps, and what PADI.AI will do to help, without needing to understand educational jargon**.
 
 **Acceptance Criteria:**
 
-1. Given the parent results page loads, then it has 6 sections: (1) Summary, (2) Prerequisite Skills table, (3) Grade 4 Domain Preview chart, (4) What This Means, (5) What MathPath Will Do, (6) Tips for Parents.
+1. Given the parent results page loads, then it has 6 sections: (1) Summary, (2) Prerequisite Skills table, (3) Grade 4 Domain Preview chart, (4) What This Means, (5) What PADI.AI Will Do, (6) Tips for Parents.
 2. Given the Prerequisite Skills table renders, then columns are: Skill Name, Standard Code, Result (colored badge), Questions Answered, Accuracy %.
 3. Given I click on a skill bar in the parent view, when the detail panel opens, then it shows: skill description, questions answered, which questions were correct/incorrect (colored circles, no question content visible), and a disabled "Practice this skill" link.
 4. Given a skill has no "Below Par" classifications, when the gap summary renders, then the message reads: "Great news! Your child is on track with all foundational skills for 4th grade math."
@@ -1010,8 +1010,8 @@ Story points use a modified Fibonacci scale: 1, 2, 3, 5, 8, 13.
 **Acceptance Criteria:**
 
 1. Given I click "Download Report (PDF)," when the server generates the PDF, then I receive a valid PDF file within 10 seconds with HTTP 200.
-2. Given the PDF is generated, then it contains: MathPath Oregon branding header, student first name only (not last), date completed, overall level, per-skill breakdown table with accuracy percentages, gap summary, and What Comes Next section.
-3. Given the PDF metadata is inspected, then the `Author` and `Creator` metadata fields contain "MathPath Oregon" — not the student's full name or date of birth.
+2. Given the PDF is generated, then it contains: PADI.AI branding header, student first name only (not last), date completed, overall level, per-skill breakdown table with accuracy percentages, gap summary, and What Comes Next section.
+3. Given the PDF metadata is inspected, then the `Author` and `Creator` metadata fields contain "PADI.AI" — not the student's full name or date of birth.
 4. Given I download the PDF twice, then both downloads contain the same data (idempotent generation from the same assessment record).
 5. Given the PDF is opened with a screen reader (e.g., Adobe Acrobat Reader with accessibility mode), then section headings are tagged and the skill table is properly structured for AT navigation.
 
@@ -1603,7 +1603,7 @@ Feature: Adaptive CAT Diagnostic Assessment
 Feature: Results and Gap Analysis Display
   As a parent
   I want to view my child's diagnostic results
-  So that I understand their math proficiency and what MathPath will do
+  So that I understand their math proficiency and what PADI.AI will do
 
   Background:
     Given Jayden has completed the diagnostic assessment
@@ -1878,7 +1878,7 @@ async def test_scoring_engine_produces_same_result_on_replay(
             --severity-level high --exit-code 1  # Fail on HIGH+
       - name: Run ESLint security plugin (TypeScript)
         run: |
-          pnpm --filter @mathpath/web run lint:security
+          pnpm --filter @padi-ai/web run lint:security
           # Uses eslint-plugin-security rules: detect-object-injection,
           # detect-non-literal-regexp, detect-possible-timing-attacks
 ```
@@ -1913,13 +1913,13 @@ async def test_scoring_engine_produces_same_result_on_replay(
       - name: ZAP API Scan
         uses: zaproxy/action-api-scan@v0.7.0
         with:
-          target: 'https://staging-api.mathpath.org/api/v1/openapi.json'
+          target: 'https://staging-api.padi.ai/api/v1/openapi.json'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a -j -m 10 -T 60'
       - name: ZAP Baseline Scan (Frontend)
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: 'https://staging.mathpath.org'
+          target: 'https://staging.padi.ai'
           rules_file_name: '.zap/baseline-rules.tsv'
 ```
 
@@ -2007,7 +2007,7 @@ async def test_no_pii_in_application_logs(
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ env.ECR_REGISTRY }}/mathpath-api:${{ github.sha }}'
+          image-ref: '${{ env.ECR_REGISTRY }}/padi-ai-api:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -2173,7 +2173,7 @@ All AWS resources created by Terraform for Stage 1 carry these mandatory tags:
 # infrastructure/terraform/modules/base_tags.tf
 locals {
   base_tags = {
-    Project     = "mathpath-oregon"
+    Project     = "padi-ai"
     Stage       = "1"            # 1–5 across dev lifecycle
     Environment = var.environment  # "dev", "staging", "production"
     Team        = "engineering"
@@ -2210,7 +2210,7 @@ Feature-level cost allocation (for future LLM spend in Stage 2+):
 ```hcl
 # infrastructure/terraform/modules/monitoring/budgets.tf
 resource "aws_budgets_budget" "stage1_production" {
-  name         = "mathpath-stage1-production"
+  name         = "padi-ai-stage1-production"
   budget_type  = "COST"
   limit_amount = "433"
   limit_unit   = "USD"
@@ -2221,7 +2221,7 @@ resource "aws_budgets_budget" "stage1_production" {
     threshold           = 75
     threshold_type      = "PERCENTAGE"
     notification_type   = "ACTUAL"
-    subscriber_email_addresses = ["eng-lead@mathpath.org", "ops@mathpath.org"]
+    subscriber_email_addresses = ["eng-lead@padi.ai", "ops@padi.ai"]
   }
 
   notification {
@@ -2229,7 +2229,7 @@ resource "aws_budgets_budget" "stage1_production" {
     threshold           = 90
     threshold_type      = "PERCENTAGE"
     notification_type   = "ACTUAL"
-    subscriber_email_addresses = ["eng-lead@mathpath.org"]
+    subscriber_email_addresses = ["eng-lead@padi.ai"]
   }
 }
 ```
@@ -2265,7 +2265,7 @@ A data breach involving children's personal information under COPPA requires FTC
 - Datadog alerting on anomalous query patterns (bulk SELECT on `students` or `assessment_responses`)
 - Sentry error spike alerts (5xx errors, unusual volume)
 - AWS GuardDuty: unusual API calls, network anomalies
-- Manual report from user via privacy@mathpath.org
+- Manual report from user via privacy@padi.ai
 
 **Phase 2 — Contain (1–4h):**
 1. Engineering on-call (PagerDuty) acknowledges within 15 minutes.
@@ -2376,7 +2376,7 @@ PR Opened / Push to PR branch
   │
   ├── 4. Build
   │     ├── Docker build: infrastructure/docker/api.Dockerfile
-  │     └── Next.js build: pnpm turbo run build --filter=@mathpath/web
+  │     └── Next.js build: pnpm turbo run build --filter=@padi-ai/web
   │
   ├── 5. Container Scan
   │     └── trivy image --severity CRITICAL,HIGH --exit-code 1
@@ -2415,8 +2415,8 @@ Every weekly run and every production release generates a Software Bill of Mater
 # infrastructure/scripts/generate-sbom.sh
 syft apps/api --output spdx-json=sbom-api-$(date +%Y%m%d).spdx.json
 syft apps/web --output spdx-json=sbom-web-$(date +%Y%m%d).spdx.json
-aws s3 cp sbom-api-*.spdx.json s3://mathpath-sbom/stage1/
-aws s3 cp sbom-web-*.spdx.json s3://mathpath-sbom/stage1/
+aws s3 cp sbom-api-*.spdx.json s3://padi-ai-sbom/stage1/
+aws s3 cp sbom-web-*.spdx.json s3://padi-ai-sbom/stage1/
 ```
 
 SBOMs are retained for 7 years (same as CloudTrail logs) for supply-chain accountability.
@@ -2605,7 +2605,7 @@ Goal: Verify admin UI handles edge cases gracefully.
 
 ---
 
-*End of MathPath Oregon Stage 1 SDLC Lifecycle Document*
+*End of PADI.AI Stage 1 SDLC Lifecycle Document*
 
 ---
 

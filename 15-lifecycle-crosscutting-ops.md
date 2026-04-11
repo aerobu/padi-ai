@@ -1,4 +1,4 @@
-# MathPath Oregon — Cross-Cutting SDLC Operations Document
+# PADI.AI — Cross-Cutting SDLC Operations Document
 
 **Document ID:** OPS-000  
 **Scope:** All 5 Stages (Months 1–20)  
@@ -50,7 +50,7 @@
 
 ## Solo Development Operations Context
 
-> **Updated April 2026:** MathPath Oregon is being built by a single developer. The cross-cutting operations described in this document apply with the following adjustments:
+> **Updated April 2026:** PADI.AI is being built by a single developer. The cross-cutting operations described in this document apply with the following adjustments:
 
 | Operation | Team-Based Approach | Solo Dev Adjustment |
 |---|---|---|
@@ -72,26 +72,26 @@
 
 ## 1. MLOps Framework (Cross-Stage)
 
-MathPath Oregon contains a heterogeneous portfolio of AI/ML components that evolve across all five stages. The MLOps framework must govern them coherently: a consistent registry, shared versioning discipline, unified monitoring, and coordinated retraining pipelines. This section applies from Month 1 onward, with the component registry growing as each stage introduces new AI capabilities.
+PADI.AI contains a heterogeneous portfolio of AI/ML components that evolve across all five stages. The MLOps framework must govern them coherently: a consistent registry, shared versioning discipline, unified monitoring, and coordinated retraining pipelines. This section applies from Month 1 onward, with the component registry growing as each stage introduces new AI capabilities.
 
 ### 1.1 Model & AI Component Registry
 
 #### Component Inventory by Stage
 
-Every AI/ML component introduced by any stage is registered in the central **MathPath Model Registry**. The registry is a Markdown file at `/docs/model-registry.md` plus a machine-readable YAML manifest at `/infra/model-registry.yaml`. The YAML manifest is the authoritative source; the Markdown is generated from it.
+Every AI/ML component introduced by any stage is registered in the central **PADI.AI Model Registry**. The registry is a Markdown file at `/docs/model-registry.md` plus a machine-readable YAML manifest at `/infra/model-registry.yaml`. The YAML manifest is the authoritative source; the Markdown is generated from it.
 
 | Component | Type | Introduced | Skills Covered | Framework | Current Version | Artifact Location |
 |-----------|------|-----------|----------------|-----------|-----------------|-------------------|
-| **pyBKT Engine** | Bayesian Knowledge Tracing | Stage 1 | 38 skills (4th grade + prerequisites) | pyBKT 1.4 | v1.x.x | S3: `mathpath-models/bkt/` |
+| **pyBKT Engine** | Bayesian Knowledge Tracing | Stage 1 | 38 skills (4th grade + prerequisites) | pyBKT 1.4 | v1.x.x | S3: `padi-ai-models/bkt/` |
 | **Diagnostic Question Selector** | Rule-based adaptive selection | Stage 1 | All diagnostic skills | Python | v1.x.x | Git — no artifact needed |
 | **Learning Plan Generator** | LLM (Claude Sonnet 4.6) | Stage 2 | All skills | LangGraph 0.2 | v2.x.x | Prompt: `prompts/learning_plan_v*.jinja2` |
 | **AI Question Generator** | LLM (o3-mini primary) | Stage 2 | All 29 Grade 4 standards | LangGraph 0.2 | v2.x.x | Prompt: `prompts/question_gen_v*.jinja2` |
 | **Multi-Agent Tutor** | LLM orchestration (Claude Sonnet 4.6) | Stage 3 | All skills | LangGraph 0.2 | v3.x.x | Prompt: `prompts/tutor_*_v*.jinja2` |
 | **Difficulty Adjuster** | Rule-based + BKT feedback | Stage 3 | All skills | Python | v3.x.x | Git |
-| **IRT Engine (CAT)** | Item Response Theory (3PL) | Stage 4 | End-of-grade assessment | py-irt 0.5 | v4.x.x | S3: `mathpath-models/irt/` |
+| **IRT Engine (CAT)** | Item Response Theory (3PL) | Stage 4 | End-of-grade assessment | py-irt 0.5 | v4.x.x | S3: `padi-ai-models/irt/` |
 | **Report Narrative Generator** | LLM (Claude Sonnet 4.6) | Stage 4 | Assessment reporting | LangGraph 0.2 | v4.x.x | Prompt: `prompts/report_narrative_v*.jinja2` |
 | **Spanish Content Generator** | LLM (Claude Sonnet 4.6, es locale) | Stage 5 | All skills, ES locale | LangGraph 0.2 | v5.x.x | Prompt: `prompts/question_gen_es_v*.jinja2` |
-| **Skill Recommendation Engine** | Collaborative filtering + BKT | Stage 5 | MMP personalization | scikit-learn | v5.x.x | S3: `mathpath-models/recommendation/` |
+| **Skill Recommendation Engine** | Collaborative filtering + BKT | Stage 5 | MMP personalization | scikit-learn | v5.x.x | S3: `padi-ai-models/recommendation/` |
 
 #### Versioning Strategy by Component Type
 
@@ -108,7 +108,7 @@ Every AI/ML component introduced by any stage is registered in the central **Mat
 All trained model artifacts (pyBKT parameter files, IRT item banks, recommendation model weights) are stored in S3 with the following structure:
 
 ```
-s3://mathpath-models-{env}/
+s3://padi-ai-models-{env}/
 ├── bkt/
 │   ├── current/
 │   │   ├── params_4OA_v1.2.0.json         # Symlinked to current production version
@@ -138,7 +138,7 @@ from pathlib import Path
 from functools import lru_cache
 
 s3 = boto3.client("s3")
-MODEL_BUCKET = f"mathpath-models-{settings.ENVIRONMENT}"
+MODEL_BUCKET = f"padi-ai-models-{settings.ENVIRONMENT}"
 
 
 @lru_cache(maxsize=32)
@@ -185,7 +185,7 @@ import datetime
 
 def register_artifact(artifact_type: str, domain: str, version: str, filepath: str):
     s3 = boto3.client("s3")
-    bucket = f"mathpath-models-production"
+    bucket = f"padi-ai-models-production"
 
     with open(filepath, "rb") as f:
         content = f.read()
@@ -235,7 +235,7 @@ def register_artifact(artifact_type: str, domain: str, version: str, filepath: s
 
 ### 1.2 LLM Governance
 
-LLMs are core to MathPath's tutoring, question generation, and reporting features. Because the users are children aged 9-10, LLM governance is a safety-critical discipline, not merely an engineering concern. Every aspect of how prompts are written, reviewed, deployed, and monitored must be treated with the same rigor as COPPA consent flows.
+LLMs are core to PADI.AI's tutoring, question generation, and reporting features. Because the users are children aged 9-10, LLM governance is a safety-critical discipline, not merely an engineering concern. Every aspect of how prompts are written, reviewed, deployed, and monitored must be treated with the same rigor as COPPA consent flows.
 
 #### Prompt Versioning Protocol
 
@@ -267,7 +267,7 @@ prompts:
     file: "tutor_hint_v1.1.jinja2"
     models: ["claude-sonnet-4-20250514"]
     stage_introduced: 3
-    safety_reviewed_by: "elena.reyes@mathpath.io"
+    safety_reviewed_by: "elena.reyes@padi.ai"
     safety_reviewed_at: "2026-03-15"
 
   question_gen:
@@ -275,7 +275,7 @@ prompts:
     file: "question_gen_v1.1.jinja2"
     models: ["o3-mini", "claude-sonnet-4-20250514"]
     stage_introduced: 2
-    safety_reviewed_by: "elena.reyes@mathpath.io"
+    safety_reviewed_by: "elena.reyes@padi.ai"
     safety_reviewed_at: "2026-03-10"
 
   question_gen_es:
@@ -283,7 +283,7 @@ prompts:
     file: "question_gen_es_v1.0.jinja2"
     models: ["claude-sonnet-4-20250514"]
     stage_introduced: 5
-    safety_reviewed_by: "elena.reyes@mathpath.io"
+    safety_reviewed_by: "elena.reyes@padi.ai"
     safety_reviewed_at: "2026-04-01"
 
   learning_plan:
@@ -291,7 +291,7 @@ prompts:
     file: "learning_plan_v2.0.jinja2"
     models: ["claude-sonnet-4-20250514"]
     stage_introduced: 2
-    safety_reviewed_by: "elena.reyes@mathpath.io"
+    safety_reviewed_by: "elena.reyes@padi.ai"
     safety_reviewed_at: "2026-02-20"
 
   report_narrative:
@@ -299,7 +299,7 @@ prompts:
     file: "report_narrative_v1.0.jinja2"
     models: ["claude-sonnet-4-20250514"]
     stage_introduced: 4
-    safety_reviewed_by: "elena.reyes@mathpath.io"
+    safety_reviewed_by: "elena.reyes@padi.ai"
     safety_reviewed_at: "2026-03-28"
 ```
 
@@ -307,7 +307,7 @@ prompts:
 
 ```jinja2
 {# tutor_hint_v1.1.jinja2 #}
-{# MathPath Tutor Hint Generator — v1.1 #}
+{# PADI.AI Tutor Hint Generator — v1.1 #}
 {# SAFETY: This prompt is used with children aged 9-10. Review all changes with safety lead. #}
 
 You are a patient, encouraging math tutor helping a 4th-grade student (age 9-10) in Oregon.
@@ -354,13 +354,13 @@ Every prompt change — even minor wording updates — follows this workflow:
 ```yaml
 # .github/CODEOWNERS
 # All prompt files require AI/ML lead + safety reviewer
-apps/api/prompts/                   @mathpath/ai-ml-lead @mathpath/safety-reviewer
-apps/api/prompts/_registry.yaml     @mathpath/ai-ml-lead @mathpath/safety-reviewer
+apps/api/prompts/                   @padi-ai/ai-ml-lead @padi-ai/safety-reviewer
+apps/api/prompts/_registry.yaml     @padi-ai/ai-ml-lead @padi-ai/safety-reviewer
 ```
 
 #### LLM Provider Failover Strategy
 
-MathPath uses a tiered failover chain to ensure tutoring and question generation remain available even if a primary LLM provider has an outage. The failover is implemented in `apps/api/src/clients/llm_client.py`.
+PADI.AI uses a tiered failover chain to ensure tutoring and question generation remain available even if a primary LLM provider has an outage. The failover is implemented in `apps/api/src/clients/llm_client.py`.
 
 **Failover chain by use case:**
 
@@ -447,11 +447,11 @@ class LLMClient:
 
                 # Emit Datadog metrics
                 tags = [f"model:{model}", f"operation:{operation}", f"fallback:{is_fallback}"]
-                ddmetrics.lambda_metric("mathpath.llm.request_count", 1, tags=tags)
-                ddmetrics.lambda_metric("mathpath.llm.latency_ms", latency_ms, tags=tags)
-                ddmetrics.lambda_metric("mathpath.llm.tokens.input", response.input_tokens, tags=tags)
-                ddmetrics.lambda_metric("mathpath.llm.tokens.output", response.output_tokens, tags=tags)
-                ddmetrics.lambda_metric("mathpath.llm.cost_cents", cost_cents, tags=tags)
+                ddmetrics.lambda_metric("padi.llm.request_count", 1, tags=tags)
+                ddmetrics.lambda_metric("padi.llm.latency_ms", latency_ms, tags=tags)
+                ddmetrics.lambda_metric("padi.llm.tokens.input", response.input_tokens, tags=tags)
+                ddmetrics.lambda_metric("padi.llm.tokens.output", response.output_tokens, tags=tags)
+                ddmetrics.lambda_metric("padi.llm.cost_cents", cost_cents, tags=tags)
 
                 if is_fallback:
                     logger.warning(
@@ -481,7 +481,7 @@ class LLMClient:
                     extra={"model": model, "error": str(exc), "operation": operation},
                 )
                 ddmetrics.lambda_metric(
-                    "mathpath.llm.error_count", 1,
+                    "padi.llm.error_count", 1,
                     tags=[f"model:{model}", f"operation:{operation}", f"error_type:{type(exc).__name__}"]
                 )
                 continue
@@ -643,7 +643,7 @@ jobs:
 
 #### Prompt Injection Defense Strategy
 
-Prompt injection — where a student types text that attempts to override the system prompt — is a real attack vector in children's EdTech. MathPath's defense is layered:
+Prompt injection — where a student types text that attempts to override the system prompt — is a real attack vector in children's EdTech. PADI.AI's defense is layered:
 
 | Defense Layer | Implementation | Responsibility |
 |--------------|----------------|----------------|
@@ -739,12 +739,12 @@ async def check_bkt_drift(skill_code: str, lookback_days: int = 7) -> dict:
 
     # Emit to Datadog
     datadog.statsd.gauge(
-        "mathpath.bkt.prediction_error",
+        "padi.bkt.prediction_error",
         error,
         tags=[f"skill_code:{skill_code}"],
     )
     datadog.statsd.gauge(
-        "mathpath.bkt.chi2_p_value",
+        "padi.bkt.chi2_p_value",
         p_value,
         tags=[f"skill_code:{skill_code}"],
     )
@@ -771,7 +771,7 @@ Every LLM response in production is logged (without PII) and evaluated against t
 {
     "name": "LLM Output Reading Level Out of Range",
     "type": "metric alert",
-    "query": "avg(last_4h):avg:mathpath.llm.output_fk_grade{operation:tutor_hint} > 7.0",
+    "query": "avg(last_4h):avg:padi.llm.output_fk_grade{operation:tutor_hint} > 7.0",
     "message": "Tutor hint Flesch-Kincaid grade level averaging > 7.0 over last 4h. "
                "Hints may be too complex for 4th graders. @slack-ai-quality @pagerduty-p2",
     "thresholds": {"critical": 7.0, "warning": 6.5},
@@ -802,22 +802,22 @@ For the Stage 4 end-of-grade assessment, IRT item parameters (a-discrimination, 
 
 #### Datadog Dashboard Specifications
 
-**Dashboard: MathPath MLOps — AI/ML Health**
+**Dashboard: PADI.AI MLOps — AI/ML Health**
 
 Widgets (organized in rows):
 
 | Row | Widget | Visualization | Query |
 |-----|--------|---------------|-------|
-| 1 | LLM Request Volume | Timeseries | `sum:mathpath.llm.request_count{*}.as_count()` by `operation` |
-| 1 | LLM Error Rate | Gauge | `sum:mathpath.llm.error_count{*} / sum:mathpath.llm.request_count{*}` |
-| 1 | LLM P95 Latency | Timeseries | `p95:mathpath.llm.latency_ms{*}` by `model` |
-| 2 | Hourly LLM Cost | Bar | `sum:mathpath.llm.cost_cents{*}.as_count()` by `model` |
-| 2 | Fallback Rate | Gauge | `sum:mathpath.llm.request_count{fallback:true} / sum:mathpath.llm.request_count{*}` |
-| 2 | Golden Set Pass Rate | Number | Weekly CI result pushed as custom metric `mathpath.llm.golden_set_pass_rate` |
-| 3 | BKT Prediction Error by Skill | Heatmap | `avg:mathpath.bkt.prediction_error{*}` by `skill_code` |
-| 3 | Skills in Drift | Number | `count:mathpath.bkt.prediction_error{*} > 0.10` |
-| 4 | Output Reading Level | Distribution | `avg:mathpath.llm.output_fk_grade{*}` by `operation` |
-| 4 | Safety Filter Violations | Counter | `sum:mathpath.llm.safety_violation{*}.as_count()` by `violation_type` |
+| 1 | LLM Request Volume | Timeseries | `sum:padi.llm.request_count{*}.as_count()` by `operation` |
+| 1 | LLM Error Rate | Gauge | `sum:padi.llm.error_count{*} / sum:padi.llm.request_count{*}` |
+| 1 | LLM P95 Latency | Timeseries | `p95:padi.llm.latency_ms{*}` by `model` |
+| 2 | Hourly LLM Cost | Bar | `sum:padi.llm.cost_cents{*}.as_count()` by `model` |
+| 2 | Fallback Rate | Gauge | `sum:padi.llm.request_count{fallback:true} / sum:padi.llm.request_count{*}` |
+| 2 | Golden Set Pass Rate | Number | Weekly CI result pushed as custom metric `padi.llm.golden_set_pass_rate` |
+| 3 | BKT Prediction Error by Skill | Heatmap | `avg:padi.bkt.prediction_error{*}` by `skill_code` |
+| 3 | Skills in Drift | Number | `count:padi.bkt.prediction_error{*} > 0.10` |
+| 4 | Output Reading Level | Distribution | `avg:padi.llm.output_fk_grade{*}` by `operation` |
+| 4 | Safety Filter Violations | Counter | `sum:padi.llm.safety_violation{*}.as_count()` by `violation_type` |
 
 ---
 
@@ -923,7 +923,7 @@ jobs:
 2. Run 3PL IRT calibration using py-irt with expected-a-posteriori (EAP) estimation.
 3. Compute item fit statistics (RMSEA, S-X² statistic).
 4. Flag items with poor fit (RMSEA >0.10) for manual curriculum review.
-5. Update item bank in `s3://mathpath-models-production/irt/current/`.
+5. Update item bank in `s3://padi-ai-models-production/irt/current/`.
 6. Register new version in model registry.
 7. Notify AI/ML lead and product team of parameter changes.
 
@@ -938,7 +938,7 @@ jobs:
 
 #### A/B Testing Framework for Model Improvements
 
-MathPath uses a feature-flag-based A/B testing framework for model improvements. Only one experiment per component runs at a time to avoid confounds.
+PADI.AI uses a feature-flag-based A/B testing framework for model improvements. Only one experiment per component runs at a time to avoid confounds.
 
 ```python
 # apps/api/src/ml/ab_testing.py
@@ -982,13 +982,13 @@ def get_prompt_variant(student_id: str, operation: str) -> str:
 
 ## 2. FinOps Framework (Cross-Stage)
 
-MathPath is a bootstrapped product. Cloud and LLM costs are existential concerns — not just engineering metrics. The FinOps framework ensures every dollar spent is tracked, attributed, and justified, with automated guardrails that prevent runaway spending before it becomes a crisis.
+PADI.AI is a bootstrapped product. Cloud and LLM costs are existential concerns — not just engineering metrics. The FinOps framework ensures every dollar spent is tracked, attributed, and justified, with automated guardrails that prevent runaway spending before it becomes a crisis.
 
 ### 2.1 Cost Allocation Strategy
 
 #### AWS Tagging Taxonomy
 
-Every AWS resource created by MathPath must carry all mandatory tags. Resources without mandatory tags are non-compliant and will be flagged by automated compliance checks.
+Every AWS resource created by PADI.AI must carry all mandatory tags. Resources without mandatory tags are non-compliant and will be flagged by automated compliance checks.
 
 | Tag Key | Required | Values | Purpose |
 |---------|----------|--------|---------|
@@ -999,7 +999,7 @@ Every AWS resource created by MathPath must carry all mandatory tags. Resources 
 | `Feature` | Recommended | `bkt`, `question-gen`, `tutoring`, `assessment`, `reporting`, `billing`, `auth` | Feature-level cost rollup |
 | `ManagedBy` | Mandatory | `terraform`, `manual`, `cloudformation` | Governance |
 | `CostCenter` | Mandatory | `engineering`, `infra`, `ai-spend` | Finance rollup |
-| `Project` | Mandatory | `mathpath-oregon` | Multi-project isolation |
+| `Project` | Mandatory | `padi-ai` | Multi-project isolation |
 
 #### Terraform Tag Enforcement
 
@@ -1022,7 +1022,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "mathpath-oregon"
+      Project     = "padi-ai"
       Environment = var.environment
       ManagedBy   = "terraform"
       Team        = var.team
@@ -1055,7 +1055,7 @@ variable "stage" {
 ```yaml
 # Checkov custom check: enforce mandatory AWS tags
 metadata:
-  name: MATHPATH_TAG_001
+  name: PADI_AI_TAG_001
   id: "CKV_CUSTOM_1"
   category: GENERAL_SECURITY
   severity: MEDIUM
@@ -1097,7 +1097,7 @@ AWS Cost Explorer is configured with cost allocation tags enabled for all mandat
 
 #### Three-Tier Token Architecture
 
-LLM spend is the most variable and potentially largest cost driver. MathPath enforces a three-tier model selection policy that routes each task to the cheapest capable model.
+LLM spend is the most variable and potentially largest cost driver. PADI.AI enforces a three-tier model selection policy that routes each task to the cheapest capable model.
 
 | Tier | Models | Cost Profile | Use Cases | Stage Introduced |
 |------|--------|-------------|-----------|-----------------|
@@ -1144,7 +1144,7 @@ Every LLM call emits its cost in cents to Datadog. Cost is computed server-side 
 {
   "name": "LLM Daily Spend — By Model",
   "type": "metric alert",
-  "query": "sum(last_24h):sum:mathpath.llm.cost_cents{environment:production}.as_count() > 5000",
+  "query": "sum(last_24h):sum:padi.llm.cost_cents{environment:production}.as_count() > 5000",
   "message": "Daily LLM spend exceeded $50 (5000 cents). Current spend: {{value}} cents. Review: https://app.datadoghq.com/cost @slack-costs",
   "thresholds": {
     "warning": 3500,
@@ -1159,10 +1159,10 @@ Each LLM call is tagged with `feature`, `session_id` (anonymized), and `student_
 
 ```python
 # Datadog query: per-session LLM cost (rolling 24h)
-"sum:mathpath.llm.cost_cents{environment:production,feature:tutoring} by {session_id}.rollup(sum, 86400)"
+"sum:padi.llm.cost_cents{environment:production,feature:tutoring} by {session_id}.rollup(sum, 86400)"
 
 # Datadog query: per-feature monthly LLM spend
-"sum(last_month):sum:mathpath.llm.cost_cents{environment:production} by {feature}.as_count()"
+"sum(last_month):sum:padi.llm.cost_cents{environment:production} by {feature}.as_count()"
 ```
 
 **Target per-session LLM cost budgets (production):**
@@ -1227,8 +1227,8 @@ ECS Fargate uses Compute Savings Plans (not RIs). Purchase a Savings Plan commit
 
 ```hcl
 # infra/terraform/modules/s3/main.tf
-resource "aws_s3_bucket_lifecycle_configuration" "mathpath_lifecycle" {
-  bucket = aws_s3_bucket.mathpath_storage.id
+resource "aws_s3_bucket_lifecycle_configuration" "padi_ai_lifecycle" {
+  bucket = aws_s3_bucket.padi_ai_storage.id
 
   # Operational logs (CloudWatch export)
   rule {
@@ -1320,14 +1320,14 @@ Cache hit rate target: ≥85% for static assets. Monitor via CloudFront metrics 
 
 ```hcl
 # infra/terraform/modules/finops/cost_anomaly.tf
-resource "aws_ce_anomaly_monitor" "mathpath_monitor" {
-  name         = "mathpath-all-services"
+resource "aws_ce_anomaly_monitor" "padi_ai_monitor" {
+  name         = "padi-ai-all-services"
   monitor_type = "DIMENSIONAL"
   monitor_dimension = "SERVICE"
 }
 
-resource "aws_ce_anomaly_subscription" "mathpath_alerts" {
-  name      = "mathpath-cost-alerts"
+resource "aws_ce_anomaly_subscription" "padi_ai_alerts" {
+  name      = "padi-ai-cost-alerts"
   threshold_expression {
     or {
       dimension {
@@ -1344,22 +1344,22 @@ resource "aws_ce_anomaly_subscription" "mathpath_alerts" {
   }
   frequency = "DAILY"
 
-  monitor_arn_list = [aws_ce_anomaly_monitor.mathpath_monitor.arn]
+  monitor_arn_list = [aws_ce_anomaly_monitor.padi_ai_monitor.arn]
 
   subscriber {
-    address = "engineering-finops@mathpath.io"
+    address = "engineering-finops@padi.ai"
     type    = "EMAIL"
   }
 
   subscriber {
-    address = "arn:aws:sns:us-west-2:${var.account_id}:mathpath-cost-alerts"
+    address = "arn:aws:sns:us-west-2:${var.account_id}:padi-ai-cost-alerts"
     type    = "SNS"
   }
 }
 
 # SNS → Slack integration via Lambda
 resource "aws_sns_topic" "cost_alerts" {
-  name = "mathpath-cost-alerts"
+  name = "padi-ai-cost-alerts"
 }
 ```
 
@@ -1428,7 +1428,7 @@ Activate when production spend exceeds 110% of monthly budget or anomaly detecti
 **Step 1 — Identify source (target: < 5 minutes):**
 ```bash
 # Datadog: Find top cost driver in last 1 hour
-# Filter: sum:mathpath.llm.cost_cents{environment:production} by {operation,model}.as_count()
+# Filter: sum:padi.llm.cost_cents{environment:production} by {operation,model}.as_count()
 # AWS Cost Explorer: Group by Service, filter to today
 ```
 
@@ -1448,14 +1448,14 @@ ld_client.update_flag("spanish-content-gen-enabled", {"value": False})
 ```bash
 # Reduce staging ECS task count to minimum
 aws ecs update-service \
-  --cluster mathpath-staging \
-  --service mathpath-api-staging \
+  --cluster padi-ai-staging \
+  --service padi-ai-api-staging \
   --desired-count 1
 
 # Disable dev environment ECS tasks
 aws ecs update-service \
-  --cluster mathpath-dev \
-  --service mathpath-api-dev \
+  --cluster padi-ai-dev \
+  --service padi-ai-api-dev \
   --desired-count 0
 ```
 
@@ -1472,17 +1472,17 @@ aws ecs update-service \
 
 ## 3. SecOps Framework (Cross-Stage)
 
-MathPath Oregon collects personal data from children under 13. This is not a compliance checkbox — it is a fundamental ethical responsibility. The SecOps framework is built first for the protection of children, and second for legal compliance. Every security control exists to prevent harm to the students and families who trust MathPath with their children's data.
+PADI.AI collects personal data from children under 13. This is not a compliance checkbox — it is a fundamental ethical responsibility. The SecOps framework is built first for the protection of children, and second for legal compliance. Every security control exists to prevent harm to the students and families who trust PADI.AI with their children's data.
 
 ### 3.1 COPPA Compliance Program
 
 #### COPPA 2025 Final Rule
 
-The FTC's updated COPPA Rule (effective June 23, 2025; full compliance required by April 22, 2026) introduces significant new obligations for MathPath:
+The FTC's updated COPPA Rule (effective June 23, 2025; full compliance required by April 22, 2026) introduces significant new obligations for PADI.AI:
 
-| New Requirement | MathPath Implementation | Owner | Status |
+| New Requirement | PADI.AI Implementation | Owner | Status |
 |----------------|------------------------|-------|--------|
-| Separate opt-in consent for targeted advertising | MathPath does not serve targeted ads. No third-party ad SDKs permitted. | Engineering Lead | Permanent prohibition in code review checklist |
+| Separate opt-in consent for targeted advertising | PADI.AI does not serve targeted ads. No third-party ad SDKs permitted. | Engineering Lead | Permanent prohibition in code review checklist |
 | Strengthened data minimization | Documented data minimization policy (below); quarterly review | Engineering Lead | Ongoing |
 | New security program requirements | This document; formal security program as of S2 | Engineering Lead + SecOps | Active |
 | Expanded definition of personal information (includes persistent identifiers, biometric data) | Audit all data fields for new PII categories | Engineering Lead | S2 task |
@@ -1490,12 +1490,12 @@ The FTC's updated COPPA Rule (effective June 23, 2025; full compliance required 
 
 #### Verifiable Parental Consent Implementation
 
-MathPath uses Auth0 with a COPPA-compliant consent flow as the sole method for child account creation. No student account is created until parental consent is verified.
+PADI.AI uses Auth0 with a COPPA-compliant consent flow as the sole method for child account creation. No student account is created until parental consent is verified.
 
 **Consent flow:**
-1. Parent visits MathPath signup page.
+1. Parent visits PADI.AI signup page.
 2. Parent provides email address and creates parent account (Auth0, no child data collected yet).
-3. MathPath sends email verification to parent (SES).
+3. PADI.AI sends email verification to parent (SES).
 4. Parent verifies email → consent form presented with:
    - Plain-English description of data collected, why, and how long retained
    - Specific disclosure that no data is shared with third parties
@@ -1531,7 +1531,7 @@ WHERE c.id IS NULL
 
 #### Data Minimization Policy
 
-MathPath collects only the data strictly necessary for adaptive math learning. Any new data field added to the schema must be reviewed against this policy by the Engineering Lead before merge.
+PADI.AI collects only the data strictly necessary for adaptive math learning. Any new data field added to the schema must be reviewed against this policy by the Engineering Lead before merge.
 
 | Data Category | What We Collect | What We DON'T Collect | Retention |
 |--------------|----------------|----------------------|-----------|
@@ -1584,7 +1584,7 @@ The `PII_ENCRYPTION_KEY` is stored in AWS Secrets Manager and rotated every 90 d
 
 #### Data Deletion Policy
 
-MathPath honors deletion requests within 48 hours for all student PII.
+PADI.AI honors deletion requests within 48 hours for all student PII.
 
 | Data Type | Deletion Method | Verification |
 |-----------|----------------|-------------|
@@ -1617,7 +1617,7 @@ Conducted every April (aligned with the COPPA rule anniversary).
 
 #### COPPA Safe Harbor Certification — Stage 5
 
-MathPath will pursue COPPA Safe Harbor certification from kidSAFE or PRIVO to provide third-party validation of COPPA compliance for school district procurement.
+PADI.AI will pursue COPPA Safe Harbor certification from kidSAFE or PRIVO to provide third-party validation of COPPA compliance for school district procurement.
 
 | Milestone | Timeline | Prerequisites |
 |-----------|----------|--------------|
@@ -1631,24 +1631,24 @@ MathPath will pursue COPPA Safe Harbor certification from kidSAFE or PRIVO to pr
 
 ### 3.2 FERPA Compliance Program
 
-FERPA (Family Educational Rights and Privacy Act) applies when MathPath processes "education records" on behalf of a school or district. This applies from Stage 5 onward when school contracts are active.
+FERPA (Family Educational Rights and Privacy Act) applies when PADI.AI processes "education records" on behalf of a school or district. This applies from Stage 5 onward when school contracts are active.
 
 #### Student Education Records Protection
 
 | Principle | Implementation |
 |-----------|---------------|
-| Education records are the property of the student | MathPath processes records as a "school official" under FERPA; data belongs to the district |
-| No disclosure without consent | MathPath never shares individual student data with third parties. Aggregate, de-identified data may be used for product improvement. |
+| Education records are the property of the student | PADI.AI processes records as a "school official" under FERPA; data belongs to the district |
+| No disclosure without consent | PADI.AI never shares individual student data with third parties. Aggregate, de-identified data may be used for product improvement. |
 | Legitimate educational interest | Staff access is limited to what they need to perform their job function (see RBAC matrix §3.4) |
-| Directory information | MathPath does not designate any student data as "directory information" — no data is publicly accessible |
+| Directory information | PADI.AI does not designate any student data as "directory information" — no data is publicly accessible |
 
 #### School/District Data Processing Agreements
 
-Beginning Stage 5, every school district purchasing MathPath must sign a Data Processing Agreement (DPA) before any student data is loaded.
+Beginning Stage 5, every school district purchasing PADI.AI must sign a Data Processing Agreement (DPA) before any student data is loaded.
 
 **DPA minimum content:**
 - Description of data processed and purposes
-- Data minimization commitment (MathPath processes only what is needed)
+- Data minimization commitment (PADI.AI processes only what is needed)
 - Sub-processor list (AWS, Auth0, Stripe, Datadog — with their DPAs)
 - Data deletion terms (90-day post-contract, or sooner on request)
 - Security program summary (references this document)
@@ -1676,7 +1676,7 @@ All teacher data access is logged in the audit log (see §3.7).
 
 - No student data is shared with third parties without explicit district DPA authorization.
 - Aggregate, de-identified data (where re-identification is not possible per NIST SP 800-188) may be used for product analytics.
-- MathPath employees may access student data only with a documented legitimate educational purpose and only in anonymized or aggregate form for product work; raw PII access requires Engineering Lead authorization and is logged.
+- PADI.AI employees may access student data only with a documented legitimate educational purpose and only in anonymized or aggregate form for product work; raw PII access requires Engineering Lead authorization and is logged.
 
 ---
 
@@ -1730,11 +1730,11 @@ War room: [Slack huddle link or Zoom]
 
 **Parent Notification (COPPA Breach — data breach template):**
 ```
-Subject: Important Security Notice Regarding Your Child's MathPath Account
+Subject: Important Security Notice Regarding Your Child's PADI.AI Account
 
 Dear [Parent First Name],
 
-We are writing to notify you of a security incident that may have affected your child's MathPath account.
+We are writing to notify you of a security incident that may have affected your child's PADI.AI account.
 
 What happened: [Plain-English description of the breach]
 What information was affected: [Specific data types]
@@ -1744,10 +1744,10 @@ When this happened: [Date/time discovered]
 
 We take the security of your child's information extremely seriously. We have reported this incident to the FTC as required by COPPA.
 
-If you have questions, please contact us at privacy@mathpath.io.
+If you have questions, please contact us at privacy@padi.ai.
 
 Sincerely,
-The MathPath Team
+The PADI.AI Team
 ```
 
 **FTC Notification (COPPA Breach — within 72 hours):**
@@ -1860,7 +1860,7 @@ Every P0 and P1 incident triggers a mandatory PIR within 72 hours of resolution.
 ```json
 // Auth0 configuration — key settings
 {
-  "tenant": "mathpath",
+  "tenant": "padi",
   "universal_login": {
     "experience": "new",
     "identifier_first": false
@@ -1937,23 +1937,23 @@ Example IAM policy for API service ECS task role:
       "Effect": "Allow",
       "Action": ["secretsmanager:GetSecretValue"],
       "Resource": [
-        "arn:aws:secretsmanager:us-west-2:*:secret:mathpath/production/db-credentials*",
-        "arn:aws:secretsmanager:us-west-2:*:secret:mathpath/production/redis-auth*",
-        "arn:aws:secretsmanager:us-west-2:*:secret:mathpath/production/llm-api-keys*",
-        "arn:aws:secretsmanager:us-west-2:*:secret:mathpath/production/auth0-credentials*"
+        "arn:aws:secretsmanager:us-west-2:*:secret:padi-ai/production/db-credentials*",
+        "arn:aws:secretsmanager:us-west-2:*:secret:padi-ai/production/redis-auth*",
+        "arn:aws:secretsmanager:us-west-2:*:secret:padi-ai/production/llm-api-keys*",
+        "arn:aws:secretsmanager:us-west-2:*:secret:padi-ai/production/auth0-credentials*"
       ]
     },
     {
       "Sid": "S3StudentReports",
       "Effect": "Allow",
       "Action": ["s3:GetObject", "s3:PutObject"],
-      "Resource": "arn:aws:s3:::mathpath-storage-production/reports/*"
+      "Resource": "arn:aws:s3:::padi-ai-storage-production/reports/*"
     },
     {
       "Sid": "SQSSendMessage",
       "Effect": "Allow",
       "Action": ["sqs:SendMessage"],
-      "Resource": "arn:aws:sqs:us-west-2:*:mathpath-question-gen-queue"
+      "Resource": "arn:aws:sqs:us-west-2:*:padi-ai-question-gen-queue"
     },
     {
       "Sid": "CloudWatchMetrics",
@@ -1961,7 +1961,7 @@ Example IAM policy for API service ECS task role:
       "Action": ["cloudwatch:PutMetricData"],
       "Resource": "*",
       "Condition": {
-        "StringEquals": {"cloudwatch:namespace": "MathPath"}
+        "StringEquals": {"cloudwatch:namespace": "PADI.AI"}
       }
     }
   ]
@@ -1984,7 +1984,7 @@ Emergency access to production is a last resort. It is always logged, reviewed, 
 ```hcl
 # Emergency access IAM policy — time-limited, attached and detached manually
 resource "aws_iam_policy" "break_glass_readonly" {
-  name = "mathpath-break-glass-readonly"
+  name = "padi-ai-break-glass-readonly"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -1997,7 +1997,7 @@ resource "aws_iam_policy" "break_glass_readonly" {
         Effect   = "Allow"
         Action   = ["ssm:StartSession"]
         Resource = [
-          "arn:aws:ecs:us-west-2:*:task/mathpath-production/*",
+          "arn:aws:ecs:us-west-2:*:task/padi-ai-production/*",
           "arn:aws:ssm:us-west-2::document/AWS-StartInteractiveCommand"
         ]
       }
@@ -2023,23 +2023,23 @@ resource "aws_iam_policy" "break_glass_readonly" {
 
 #### Secret Categories and Locations
 
-All secrets are stored in AWS Secrets Manager under the path `mathpath/{environment}/{secret-name}`.
+All secrets are stored in AWS Secrets Manager under the path `padi-ai/{environment}/{secret-name}`.
 
 | Secret | Path | Rotation Period | Rotated By |
 |--------|------|----------------|-----------|
-| Database credentials (main) | `mathpath/production/db-credentials` | 90 days | Lambda (automated) |
-| Database credentials (readonly) | `mathpath/production/db-readonly-credentials` | 90 days | Lambda (automated) |
-| Redis AUTH token | `mathpath/production/redis-auth` | 90 days | Lambda (automated) |
-| Auth0 client secret (API) | `mathpath/production/auth0-api-client-secret` | 30 days | Lambda (automated) |
-| Auth0 client secret (web) | `mathpath/production/auth0-web-client-secret` | 30 days | Lambda (automated) |
-| Auth0 Management API client secret | `mathpath/production/auth0-management-secret` | 30 days | Lambda (automated) |
-| Anthropic API key | `mathpath/production/anthropic-api-key` | 30 days | Manual (Anthropic console) |
-| OpenAI API key | `mathpath/production/openai-api-key` | 30 days | Manual (OpenAI console) |
-| Stripe secret key (live) | `mathpath/production/stripe-secret-key` | 90 days | Manual (Stripe dashboard) |
-| Stripe webhook secret | `mathpath/production/stripe-webhook-secret` | 90 days | Manual (Stripe dashboard) |
-| PII encryption key | `mathpath/production/pii-encryption-key` | 90 days | Manual + re-encryption migration |
-| Datadog API key | `mathpath/production/datadog-api-key` | 90 days | Manual (Datadog console) |
-| LaunchDarkly SDK key | `mathpath/production/launchdarkly-sdk-key` | 90 days | Manual (LaunchDarkly console) |
+| Database credentials (main) | `padi-ai/production/db-credentials` | 90 days | Lambda (automated) |
+| Database credentials (readonly) | `padi-ai/production/db-readonly-credentials` | 90 days | Lambda (automated) |
+| Redis AUTH token | `padi-ai/production/redis-auth` | 90 days | Lambda (automated) |
+| Auth0 client secret (API) | `padi-ai/production/auth0-api-client-secret` | 30 days | Lambda (automated) |
+| Auth0 client secret (web) | `padi-ai/production/auth0-web-client-secret` | 30 days | Lambda (automated) |
+| Auth0 Management API client secret | `padi-ai/production/auth0-management-secret` | 30 days | Lambda (automated) |
+| Anthropic API key | `padi-ai/production/anthropic-api-key` | 30 days | Manual (Anthropic console) |
+| OpenAI API key | `padi-ai/production/openai-api-key` | 30 days | Manual (OpenAI console) |
+| Stripe secret key (live) | `padi-ai/production/stripe-secret-key` | 90 days | Manual (Stripe dashboard) |
+| Stripe webhook secret | `padi-ai/production/stripe-webhook-secret` | 90 days | Manual (Stripe dashboard) |
+| PII encryption key | `padi-ai/production/pii-encryption-key` | 90 days | Manual + re-encryption migration |
+| Datadog API key | `padi-ai/production/datadog-api-key` | 90 days | Manual (Datadog console) |
+| LaunchDarkly SDK key | `padi-ai/production/launchdarkly-sdk-key` | 90 days | Manual (LaunchDarkly console) |
 
 #### Secret Rotation Automation
 
@@ -2110,8 +2110,8 @@ Use when a secret is suspected or confirmed to be compromised.
 1. **Identify compromised secret** (from alert or discovery).
 2. **Immediate revocation**: Disable the compromised secret at the source (Anthropic console, OpenAI dashboard, Auth0, Stripe, etc.) — not just rotate in Secrets Manager.
 3. **Generate new secret** at the provider.
-4. **Update AWS Secrets Manager**: `aws secretsmanager update-secret --secret-id mathpath/production/[NAME] --secret-string '{"key":"NEW_VALUE"}'`
-5. **Force ECS service redeployment** to pick up new secret: `aws ecs update-service --cluster mathpath-production --service mathpath-api --force-new-deployment`
+4. **Update AWS Secrets Manager**: `aws secretsmanager update-secret --secret-id padi-ai/production/[NAME] --secret-string '{"key":"NEW_VALUE"}'`
+5. **Force ECS service redeployment** to pick up new secret: `aws ecs update-service --cluster padi-ai-production --service padi-ai-api --force-new-deployment`
 6. **Verify**: Check application logs — no auth errors for 5 minutes.
 7. **Audit**: Review CloudTrail for all API calls made using the compromised secret in the window it may have been exposed.
 8. **Notify**: If LLM API key was compromised, notify provider. If Auth0 secret was compromised, review for unauthorized OAuth flows.
@@ -2227,7 +2227,7 @@ Every Docker image build triggers a Trivy scan. Images with CRITICAL or HIGH fin
   - name: Upload SBOM to S3
     run: |
       aws s3 cp sbom.json \
-        s3://mathpath-security-artifacts/sbom/${GITHUB_SHA}.json \
+        s3://padi-ai-security-artifacts/sbom/${GITHUB_SHA}.json \
         --sse aws:kms
 ```
 
@@ -2249,12 +2249,12 @@ jobs:
       - name: ZAP API Scan
         uses: zaproxy/action-api-scan@v0.7.0
         with:
-          target: 'https://staging-api.mathpath.io/openapi.json'
+          target: 'https://staging-api.padi.ai/openapi.json'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: >
             -config globalexcludeurl.url_list.url\(0\).regex='.*/api/v1/health.*'
             -config globalexcludeurl.url_list.url\(1\).regex='.*/docs.*'
-            -config auth.loginurl=https://staging-api.mathpath.io/api/v1/auth/token
+            -config auth.loginurl=https://staging-api.padi.ai/api/v1/auth/token
             -config auth.username_field=email
             -config auth.password_field=password
             -config auth.username=${{ secrets.ZAP_TEST_USERNAME }}
@@ -2310,15 +2310,15 @@ Annual external penetration test conducted by a qualified third-party firm (OSCP
 
 | Event Category | Events Logged | Log Group | Retention |
 |---------------|--------------|-----------|-----------|
-| **Authentication** | Login success, login failure, logout, token refresh, MFA events | `/mathpath/audit/auth` | 1 year operational; 7 years archive |
-| **Student data access** | Any read of student PII (query + `student_id` + accessor `user_id`) | `/mathpath/audit/data-access` | 7 years (FERPA) |
-| **Consent events** | Consent granted, consent revoked, consent viewed by parent | `/mathpath/audit/consent` | 7 years (COPPA) |
-| **Admin actions** | Account creation/deletion, role changes, config changes | `/mathpath/audit/admin` | 7 years |
-| **LLM calls** | Every LLM API call: operation, model, token counts, latency, cost (no content) | `/mathpath/audit/llm` | 1 year |
-| **Billing events** | Subscription created, payment processed, refund issued | `/mathpath/audit/billing` | 7 years (financial records) |
-| **Data deletion requests** | Request received, deletion completed, verification | `/mathpath/audit/deletion` | 7 years |
+| **Authentication** | Login success, login failure, logout, token refresh, MFA events | `/padi-ai/audit/auth` | 1 year operational; 7 years archive |
+| **Student data access** | Any read of student PII (query + `student_id` + accessor `user_id`) | `/padi-ai/audit/data-access` | 7 years (FERPA) |
+| **Consent events** | Consent granted, consent revoked, consent viewed by parent | `/padi-ai/audit/consent` | 7 years (COPPA) |
+| **Admin actions** | Account creation/deletion, role changes, config changes | `/padi-ai/audit/admin` | 7 years |
+| **LLM calls** | Every LLM API call: operation, model, token counts, latency, cost (no content) | `/padi-ai/audit/llm` | 1 year |
+| **Billing events** | Subscription created, payment processed, refund issued | `/padi-ai/audit/billing` | 7 years (financial records) |
+| **Data deletion requests** | Request received, deletion completed, verification | `/padi-ai/audit/deletion` | 7 years |
 | **AWS API calls** | All AWS API activity via CloudTrail | CloudTrail → S3 | 7 years |
-| **Security events** | Trivy findings, ZAP alerts, Bandit findings | `/mathpath/audit/security` | 1 year |
+| **Security events** | Trivy findings, ZAP alerts, Bandit findings | `/padi-ai/audit/security` | 1 year |
 
 #### Structured Audit Log Format
 
@@ -2588,7 +2588,7 @@ indent_unit = space
 
 #### OWASP ZAP Configuration
 
-MathPath uses the ZAP API scan action (OpenAPI-spec-based) augmented with an authenticated full scan for sensitive endpoints.
+PADI.AI uses the ZAP API scan action (OpenAPI-spec-based) augmented with an authenticated full scan for sensitive endpoints.
 
 **Authentication handling for authenticated scans:**
 
@@ -2596,7 +2596,7 @@ MathPath uses the ZAP API scan action (OpenAPI-spec-based) augmented with an aut
 # .zap/auth_script.py — ZAP authentication script (Jython)
 def authenticate(helper, paramsValues, credentials):
     """
-    Authenticate to MathPath staging API using test credentials.
+    Authenticate to PADI.AI staging API using test credentials.
     Returns a valid JWT access token for authenticated scanning.
     """
     import urllib2
@@ -2619,9 +2619,9 @@ def authenticate(helper, paramsValues, credentials):
 
 | Target | Scan Type | Authentication |
 |--------|-----------|----------------|
-| `https://staging-api.mathpath.io/openapi.json` | API scan (OpenAPI) | Test credentials |
-| `https://staging.mathpath.io` | Spider + active scan | Test parent + student accounts |
-| `https://staging-api.mathpath.io/api/v1/students/{id}` | Active IDOR test | Test credentials |
+| `https://staging-api.padi.ai/openapi.json` | API scan (OpenAPI) | Test credentials |
+| `https://staging.padi.ai` | Spider + active scan | Test parent + student accounts |
+| `https://staging-api.padi.ai/api/v1/students/{id}` | Active IDOR test | Test credentials |
 | COPPA consent flow endpoints | Active form scan | Unauthenticated (pre-login flow) |
 
 **DAST scan schedule:**
@@ -2666,9 +2666,9 @@ A Software Bill of Materials is generated for every production build and stored 
 - name: Upload SBOMs to S3
   run: |
     TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
-    aws s3 cp sbom-api.json s3://mathpath-security-artifacts/sbom/${TIMESTAMP}-api.json --sse aws:kms
-    aws s3 cp sbom-frontend.json s3://mathpath-security-artifacts/sbom/${TIMESTAMP}-frontend.json --sse aws:kms
-    aws s3 cp sbom-api-python.json s3://mathpath-security-artifacts/sbom/${TIMESTAMP}-python.json --sse aws:kms
+    aws s3 cp sbom-api.json s3://padi-ai-security-artifacts/sbom/${TIMESTAMP}-api.json --sse aws:kms
+    aws s3 cp sbom-frontend.json s3://padi-ai-security-artifacts/sbom/${TIMESTAMP}-frontend.json --sse aws:kms
+    aws s3 cp sbom-api-python.json s3://padi-ai-security-artifacts/sbom/${TIMESTAMP}-python.json --sse aws:kms
 ```
 
 **SBOM use cases:**
@@ -2719,8 +2719,8 @@ A Software Bill of Materials is generated for every production build and stored 
 
 # API Service Security Group — only accepts traffic from ALB
 resource "aws_security_group" "api_service" {
-  name        = "mathpath-${var.environment}-api"
-  description = "MathPath API service — only from ALB"
+  name        = "padi-ai-${var.environment}-api"
+  description = "PADI.AI API service — only from ALB"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -2739,13 +2739,13 @@ resource "aws_security_group" "api_service" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "mathpath-${var.environment}-api-sg" }
+  tags = { Name = "padi-ai-${var.environment}-api-sg" }
 }
 
 # RDS Security Group — only accepts traffic from API service
 resource "aws_security_group" "rds" {
-  name        = "mathpath-${var.environment}-rds"
-  description = "MathPath RDS — only from API and agent-engine"
+  name        = "padi-ai-${var.environment}-rds"
+  description = "PADI.AI RDS — only from API and agent-engine"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -2769,8 +2769,8 @@ resource "aws_security_group" "rds" {
 }
 
 # WAF — attached to CloudFront and ALB
-resource "aws_wafv2_web_acl" "mathpath" {
-  name  = "mathpath-${var.environment}"
+resource "aws_wafv2_web_acl" "padi_ai" {
+  name  = "padi-ai-${var.environment}"
   scope = "CLOUDFRONT"
 
   default_action { allow {} }
@@ -2873,7 +2873,7 @@ resource "aws_alb_listener" "http_redirect" {
 **Pre-deployment checks (15 minutes before deploy):**
 
 1. Confirm no active P0/P1 incidents in #incidents.
-2. Confirm all CI jobs pass on the release commit: `gh run list --repo mathpath-org/mathpath --branch main --limit 1`.
+2. Confirm all CI jobs pass on the release commit: `gh run list --repo padi-ai-org/padi-ai --branch main --limit 1`.
 3. Confirm staging E2E tests passed within the last 24 hours: check GitHub Actions `deploy-staging.yml` run.
 4. Confirm no pending database migrations that haven't been tested in staging.
 5. Confirm the on-call engineer is aware and available during deploy (3pm–8pm Pacific preferred window).
@@ -2888,14 +2888,14 @@ git push origin v{MAJOR}.{MINOR}.{PATCH}
 
 # 2. Monitor blue-green switch in AWS console or CLI
 aws ecs describe-services \
-  --cluster mathpath-production \
-  --services mathpath-api mathpath-agent-engine \
+  --cluster padi-ai-production \
+  --services padi-ai-api padi-ai-agent-engine \
   --query 'services[*].{service:serviceName,running:runningCount,pending:pendingCount,desired:desiredCount}'
 
 # 3. Watch ECS deployment events
 aws ecs describe-services \
-  --cluster mathpath-production \
-  --services mathpath-api \
+  --cluster padi-ai-production \
+  --services padi-ai-api \
   --query 'services[0].events[0:5]'
 ```
 
@@ -2905,8 +2905,8 @@ aws ecs describe-services \
 2. Check Datadog — P95 API latency should be <500ms.
 3. Run smoke tests:
    ```bash
-   curl -f https://api.mathpath.io/api/v1/health
-   curl -f https://mathpath.io/api/health
+   curl -f https://api.padi.ai/api/v1/health
+   curl -f https://padi.ai/api/health
    ```
 4. Test critical user flow manually: parent login → view student progress.
 5. Check Sentry — no new error classes introduced.
@@ -2931,8 +2931,8 @@ aws ecs describe-services \
 ```bash
 # 1. Identify the previous task definition
 PREVIOUS_TD=$(aws ecs describe-services \
-  --cluster mathpath-production \
-  --services mathpath-api \
+  --cluster padi-ai-production \
+  --services padi-ai-api \
   --query 'services[0].taskDefinition' \
   --output text | sed 's/:[0-9]*$//')
 
@@ -2945,22 +2945,22 @@ echo "Rolling back to revision: $PREVIOUS_REVISION"
 
 # 2. Update service to previous task definition
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-api \
+  --cluster padi-ai-production \
+  --service padi-ai-api \
   --task-definition ${PREVIOUS_TD}:${PREVIOUS_REVISION} \
   --force-new-deployment
 
 # 3. Repeat for agent-engine
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-agent-engine \
-  --task-definition mathpath-agent-engine:${PREVIOUS_REVISION} \
+  --cluster padi-ai-production \
+  --service padi-ai-agent-engine \
+  --task-definition padi-ai-agent-engine:${PREVIOUS_REVISION} \
   --force-new-deployment
 
 # 4. Monitor rollback completion
 watch -n 5 "aws ecs describe-services \
-  --cluster mathpath-production \
-  --services mathpath-api mathpath-agent-engine \
+  --cluster padi-ai-production \
+  --services padi-ai-api padi-ai-agent-engine \
   --query 'services[*].{service:serviceName,running:runningCount,pending:pendingCount}'"
 ```
 
@@ -2989,7 +2989,7 @@ watch -n 5 "aws ecs describe-services \
 ```bash
 # 1. Take a manual RDS snapshot before migrating
 aws rds create-db-snapshot \
-  --db-instance-identifier mathpath-production-primary \
+  --db-instance-identifier padi-ai-production-primary \
   --db-snapshot-identifier pre-migration-$(date +%Y%m%d-%H%M%S)
 
 # 2. Wait for snapshot to complete
@@ -2998,15 +2998,15 @@ aws rds wait db-snapshot-available \
 
 # 3. Run migration via ECS task (not directly — never from developer laptop to production)
 aws ecs run-task \
-  --cluster mathpath-production \
-  --task-definition mathpath-migration \
+  --cluster padi-ai-production \
+  --task-definition padi-ai-migration \
   --launch-type FARGATE \
   --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx],securityGroups=[sg-xxx]}" \
   --overrides '{"containerOverrides":[{"name":"api","command":["alembic","upgrade","head"]}]}'
 
 # 4. Monitor task exit code
-aws ecs wait tasks-stopped --cluster mathpath-production --tasks [task-arn]
-aws ecs describe-tasks --cluster mathpath-production --tasks [task-arn] \
+aws ecs wait tasks-stopped --cluster padi-ai-production --tasks [task-arn]
+aws ecs describe-tasks --cluster padi-ai-production --tasks [task-arn] \
   --query 'tasks[0].containers[0].exitCode'
 # Must be 0
 ```
@@ -3016,8 +3016,8 @@ aws ecs describe-tasks --cluster mathpath-production --tasks [task-arn] \
 ```bash
 # Rollback to previous revision
 aws ecs run-task \
-  --cluster mathpath-production \
-  --task-definition mathpath-migration \
+  --cluster padi-ai-production \
+  --task-definition padi-ai-migration \
   --overrides '{"containerOverrides":[{"name":"api","command":["alembic","downgrade","-1"]}]}'
 ```
 
@@ -3025,7 +3025,7 @@ aws ecs run-task \
 
 #### Runbook: COPPA Data Deletion Request Handling
 
-**Trigger:** Parent submits data deletion request via parent dashboard or emails privacy@mathpath.io.
+**Trigger:** Parent submits data deletion request via parent dashboard or emails privacy@padi.ai.
 
 **SLA:** Complete deletion within 48 hours.
 
@@ -3054,7 +3054,7 @@ aws ecs run-task \
      -H "Authorization: Bearer ${PLATFORM_ADMIN_TOKEN}" \
      -H "Content-Type: application/json" \
      -d '{"student_id": "...", "requestor_id": "...", "reason": "coppa_deletion_request"}' \
-     https://api.mathpath.io/api/v1/admin/students/delete
+     https://api.padi.ai/api/v1/admin/students/delete
    ```
    
    The deletion endpoint handles: DB hard delete, Redis cache flush, S3 object deletion, PostHog deletion API, audit log entry.
@@ -3109,7 +3109,7 @@ aws ecs run-task \
    ```
 
 3. **Update status page** (2 minutes):
-   Post on status.mathpath.io: "AI tutoring is operating in limited mode. Practice sessions continue with our question library. We are monitoring the situation."
+   Post on status.padi.ai: "AI tutoring is operating in limited mode. Practice sessions continue with our question library. We are monitoring the situation."
 
 4. **Monitor for recovery** (ongoing):
    Check provider status pages every 15 minutes. Test API directly every 15 minutes.
@@ -3141,9 +3141,9 @@ aws ecs run-task \
 
    | Root Cause | Indicators | Remediation |
    |-----------|-----------|-------------|
-   | DB connection pool exhaustion | `mathpath.db.pool_active_connections` near max | Scale up ECS tasks (more connections) OR reduce pool size per task |
-   | LLM latency spike | `mathpath.llm.latency_ms` elevated | Check provider status; activate fallback model |
-   | Redis hit rate degraded | `mathpath.redis.hit_rate` < 70% | Investigate cache eviction policy; increase ElastiCache memory |
+   | DB connection pool exhaustion | `padi.db.pool_active_connections` near max | Scale up ECS tasks (more connections) OR reduce pool size per task |
+   | LLM latency spike | `padi.llm.latency_ms` elevated | Check provider status; activate fallback model |
+   | Redis hit rate degraded | `padi.redis.hit_rate` < 70% | Investigate cache eviction policy; increase ElastiCache memory |
    | ECS CPU throttling | ECS CPU reservation >90% | Trigger manual scale-up: `aws ecs update-service --desired-count N+2` |
    | Slow DB query | Datadog APM shows slow `db.query` spans | Identify query via `pg_stat_statements`; add index or optimize |
    | Memory leak (long-running tasks) | ECS memory usage growing over hours | Restart service; investigate memory profile |
@@ -3151,8 +3151,8 @@ aws ecs run-task \
 3. **Manual scale-out if needed:**
    ```bash
    aws ecs update-service \
-     --cluster mathpath-production \
-     --service mathpath-api \
+     --cluster padi-ai-production \
+     --service padi-ai-api \
      --desired-count 6  # Up from 4
    ```
 
@@ -3162,27 +3162,27 @@ aws ecs run-task \
 
 #### Runbook: Scaling for School-Day Peak Traffic
 
-MathPath experiences peak traffic on school day mornings (9am–12pm Pacific) and afternoons (1pm–3pm Pacific) when students complete assignments.
+PADI.AI experiences peak traffic on school day mornings (9am–12pm Pacific) and afternoons (1pm–3pm Pacific) when students complete assignments.
 
 **Pre-peak preparation (evening before school day):**
 
 ```bash
 # Pre-warm ECS services to handle peak
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-api \
+  --cluster padi-ai-production \
+  --service padi-ai-api \
   --desired-count 6
 
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-agent-engine \
+  --cluster padi-ai-production \
+  --service padi-ai-agent-engine \
   --desired-count 4
 
 # Pre-warm ElastiCache connection pool (if newly deployed)
 # Verify auto-scaling policies are active
 aws application-autoscaling describe-scaling-policies \
   --service-namespace ecs \
-  --resource-id service/mathpath-production/mathpath-api
+  --resource-id service/padi-ai-production/padi-ai-api
 ```
 
 **During peak (automated):**
@@ -3195,13 +3195,13 @@ aws application-autoscaling describe-scaling-policies \
 ```bash
 # After 3:30pm Pacific — restore to baseline
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-api \
+  --cluster padi-ai-production \
+  --service padi-ai-api \
   --desired-count 3
 
 aws ecs update-service \
-  --cluster mathpath-production \
-  --service mathpath-agent-engine \
+  --cluster padi-ai-production \
+  --service padi-ai-agent-engine \
   --desired-count 2
 ```
 
@@ -3211,23 +3211,23 @@ aws ecs update-service \
 
 #### Datadog Dashboard Specifications
 
-**Master Dashboard: MathPath Operations Overview**
+**Master Dashboard: PADI.AI Operations Overview**
 
 | Row | Widget | Query | Visualization |
 |-----|--------|-------|---------------|
 | 1 | SLA Uptime (99.5% target) | Synthetic monitor uptime | SLO widget |
-| 1 | Active Users (concurrent) | `mathpath.websocket.connections_active` | Gauge |
-| 1 | API Error Rate | `sum:mathpath.api.request_count{status_code:5xx} / sum:mathpath.api.request_count{*}` | Gauge |
-| 1 | API P95 Latency | `p95:mathpath.api.request_duration_ms{*}` | Gauge |
-| 2 | Requests per Minute | `sum:mathpath.api.request_count{*}.as_rate()` by `endpoint` | Timeseries |
-| 2 | LLM Requests per Minute | `sum:mathpath.llm.request_count{*}.as_rate()` by `model` | Timeseries |
-| 3 | DB Connection Utilization | `avg:mathpath.db.pool_active_connections{*} / max_pool_size` | Timeseries |
+| 1 | Active Users (concurrent) | `padi.websocket.connections_active` | Gauge |
+| 1 | API Error Rate | `sum:padi.api.request_count{status_code:5xx} / sum:padi.api.request_count{*}` | Gauge |
+| 1 | API P95 Latency | `p95:padi.api.request_duration_ms{*}` | Gauge |
+| 2 | Requests per Minute | `sum:padi.api.request_count{*}.as_rate()` by `endpoint` | Timeseries |
+| 2 | LLM Requests per Minute | `sum:padi.llm.request_count{*}.as_rate()` by `model` | Timeseries |
+| 3 | DB Connection Utilization | `avg:padi.db.pool_active_connections{*} / max_pool_size` | Timeseries |
 | 3 | Redis Memory Utilization | `avg:aws.elasticache.freeable_memory{*}` | Timeseries |
-| 3 | ECS CPU (API) | `avg:ecs.fargate.cpu.percent{service:mathpath-api}` | Timeseries |
-| 4 | Today's LLM Spend | `sum:mathpath.llm.cost_cents{environment:production}.as_count()` | Metric number |
-| 4 | LLM Fallback Rate | `sum:mathpath.llm.request_count{fallback:true} / total` | Gauge |
-| 5 | Consent Events | `sum:mathpath.auth.consent_completed{*}.as_count()` | Counter |
-| 5 | Security Alerts Today | `sum:mathpath.security.alert{*}.as_count()` | Counter |
+| 3 | ECS CPU (API) | `avg:ecs.fargate.cpu.percent{service:padi-ai-api}` | Timeseries |
+| 4 | Today's LLM Spend | `sum:padi.llm.cost_cents{environment:production}.as_count()` | Metric number |
+| 4 | LLM Fallback Rate | `sum:padi.llm.request_count{fallback:true} / total` | Gauge |
+| 5 | Consent Events | `sum:padi.auth.consent_completed{*}.as_count()` | Counter |
+| 5 | Security Alerts Today | `sum:padi.security.alert{*}.as_count()` | Counter |
 
 #### Alert Routing
 
@@ -3248,7 +3248,7 @@ aws ecs update-service \
 | AI/ML On-Call | Weekly (during S2+ active stages) | AI/ML team members |
 | FinOps On-Call | Monthly | Engineering Lead or Platform Engineer |
 
-PagerDuty schedule: `mathpath-on-call` (IC), `mathpath-backup` (Backup), `mathpath-aiml` (AI/ML).
+PagerDuty schedule: `padi-ai-on-call` (IC), `padi-ai-backup` (Backup), `padi-ai-aiml` (AI/ML).
 
 #### SLA Monitoring
 
@@ -3261,8 +3261,8 @@ PagerDuty schedule: `mathpath-on-call` (IC), `mathpath-backup` (Backup), `mathpa
 
 | Monitor | URL | Frequency | Success Criteria |
 |---------|-----|-----------|-----------------|
-| API Health | `https://api.mathpath.io/api/v1/health` | Every 1 min | HTTP 200, response <500ms |
-| Homepage | `https://mathpath.io` | Every 5 min | HTTP 200, LCP <3s |
+| API Health | `https://api.padi.ai/api/v1/health` | Every 1 min | HTTP 200, response <500ms |
+| Homepage | `https://padi.ai` | Every 5 min | HTTP 200, LCP <3s |
 | Auth flow | Full Playwright synthetic (login → dashboard) | Every 15 min | Completes in <8s |
 | Consent flow | Full Playwright synthetic (parent consent) | Every 30 min | Completes without errors |
 
@@ -3325,7 +3325,7 @@ resource "aws_db_instance" "primary" {
 RDS Multi-AZ failover is automatic. When a failover occurs:
 
 1. AWS detects primary instance failure (typically <1 minute).
-2. DNS entry for `mathpath-production-primary.xxxx.us-west-2.rds.amazonaws.com` is updated to point to the standby.
+2. DNS entry for `padi-ai-production-primary.xxxx.us-west-2.rds.amazonaws.com` is updated to point to the standby.
 3. Application reconnects using the same hostname (connections pool is reset automatically by SQLAlchemy).
 4. Failover completes within 2–5 minutes.
 
@@ -3346,8 +3346,8 @@ RESTORE_TIME="2026-03-15T10:30:00Z"
 
 # 2. Restore RDS to a point-in-time (creates a new instance)
 aws rds restore-db-instance-to-point-in-time \
-  --source-db-instance-identifier mathpath-production-primary \
-  --target-db-instance-identifier mathpath-recovery \
+  --source-db-instance-identifier padi-ai-production-primary \
+  --target-db-instance-identifier padi-ai-recovery \
   --restore-time $RESTORE_TIME \
   --db-instance-class db.r8g.large \
   --no-multi-az \
@@ -3355,27 +3355,27 @@ aws rds restore-db-instance-to-point-in-time \
 
 # 3. Wait for instance to be available (~10 minutes)
 aws rds wait db-instance-available \
-  --db-instance-identifier mathpath-recovery
+  --db-instance-identifier padi-ai-recovery
 
 # 4. Connect to recovery instance and export the affected table
 pg_dump \
-  -h mathpath-recovery.xxxx.us-west-2.rds.amazonaws.com \
-  -U mathpath_admin \
-  -d mathpath \
+  -h padi-ai-recovery.xxxx.us-west-2.rds.amazonaws.com \
+  -U padi_ai_admin \
+  -d padi_ai \
   -t students \
   --data-only \
   > students_recovery.sql
 
 # 5. Import to production (with caution — verify no conflicts)
 psql \
-  -h mathpath-production-primary.xxxx.us-west-2.rds.amazonaws.com \
-  -U mathpath_admin \
-  -d mathpath \
+  -h padi-ai-production-primary.xxxx.us-west-2.rds.amazonaws.com \
+  -U padi_ai_admin \
+  -d padi_ai \
   < students_recovery.sql
 
 # 6. Terminate recovery instance after data is verified
 aws rds delete-db-instance \
-  --db-instance-identifier mathpath-recovery \
+  --db-instance-identifier padi-ai-recovery \
   --skip-final-snapshot
 ```
 
@@ -3482,8 +3482,8 @@ The compliance calendar consolidates all recurring compliance activities across 
 
 ---
 
-*This document is the authoritative operational reference for MathPath Oregon's cross-cutting SDLC governance. It is a living document; updates require Engineering Lead sign-off. All changes are tracked in git history.*
+*This document is the authoritative operational reference for PADI.AI's cross-cutting SDLC governance. It is a living document; updates require Engineering Lead sign-off. All changes are tracked in git history.*
 
 *Last validated: April 4, 2026*  
 *Next scheduled review: July 4, 2026 (quarterly)*  
-*Document owner: Engineering Lead, MathPath Oregon*
+*Document owner: Engineering Lead, PADI.AI*

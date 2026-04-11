@@ -1,4 +1,4 @@
-# ENG-006 — Cross-Cutting Engineering Concerns: MathPath Oregon
+# ENG-006 — Cross-Cutting Engineering Concerns: PADI.AI
 
 **Document ID:** ENG-006  
 **Scope:** All 5 stages (Months 1–20)  
@@ -23,7 +23,7 @@
 
 ### 1.1 Philosophy and Approach
 
-MathPath Oregon is an AI-powered educational product for children. Testing is not a box-checking exercise — it is a critical safety system. A bug in a typical SaaS product causes inconvenience; a bug in MathPath can cause real harm. An incorrect BKT state update can send a struggling student down an overly difficult learning path, causing frustration and discouragement. A COPPA consent flow bug can expose a child's personal information without parental authorization, creating legal liability and eroding trust. A Stripe billing bug can overcharge parents or grant access to unsubscribed users. The testing strategy must be proportional to the risk surface, and in a children's EdTech product, that surface is unusually large.
+PADI.AI is an AI-powered educational product for children. Testing is not a box-checking exercise — it is a critical safety system. A bug in a typical SaaS product causes inconvenience; a bug in PADI.AI can cause real harm. An incorrect BKT state update can send a struggling student down an overly difficult learning path, causing frustration and discouragement. A COPPA consent flow bug can expose a child's personal information without parental authorization, creating legal liability and eroding trust. A Stripe billing bug can overcharge parents or grant access to unsubscribed users. The testing strategy must be proportional to the risk surface, and in a children's EdTech product, that surface is unusually large.
 
 The non-deterministic nature of AI components (tutor hints, question generation, adaptive path selection) makes testing fundamentally harder than in deterministic systems. Traditional assertion-based testing — "given input X, expect exact output Y" — breaks down when an LLM generates a different valid hint each time. Our strategy addresses this through behavioral contracts: we test properties and invariants of outputs rather than exact strings. A hint at level 1 must not contain the numeric answer. A generated question must be solvable by a 4th grader. An encouragement message must be positive in sentiment. These properties can be verified programmatically, giving us confidence without demanding determinism.
 
@@ -582,7 +582,7 @@ handlers:
     class: watchtower.CloudWatchLogHandler
     level: INFO
     formatter: json
-    log_group_name: /mathpath/audit
+    log_group_name: /padi-ai/audit
     log_stream_name: "{hostname}-{datetime}"
     send_interval: 10
 
@@ -662,68 +662,68 @@ export default logger;
 **Complete metrics taxonomy:**
 
 ```python
-# All custom metrics emitted by MathPath. Prefixed with 'mathpath.' namespace.
+# All custom metrics emitted by PADI.AI. Prefixed with 'padi.' namespace.
 
 # ── Assessment Metrics ───────────────────────────────────────────────
-"mathpath.assessment.started"          # counter | tags: assessment_type, grade
-"mathpath.assessment.completed"        # counter | tags: assessment_type, proficiency_level, grade
-"mathpath.assessment.duration_seconds"  # histogram | tags: assessment_type
-"mathpath.assessment.items_answered"   # histogram | tags: assessment_type
+"padi.assessment.started"          # counter | tags: assessment_type, grade
+"padi.assessment.completed"        # counter | tags: assessment_type, proficiency_level, grade
+"padi.assessment.duration_seconds"  # histogram | tags: assessment_type
+"padi.assessment.items_answered"   # histogram | tags: assessment_type
 
 # ── Practice Session Metrics ─────────────────────────────────────────
-"mathpath.session.started"             # counter | tags: skill_code, track (catch_up/on_par/exceeding)
-"mathpath.session.completed"           # counter | tags: skill_code, track
-"mathpath.session.duration_seconds"    # histogram | tags: skill_code
-"mathpath.session.questions_answered"  # histogram | tags: skill_code
+"padi.session.started"             # counter | tags: skill_code, track (catch_up/on_par/exceeding)
+"padi.session.completed"           # counter | tags: skill_code, track
+"padi.session.duration_seconds"    # histogram | tags: skill_code
+"padi.session.questions_answered"  # histogram | tags: skill_code
 
 # ── BKT / Learning Metrics ──────────────────────────────────────────
-"mathpath.bkt.mastery_achieved"        # counter | tags: skill_code, track
-"mathpath.bkt.state_updated"           # counter | tags: skill_code, direction (up/down)
-"mathpath.bkt.p_mastery"              # gauge (sampled) | tags: skill_code — average across active students
+"padi.bkt.mastery_achieved"        # counter | tags: skill_code, track
+"padi.bkt.state_updated"           # counter | tags: skill_code, direction (up/down)
+"padi.bkt.p_mastery"              # gauge (sampled) | tags: skill_code — average across active students
 
 # ── Question Metrics ────────────────────────────────────────────────
-"mathpath.question.answered"           # counter | tags: is_correct, difficulty, skill_code
-"mathpath.question.accuracy_rate"      # gauge | tags: skill_code, difficulty — rolling 1-hour average
-"mathpath.question.generation.count"   # counter | tags: skill_code, model
-"mathpath.question.generation.latency" # histogram | tags: model
-"mathpath.question.validation.result"  # counter | tags: result (pass/fail), reason (math_error/readability/safety)
-"mathpath.question.validation.latency" # histogram
+"padi.question.answered"           # counter | tags: is_correct, difficulty, skill_code
+"padi.question.accuracy_rate"      # gauge | tags: skill_code, difficulty — rolling 1-hour average
+"padi.question.generation.count"   # counter | tags: skill_code, model
+"padi.question.generation.latency" # histogram | tags: model
+"padi.question.validation.result"  # counter | tags: result (pass/fail), reason (math_error/readability/safety)
+"padi.question.validation.latency" # histogram
 
 # ── AI/LLM Metrics ──────────────────────────────────────────────────
-"mathpath.llm.request_count"           # counter | tags: model, operation (hint/question_gen/assessment)
-"mathpath.llm.latency_ms"             # histogram | tags: model, operation
-"mathpath.llm.tokens.input"           # counter | tags: model, operation
-"mathpath.llm.tokens.output"          # counter | tags: model, operation
-"mathpath.llm.error_count"            # counter | tags: model, error_type (timeout/rate_limit/api_error)
-"mathpath.llm.cost_cents"             # counter | tags: model, operation — estimated cost per call
-"mathpath.agent.node_execution_ms"    # histogram | tags: node_name (hint_generator/bkt_updater/etc)
+"padi.llm.request_count"           # counter | tags: model, operation (hint/question_gen/assessment)
+"padi.llm.latency_ms"             # histogram | tags: model, operation
+"padi.llm.tokens.input"           # counter | tags: model, operation
+"padi.llm.tokens.output"          # counter | tags: model, operation
+"padi.llm.error_count"            # counter | tags: model, error_type (timeout/rate_limit/api_error)
+"padi.llm.cost_cents"             # counter | tags: model, operation — estimated cost per call
+"padi.agent.node_execution_ms"    # histogram | tags: node_name (hint_generator/bkt_updater/etc)
 
 # ── Billing Metrics ──────────────────────────────────────────────────
-"mathpath.billing.checkout_started"    # counter | tags: plan
-"mathpath.billing.subscription_created" # counter | tags: plan, trial (true/false)
-"mathpath.billing.payment_succeeded"   # counter | tags: plan
-"mathpath.billing.payment_failed"      # counter | tags: plan, failure_reason
-"mathpath.billing.churn"              # counter | tags: plan, reason
-"mathpath.billing.webhook_processed"   # counter | tags: event_type, status (processed/skipped/failed)
-"mathpath.billing.webhook_latency_ms"  # histogram | tags: event_type
+"padi.billing.checkout_started"    # counter | tags: plan
+"padi.billing.subscription_created" # counter | tags: plan, trial (true/false)
+"padi.billing.payment_succeeded"   # counter | tags: plan
+"padi.billing.payment_failed"      # counter | tags: plan, failure_reason
+"padi.billing.churn"              # counter | tags: plan, reason
+"padi.billing.webhook_processed"   # counter | tags: event_type, status (processed/skipped/failed)
+"padi.billing.webhook_latency_ms"  # histogram | tags: event_type
 
 # ── Auth Metrics ─────────────────────────────────────────────────────
-"mathpath.auth.login_success"          # counter | tags: method (auth0/clever)
-"mathpath.auth.login_failure"          # counter | tags: method, reason
-"mathpath.auth.consent_completed"      # counter — COPPA parental consent
-"mathpath.auth.consent_denied"         # counter
+"padi.auth.login_success"          # counter | tags: method (auth0/clever)
+"padi.auth.login_failure"          # counter | tags: method, reason
+"padi.auth.consent_completed"      # counter — COPPA parental consent
+"padi.auth.consent_denied"         # counter
 
 # ── Infrastructure Metrics (in addition to AWS/Datadog defaults) ─────
-"mathpath.api.request_count"           # counter | tags: endpoint, method, status_code
-"mathpath.api.request_duration_ms"     # histogram | tags: endpoint, method
-"mathpath.websocket.connections_active" # gauge — current WebSocket connections
-"mathpath.websocket.message_rtt_ms"    # histogram
-"mathpath.db.query_duration_ms"        # histogram | tags: operation (select/insert/update)
-"mathpath.db.pool_active_connections"  # gauge
-"mathpath.redis.operation_duration_ms" # histogram | tags: operation (get/set/del)
-"mathpath.redis.hit_rate"             # gauge — cache hit percentage
-"mathpath.sqs.messages_in_flight"      # gauge | tags: queue_name
-"mathpath.sqs.processing_latency_ms"   # histogram | tags: queue_name
+"padi.api.request_count"           # counter | tags: endpoint, method, status_code
+"padi.api.request_duration_ms"     # histogram | tags: endpoint, method
+"padi.websocket.connections_active" # gauge — current WebSocket connections
+"padi.websocket.message_rtt_ms"    # histogram
+"padi.db.query_duration_ms"        # histogram | tags: operation (select/insert/update)
+"padi.db.pool_active_connections"  # gauge
+"padi.redis.operation_duration_ms" # histogram | tags: operation (get/set/del)
+"padi.redis.hit_rate"             # gauge — cache hit percentage
+"padi.sqs.messages_in_flight"      # gauge | tags: queue_name
+"padi.sqs.processing_latency_ms"   # histogram | tags: queue_name
 ```
 
 #### Distributed Tracing (Datadog APM)
@@ -772,7 +772,7 @@ patch_all(
 )
 
 # Configure tracer
-ddtrace.config.fastapi["service_name"] = "mathpath-api"
+ddtrace.config.fastapi["service_name"] = "padi-ai-api"
 ddtrace.config.fastapi["analytics_enabled"] = True
 
 
@@ -792,7 +792,7 @@ async def trace_langgraph_node(node_name: str, **tags):
     """
     with tracer.trace(
         name=f"langgraph.node.{node_name}",
-        service="mathpath-agent-engine",
+        service="padi-ai-agent-engine",
         resource=node_name,
         span_type="custom",
     ) as span:
@@ -820,7 +820,7 @@ async def trace_llm_call(model: str, operation: str, **kwargs):
     """
     with tracer.trace(
         name=f"llm.{operation}",
-        service="mathpath-agent-engine",
+        service="padi-ai-agent-engine",
         resource=model,
         span_type="llm",
     ) as span:
@@ -863,26 +863,26 @@ def tag_query_type(conn, clauseelement, multiparams, params, execution_options):
 
 | # | Alert Name | Metric / Condition | Threshold | Duration | Channel | Runbook |
 |---|-----------|-------------------|-----------|----------|---------|---------|
-| 1 | API Error Rate Critical | `mathpath.api.request_count{status_code:5xx}` / total | > 5% | 5 min | PagerDuty + SMS | `runbooks/api-errors.md` |
-| 2 | Database Connection Exhaustion | `mathpath.db.pool_active_connections` / max_pool_size | > 90% | 3 min | PagerDuty + SMS | `runbooks/db-pool.md` |
-| 3 | Auth0 Service Degradation | `mathpath.auth.login_success` / total attempts | < 90% | 5 min | PagerDuty | `runbooks/auth-degradation.md` |
-| 4 | LLM API Cascade Failure | `mathpath.llm.error_count` / total requests, all models | > 20% | 5 min | PagerDuty | `runbooks/llm-cascade.md` |
-| 5 | COPPA Consent Service Down | `mathpath.auth.consent_completed` + `mathpath.auth.consent_denied` = 0 AND signups attempted | Any | 3 min | PagerDuty + SMS | `runbooks/consent-service.md` |
+| 1 | API Error Rate Critical | `padi.api.request_count{status_code:5xx}` / total | > 5% | 5 min | PagerDuty + SMS | `runbooks/api-errors.md` |
+| 2 | Database Connection Exhaustion | `padi.db.pool_active_connections` / max_pool_size | > 90% | 3 min | PagerDuty + SMS | `runbooks/db-pool.md` |
+| 3 | Auth0 Service Degradation | `padi.auth.login_success` / total attempts | < 90% | 5 min | PagerDuty | `runbooks/auth-degradation.md` |
+| 4 | LLM API Cascade Failure | `padi.llm.error_count` / total requests, all models | > 20% | 5 min | PagerDuty | `runbooks/llm-cascade.md` |
+| 5 | COPPA Consent Service Down | `padi.auth.consent_completed` + `padi.auth.consent_denied` = 0 AND signups attempted | Any | 3 min | PagerDuty + SMS | `runbooks/consent-service.md` |
 | 6 | Critical Security Finding | Trivy/ZAP scan severity = CRITICAL | Any new finding | Immediate | PagerDuty + Slack #security | `runbooks/security-finding.md` |
 | 7 | Database Primary Down | RDS event `failover-started` or connection refused | Any | 1 min | PagerDuty + SMS | `runbooks/db-failover.md` |
-| 8 | Stripe Webhook Complete Failure | `mathpath.billing.webhook_processed{status:failed}` / total | > 50% | 5 min | PagerDuty | ENG-005 §7.1 |
+| 8 | Stripe Webhook Complete Failure | `padi.billing.webhook_processed{status:failed}` / total | > 50% | 5 min | PagerDuty | ENG-005 §7.1 |
 | 9 | Student Data Access Anomaly | Audit log: single user accessing > 100 unique students in 5 min | > 100 | 5 min | PagerDuty + Slack #security | `runbooks/data-anomaly.md` |
-| 10 | WebSocket Service Down | `mathpath.websocket.connections_active` drops to 0 when expected > 0 (school hours) | 0 connections on weekday 9am-3pm | 2 min | PagerDuty | `runbooks/ws-service-down.md` |
+| 10 | WebSocket Service Down | `padi.websocket.connections_active` drops to 0 when expected > 0 (school hours) | 0 connections on weekday 9am-3pm | 2 min | PagerDuty | `runbooks/ws-service-down.md` |
 
 #### P2 Alerts (Page During Business Hours 8am–8pm Pacific)
 
 | # | Alert Name | Metric / Condition | Threshold | Duration | Channel |
 |---|-----------|-------------------|-----------|----------|---------|
-| 1 | API Latency Degraded | `mathpath.api.request_duration_ms` P95 | > 1000ms | 10 min | Slack #alerts + PagerDuty (low-urgency) |
-| 2 | LLM Response Latency High | `mathpath.llm.latency_ms` P95 | > 5000ms | 10 min | Slack #alerts |
-| 3 | Question Validation Failure Spike | `mathpath.question.validation.result{result:fail}` / total | > 20% | 15 min | Slack #alerts |
+| 1 | API Latency Degraded | `padi.api.request_duration_ms` P95 | > 1000ms | 10 min | Slack #alerts + PagerDuty (low-urgency) |
+| 2 | LLM Response Latency High | `padi.llm.latency_ms` P95 | > 5000ms | 10 min | Slack #alerts |
+| 3 | Question Validation Failure Spike | `padi.question.validation.result{result:fail}` / total | > 20% | 15 min | Slack #alerts |
 | 4 | Email Delivery Degraded | SES delivery rate | < 95% | 30 min | Slack #alerts |
-| 5 | WebSocket Error Rate Elevated | `mathpath.websocket.message_rtt_ms` error rate | > 2% | 10 min | Slack #alerts |
+| 5 | WebSocket Error Rate Elevated | `padi.websocket.message_rtt_ms` error rate | > 2% | 10 min | Slack #alerts |
 | 6 | Read Replica Lag | RDS replica lag | > 5 seconds | 5 min | Slack #alerts |
 | 7 | Redis Memory High | ElastiCache memory utilization | > 80% | 15 min | Slack #alerts |
 | 8 | SQS Dead Letter Queue Non-Empty | DLQ message count | > 0 | 5 min | Slack #alerts |
@@ -895,8 +895,8 @@ def tag_query_type(conn, clauseelement, multiparams, params, execution_options):
 |---|-----------|-------------------|-----------|---------|
 | 1 | Test Coverage Dropped | CI coverage report | Below 80% on any PR | GitHub PR comment |
 | 2 | Infrastructure Cost Anomaly | Daily AWS spend | > 150% of 7-day rolling average | Slack #costs + Jira ticket |
-| 3 | Stripe Webhook Processing Lag | `mathpath.billing.webhook_latency_ms` P95 | > 60,000ms (60s) | Slack #billing |
-| 4 | LLM Daily Spend Over Budget | `mathpath.llm.cost_cents` daily sum | > 2x daily budget | Slack #costs |
+| 3 | Stripe Webhook Processing Lag | `padi.billing.webhook_latency_ms` P95 | > 60,000ms (60s) | Slack #billing |
+| 4 | LLM Daily Spend Over Budget | `padi.llm.cost_cents` daily sum | > 2x daily budget | Slack #costs |
 | 5 | Dependency Vulnerability (Medium) | `pip-audit` / `npm audit` finding | Severity = Medium | Jira ticket with 30-day SLA |
 | 6 | Certificate Expiry Approaching | ACM certificate days to expiry | < 30 days | Slack #infra |
 | 7 | S3 Storage Growing Fast | S3 bucket size growth rate | > 50% month-over-month | Slack #infra |
@@ -933,22 +933,22 @@ def tag_query_type(conn, clauseelement, multiparams, params, execution_options):
 ```
 
 **Metrics on this dashboard:**
-- `mathpath.api.request_count` by `status_code` (grouped into 2xx, 4xx, 5xx)
-- `mathpath.api.request_duration_ms` P50, P95, P99
-- `mathpath.websocket.connections_active`
-- `mathpath.db.pool_active_connections`
+- `padi.api.request_count` by `status_code` (grouped into 2xx, 4xx, 5xx)
+- `padi.api.request_duration_ms` P50, P95, P99
+- `padi.websocket.connections_active`
+- `padi.db.pool_active_connections`
 - RDS replica lag (AWS CloudWatch)
-- `mathpath.redis.hit_rate`
+- `padi.redis.hit_rate`
 - ElastiCache memory utilization
 
 #### Dashboard 2: Learning Metrics
 
 **Metrics on this dashboard:**
-- `mathpath.session.started` and `mathpath.session.completed` (throughput)
-- `mathpath.question.answered` with `is_correct` tag (accuracy trends)
-- `mathpath.bkt.mastery_achieved` by `skill_code` (mastery leaderboard)
-- `mathpath.assessment.completed` by `proficiency_level` (distribution)
-- `mathpath.session.duration_seconds` histogram (engagement)
+- `padi.session.started` and `padi.session.completed` (throughput)
+- `padi.question.answered` with `is_correct` tag (accuracy trends)
+- `padi.bkt.mastery_achieved` by `skill_code` (mastery leaderboard)
+- `padi.assessment.completed` by `proficiency_level` (distribution)
+- `padi.session.duration_seconds` histogram (engagement)
 - Active students (unique `actor_hash` in analytics_events, last 1 hour)
 - Questions answered today (counter)
 - Average questions per session
@@ -956,11 +956,11 @@ def tag_query_type(conn, clauseelement, multiparams, params, execution_options):
 #### Dashboard 3: Business Metrics
 
 **Metrics on this dashboard:**
-- `mathpath.billing.subscription_created` (new signups, daily)
-- `mathpath.billing.churn` (cancellations, daily)
+- `padi.billing.subscription_created` (new signups, daily)
+- `padi.billing.churn` (cancellations, daily)
 - MRR (calculated: active subscriptions × plan price)
 - Trial conversion rate (subscriptions that went trial → active / total trials)
-- `mathpath.billing.payment_failed` (failed payments, daily)
+- `padi.billing.payment_failed` (failed payments, daily)
 - Active parent accounts (daily active parents)
 - Active student profiles
 - School accounts and student seats utilized
@@ -972,7 +972,7 @@ def tag_query_type(conn, clauseelement, multiparams, params, execution_options):
 - RDS connections, IOPS, storage
 - Redis operations/sec, memory, evictions
 - S3 storage and request costs
-- LLM API spend: daily total by model (`mathpath.llm.cost_cents`)
+- LLM API spend: daily total by model (`padi.llm.cost_cents`)
 - LLM tokens consumed: input vs output by model
 - SQS queue depth and processing rate
 - CloudFront cache hit ratio and bandwidth
@@ -1020,9 +1020,9 @@ async def track_llm_cost(
     cost_cents = calculate_cost_cents(model, input_tokens, output_tokens)
 
     # Emit metrics
-    datadog_client.increment("mathpath.llm.tokens.input", input_tokens, tags=[f"model:{model}", f"op:{operation}"])
-    datadog_client.increment("mathpath.llm.tokens.output", output_tokens, tags=[f"model:{model}", f"op:{operation}"])
-    datadog_client.increment("mathpath.llm.cost_cents", cost_cents, tags=[f"model:{model}", f"op:{operation}"])
+    datadog_client.increment("padi.llm.tokens.input", input_tokens, tags=[f"model:{model}", f"op:{operation}"])
+    datadog_client.increment("padi.llm.tokens.output", output_tokens, tags=[f"model:{model}", f"op:{operation}"])
+    datadog_client.increment("padi.llm.cost_cents", cost_cents, tags=[f"model:{model}", f"op:{operation}"])
 
 
 async def check_daily_budget(redis_client, datadog_client) -> bool:
@@ -1035,13 +1035,13 @@ async def check_daily_budget(redis_client, datadog_client) -> bool:
 
     if daily_spend > DAILY_BUDGET_CENTS * THROTTLE_THRESHOLD:
         # ALERT: Over 2x budget — activate throttling
-        datadog_client.increment("mathpath.llm.budget_exceeded", tags=["severity:critical"])
+        datadog_client.increment("padi.llm.budget_exceeded", tags=["severity:critical"])
         await activate_cost_throttling(redis_client)
         return False
 
     if daily_spend > DAILY_BUDGET_CENTS:
         # WARNING: Over budget but under throttle threshold
-        datadog_client.increment("mathpath.llm.budget_exceeded", tags=["severity:warning"])
+        datadog_client.increment("padi.llm.budget_exceeded", tags=["severity:warning"])
 
     return True
 
@@ -1099,7 +1099,7 @@ async def activate_cost_throttling(redis_client) -> None:
 |---|--------|----------|------------|
 | R1 | Parent denies giving COPPA consent, claims child was enrolled without permission | High | Consent records include: IP address, timestamp, email verification proof, consent method. Records stored in immutable audit log (S3 Object Lock). COPPA consent is re-verified on login if consent record is >12 months old |
 | R2 | School admin denies signing DPA agreement | Medium | DPA signing includes: electronic signature (name, title, email), timestamp, IP address, signed PDF archived in S3 with Object Lock. Email confirmation sent at time of signing |
-| R3 | Disputed billing charge — parent claims they didn't subscribe | Medium | Stripe handles payment disputes. MathPath records: checkout session creation timestamp, IP, user agent. Subscription audit log with all state transitions. Cancellation confirmation email sent immediately |
+| R3 | Disputed billing charge — parent claims they didn't subscribe | Medium | Stripe handles payment disputes. PADI.AI records: checkout session creation timestamp, IP, user agent. Subscription audit log with all state transitions. Cancellation confirmation email sent immediately |
 
 #### Information Disclosure
 
@@ -1125,7 +1125,7 @@ async def activate_cost_throttling(redis_client) -> None:
 |---|--------|----------|------------|
 | E1 | Parent account escalates to teacher/admin role | Critical | Role changes require: admin action + re-authentication. Roles stored in Auth0 with JWT claims. Server-side role verification on every request. No self-service role escalation endpoint |
 | E2 | Teacher accesses student data outside their classrooms | High | PostgreSQL RLS policies enforce classroom scoping. Application layer double-checks classroom membership. Audit log for all student data access |
-| E3 | Clever sync creates admin accounts for non-admin users | Medium | Clever role mapping is explicit: student → STUDENT, teacher → TEACHER. Admin role assignment requires manual approval by district admin in MathPath. No auto-admin from Clever sync |
+| E3 | Clever sync creates admin accounts for non-admin users | Medium | Clever role mapping is explicit: student → STUDENT, teacher → TEACHER. Admin role assignment requires manual approval by district admin in PADI.AI. No auto-admin from Clever sync |
 
 ### 3.2 Security Controls by Layer
 
@@ -1304,7 +1304,7 @@ ALTER SYSTEM SET ssl = on;
 - **JWT validation:** RS256 algorithm, verify `aud` (audience) and `iss` (issuer) on every request against Auth0 tenant.
 - **Session invalidation:** On logout, JWT `jti` claim is added to Redis blocklist with TTL matching token expiry. Every request checks blocklist before processing.
 - **Privilege escalation prevention:** Role changes require re-authentication (Auth0 MFA step-up). Role is verified server-side from JWT claims, never from client-provided data.
-- **COPPA-specific:** Students never have their own login credentials. Students access MathPath through their parent's authenticated session, with the parent selecting a child profile. The API scopes all student data access to the parent's children.
+- **COPPA-specific:** Students never have their own login credentials. Students access PADI.AI through their parent's authenticated session, with the parent selecting a child profile. The API scopes all student data access to the parent's children.
 
 ### 3.3 Vulnerability Management
 
@@ -1347,7 +1347,7 @@ jobs:
     steps:
       - uses: aquasecurity/trivy-action@master
         with:
-          image-ref: mathpath/api:${{ github.sha }}
+          image-ref: padi-ai/api:${{ github.sha }}
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'  # Fail CI on critical/high
@@ -1358,7 +1358,7 @@ jobs:
     steps:
       - uses: zaproxy/action-full-scan@v0.8.0
         with:
-          target: 'https://staging.mathpath.app'
+          target: 'https://staging.padi.ai'
           rules_file_name: '.zap-rules.tsv'
 ```
 
@@ -1762,11 +1762,11 @@ pnpm update --latest            # Update to latest within ranges
 
 | Bucket | Versioning | Lifecycle Policy | Cross-Region |
 |--------|-----------|-----------------|--------------|
-| `mathpath-question-bank` | Enabled | Standard → IA after 90 days | No (can regenerate) |
-| `mathpath-reports` | Enabled | Standard → Glacier after 90 days → Delete after 3 years | No |
-| `mathpath-audit-logs` | Enabled + Object Lock | Standard → Glacier after 90 days → Deep Archive after 2 years | Yes (us-east-1) |
-| `mathpath-dpa-documents` | Enabled + Object Lock | Standard → Glacier after 1 year | Yes (us-east-1) |
-| `mathpath-i18n` | Enabled | Current version only | No |
+| `padi-ai-question-bank` | Enabled | Standard → IA after 90 days | No (can regenerate) |
+| `padi-ai-reports` | Enabled | Standard → Glacier after 90 days → Delete after 3 years | No |
+| `padi-ai-audit-logs` | Enabled + Object Lock | Standard → Glacier after 90 days → Deep Archive after 2 years | Yes (us-east-1) |
+| `padi-ai-dpa-documents` | Enabled + Object Lock | Standard → Glacier after 1 year | Yes (us-east-1) |
+| `padi-ai-i18n` | Enabled | Current version only | No |
 
 **Redis (ElastiCache):**
 
@@ -1810,11 +1810,11 @@ Monthly restore drill (first Monday of each month):
 ### 6.1 Project Context File (CLAUDE.md — Complete)
 
 ```markdown
-# CLAUDE.md — MathPath Oregon
+# CLAUDE.md — PADI.AI
 
 ## Project Overview
 
-MathPath Oregon is an AI-powered adaptive math learning application for Oregon
+PADI.AI is an AI-powered adaptive math learning application for Oregon
 4th graders. It uses Bayesian Knowledge Tracing (BKT) to model each student's
 mastery of Common Core State Standards for Mathematics (CCSS-M), generates
 personalized practice sessions with AI-created questions, and provides an AI
@@ -2227,7 +2227,7 @@ I need to: ───────────────────────
 2. Always use Sonnet (at minimum) for security-sensitive code (auth, billing, COPPA, encryption)
 3. When daily LLM budget is tight: route everything possible to local models, save Sonnet for code review
 4. Question generation is high-volume: use o3-mini (good price-performance for creative tasks)
-5. Monitor `mathpath.llm.cost_cents` daily — if trending over budget, shift more to local models
+5. Monitor `padi.llm.cost_cents` daily — if trending over budget, shift more to local models
 
 ---
 

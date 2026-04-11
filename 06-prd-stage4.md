@@ -1,5 +1,5 @@
 # PRD Stage 4: End-of-Grade Assessment & Teacher/Parent Reporting
-## MathPath Oregon | Version 1.0 | Target Completion: Month 14
+## PADI.AI | Version 1.0 | Target Completion: Month 14
 
 **Document Status:** Draft  
 **Owner:** Product — Assessment & Reporting  
@@ -26,7 +26,7 @@
 
 ### Why Stage 4 Completes the MVP
 
-MathPath Oregon's core value proposition is:
+PADI.AI's core value proposition is:
 
 > *An Oregon 4th grader who may be behind in math can take a diagnostic assessment, receive a personalized AI-powered learning plan, practice adaptively with an AI tutor, be assessed against grade-level standards, and continue improving in a closed remediation loop — all without human tutoring intervention.*
 
@@ -239,7 +239,7 @@ Immediately following assessment completion:
 
 ### FR-16: Remediation Loop
 
-The Remediation Loop is the mechanism that makes MathPath Oregon a continuous improvement system rather than a one-time assessment tool. After each EOG Assessment, the system automatically generates a revised learning plan targeted at remaining gaps.
+The Remediation Loop is the mechanism that makes PADI.AI a continuous improvement system rather than a one-time assessment tool. After each EOG Assessment, the system automatically generates a revised learning plan targeted at remaining gaps.
 
 #### FR-16.1: Revised Learning Plan Generation
 
@@ -318,7 +318,7 @@ The remediation loop continues until:
 Immediately after EOG Assessment completion, parent receives email (FR-20):
 
 ```
-Subject: [Student Name] completed the MathPath Oregon End-of-Grade Assessment
+Subject: [Student Name] completed the PADI.AI End-of-Grade Assessment
 
 Hi [Parent Name],
 
@@ -329,7 +329,7 @@ Hi [Parent Name],
 What this means: [Student Name] is making strong progress and is working toward 
 full grade-level proficiency in Oregon 4th grade math.
 
-What happens next: MathPath Oregon has automatically updated [Student Name]'s 
+What happens next: PADI.AI has automatically updated [Student Name]'s 
 learning plan to focus on the skills where they can improve most:
 • Adding and Subtracting Fractions (4.NF.B.3)
 • Measurement Conversions (4.MD.A.1)
@@ -339,7 +339,7 @@ View the full report: [Link to PDF report]
 
 [Student Name] can continue practicing right away — the updated plan is ready.
 
-The MathPath Oregon Team
+The PADI.AI Team
 ```
 
 ---
@@ -361,7 +361,7 @@ Both versions are generated as PDFs (using `WeasyPrint` or `Puppeteer` HTML-to-P
 
 #### FR-17.2: Student Report Sections
 
-1. **Cover page:** Student name, assessment date, MathPath Oregon logo, Oregon map graphic
+1. **Cover page:** Student name, assessment date, PADI.AI logo, Oregon map graphic
 2. **Your Level:** Large visual indicator of proficiency level (Below Par / Approaching / On Par / Above Par), with friendly description ("You're Approaching! That means you've learned a lot and you're getting close to the top!")
 3. **What You're Great At:** Visual badges for each mastered skill domain (e.g., "Multiplication Master 🏆")
 4. **What You're Working On:** Visual checklist of in-progress skills with encouragement ("You're almost there on Fractions!")
@@ -583,7 +583,7 @@ For the teacher's shared roster, display aggregate insights:
 
 #### FR-20.1: Parent Email Notifications
 
-All emails to parents are sent via **SendGrid** (or AWS SES as fallback). Email templates use responsive HTML with plain-text fallback. From address: `updates@mathpathOregon.com`.
+All emails to parents are sent via **SendGrid** (or AWS SES as fallback). Email templates use responsive HTML with plain-text fallback. From address: `hello@padi.ai`.
 
 **Notification types and triggers:**
 
@@ -602,7 +602,7 @@ All emails to parents are sent via **SendGrid** (or AWS SES as fallback). Email 
 **Weekly Summary Email (template):**
 
 ```
-Subject: Alex's MathPath Oregon Update — Week of [Date]
+Subject: Alex's PADI.AI Update — Week of [Date]
 
 This week Alex:
 • Completed 4 practice sessions (47 minutes total)
@@ -624,12 +624,12 @@ Subject: Alex hasn't practiced in 7 days — here's a quick way to help
 
 Hi Sarah,
 
-We noticed Alex hasn't practiced on MathPath Oregon in 7 days. 
+We noticed Alex hasn't practiced on PADI.AI in 7 days. 
 
 Research shows consistent short sessions (even 10 minutes) are the most 
 effective for building math skills.
 
-💡 Tip: Try adding MathPath Oregon to Alex's after-school routine — 
+💡 Tip: Try adding PADI.AI to Alex's after-school routine — 
 even 2 sessions a week makes a big difference.
 
 [Open Alex's Practice Session]
@@ -983,7 +983,7 @@ GET    /api/v1/students/{student_id}/eog-assessments/eligibility  Check if retak
   "assessment_id": "eog_xyz789",
   "status": "in_progress",
   "items_to_administer_estimate": "40-50",
-  "websocket_url": "wss://api.mathpathorgon.com/ws/eog/eog_xyz789",
+  "websocket_url": "wss://api.padi.ai/ws/eog/eog_xyz789",
   "assessment_token": "at_...",
   "instructions": {
     "title": "End-of-Grade Math Assessment",
@@ -1050,7 +1050,7 @@ POST   /api/v1/students/{student_id}/reports/generate    Manually trigger report
 ```json
 {
   "share_token": "sh_abc123xyz",
-  "share_url": "https://app.mathpathorgon.com/shared/sh_abc123xyz",
+  "share_url": "https://app.padi.ai/shared/sh_abc123xyz",
   "expires_at": "2026-07-02T23:15:00Z",
   "report_type": "parent"
 }
@@ -1243,7 +1243,7 @@ POST   /api/v1/notifications/unsubscribe                 Global email unsubscrib
 **When** the notification job processes (within 5 minutes)  
 **Then**:
 - Parent receives email to their registered email address
-- Email subject: "[Student Name] completed the MathPath Oregon End-of-Grade Assessment"
+- Email subject: "[Student Name] completed the PADI.AI End-of-Grade Assessment"
 - Email body includes: proficiency level, top 3 deficient skills, link to PDF report
 - Email is sent via SendGrid and `notification_log` record shows `status = 'sent'`
 - No email is sent to any student email address

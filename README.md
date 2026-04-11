@@ -1,4 +1,4 @@
-# MathPath Oregon
+# PADI.AI
 
 > AI-powered adaptive math learning for Oregon elementary students (Grades 1–5), with an initial focus on Grade 4.
 
@@ -10,9 +10,9 @@
 
 ## 🎯 Mission
 
-MathPath Oregon closes the math proficiency gap for Oregon elementary students by delivering AI-generated, standards-aligned adaptive instruction — diagnosing exactly where each student is, building personalized learning paths from the ground up, and continuously adapting until mastery is real and measured.
+PADI.AI closes the math proficiency gap for Oregon elementary students by delivering AI-generated, standards-aligned adaptive instruction — diagnosing exactly where each student is, building personalized learning paths from the ground up, and continuously adapting until mastery is real and measured.
 
-Oregon 4th graders score 8 points below the national NAEP average; only 31% reach proficiency. **MathPath targets this gap with**:
+Oregon 4th graders score 8 points below the national NAEP average; only 31% reach proficiency. **PADI.AI targets this gap with**:
 
 1. **Prerequisite gap remediation** — diagnose and fix Grade 3 foundations before Grade 4 content
 2. **Step-level Socratic tutoring** — AI-powered hints that guide students through reasoning (d=0.76 vs. answer-level d=0.30)
@@ -93,8 +93,8 @@ Expected outcome: **15–25 percentage point proficiency improvement** among eng
 
 ### 1. Clone & Install
 ```bash
-git clone git@github.com:<your-org>/mathpath-oregon.git
-cd mathpath-oregon
+git clone git@github.com:<your-org>/padi-ai.git
+cd padi-ai
 
 # Install dependencies
 pnpm install
@@ -188,7 +188,7 @@ See **[ENG-000-foundations.md](ENG-000-foundations.md)** for full ADRs and secur
 
 ## 📊 Pedagogical Hypothesis
 
-MathPath will achieve **15–25pp proficiency improvement** among engaged students (vs. ~5% for existing platforms) because:
+PADI.AI will achieve **15–25pp proficiency improvement** among engaged students (vs. ~5% for existing platforms) because:
 
 | Mechanism | Research | Effect |
 |---|---|---|

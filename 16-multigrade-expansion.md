@@ -1,4 +1,4 @@
-# MathPath Oregon — Multi-Grade Expansion Document
+# PADI.AI — Multi-Grade Expansion Document
 ## PRD & Architecture Plan: Grades 1, 2, 3, and 5
 
 > **Document Version:** 1.0  
@@ -31,7 +31,7 @@
 
 ## 1.1 Overview
 
-MathPath Oregon launched as a Grade 4-only adaptive math platform. The Grade 4 application will be fully built and validated across five development stages spanning approximately 20 months. This document defines the complete product requirements, content architecture, user experience specifications, and technical expansion plan for extending MathPath Oregon to cover **Grades 1, 2, 3, and 5** — encompassing the full Oregon elementary math curriculum from first grade through fifth grade.
+PADI.AI launched as a Grade 4-only adaptive math platform. The Grade 4 application will be fully built and validated across five development stages spanning approximately 20 months. This document defines the complete product requirements, content architecture, user experience specifications, and technical expansion plan for extending PADI.AI to cover **Grades 1, 2, 3, and 5** — encompassing the full Oregon elementary math curriculum from first grade through fifth grade.
 
 The expansion is not a rewrite. It builds directly on the Grade 4 infrastructure: the same standards database schema (with the `grade` field already typed as `SMALLINT`), the same BKT mastery-tracking pipeline (parameterized per grade), the same question generation architecture (with grade-context injected into LLM prompts), and the same design system (extended with grade-band-specific theme tokens). The work is additive, not architectural, with the significant exception of Grade 1 — where pre-literacy design requirements mandate a dedicated TTS integration layer, enlarged touch targets, and interaction patterns that eliminate keyboard input entirely.
 
@@ -105,7 +105,7 @@ This timeline assumes the Grade 4 application is fully built and the team has fu
 
 # 2. Oregon 2021 Math Standards — Complete Catalog
 
-This section is the authoritative standards reference for the MathPath multi-grade expansion. Every standard is listed with its full official text from the 2021 Oregon Math Standards (v5.2), its domain, cluster, an estimated Depth of Knowledge (DOK) level, and the standards count per domain. No standard text has been abbreviated.
+This section is the authoritative standards reference for the PADI.AI multi-grade expansion. Every standard is listed with its full official text from the 2021 Oregon Math Standards (v5.2), its domain, cluster, an estimated Depth of Knowledge (DOK) level, and the standards count per domain. No standard text has been abbreviated.
 
 **DOK Level Key (Webb's Framework):**
 - **DOK 1** — Recall and Reproduction: Identify, recall, recognize, use, measure
@@ -454,7 +454,7 @@ The three critical areas of focus for Grade 5 mathematics, as defined by the Ore
 
 # 3. Prerequisite Relationship Graphs (Per Grade)
 
-The prerequisite relationship graph is the core data structure that powers MathPath's adaptive sequencing. Every edge in this graph represents a pedagogically validated dependency: a student who has not mastered the prerequisite standard should not be presented with the dependent standard in their learning plan. The Grade 4 PRD (FR-2.4) established this pattern with 9 inter-grade edges and approximately 20 intra-grade edges. This section extends that graph to all expansion grades using the same directed edge format.
+The prerequisite relationship graph is the core data structure that powers PADI.AI's adaptive sequencing. Every edge in this graph represents a pedagogically validated dependency: a student who has not mastered the prerequisite standard should not be presented with the dependent standard in their learning plan. The Grade 4 PRD (FR-2.4) established this pattern with 9 inter-grade edges and approximately 20 intra-grade edges. This section extends that graph to all expansion grades using the same directed edge format.
 
 **Edge notation:** `[prerequisite_code] → [dependent_code]  (rationale)`
 
@@ -470,7 +470,7 @@ A directed edge `A → B` means: *"Standard A must be mastered before Standard B
 
 ### Inter-Grade Prerequisites: Kindergarten → Grade 1 (8 edges)
 
-These 8 Kindergarten standards serve as the prerequisite gate for the Grade 1 diagnostic. When a student enters MathPath at Grade 1, the diagnostic samples these K skills alongside Grade 1 content to establish an accurate starting BKT state.
+These 8 Kindergarten standards serve as the prerequisite gate for the Grade 1 diagnostic. When a student enters PADI.AI at Grade 1, the diagnostic samples these K skills alongside Grade 1 content to establish an accurate starting BKT state.
 
 ```
 K.OA.A.2 → 1.OA.A.1  (HARD — add/subtract within 10 is the foundation for extending to within 20; without K.OA.A.2, 1.OA.A.1 problems are inaccessible)
@@ -2810,7 +2810,7 @@ ALTER TABLE standards ADD COLUMN parent_description TEXT;
 
 ## 7.7 Teacher Dashboard: Multi-Grade Classroom Support
 
-The teacher dashboard (Stage 5 of the existing product plan) requires multi-grade support from the moment it launches, since schools will have MathPath deployed across multiple grade levels simultaneously.
+The teacher dashboard (Stage 5 of the existing product plan) requires multi-grade support from the moment it launches, since schools will have PADI.AI deployed across multiple grade levels simultaneously.
 
 ### Class-Level Multi-Grade View
 
@@ -3197,7 +3197,7 @@ The existing product plan includes Spanish (Español) localization for Stage 5. 
 
 ## 9.4 Grade Placement Assessment
 
-A student newly enrolling in MathPath may not know their appropriate grade level — or may be enrolled in a grade that doesn't match their actual skill level. The grade placement assessment is a short (12–15 item) adaptive assessment that spans two adjacent grade levels and recommends the grade at which the student should begin.
+A student newly enrolling in PADI.AI may not know their appropriate grade level — or may be enrolled in a grade that doesn't match their actual skill level. The grade placement assessment is a short (12–15 item) adaptive assessment that spans two adjacent grade levels and recommends the grade at which the student should begin.
 
 ### Placement Assessment Design
 
@@ -3226,7 +3226,7 @@ The placement assessment uses the same BKT diagnostic engine as the grade-level 
 
 # 10. Appendix: Kindergarten Standards Reference
 
-This appendix provides a complete listing of all Kindergarten Oregon 2021 Math Standards. These standards serve as the prerequisite pool for Grade 1 diagnostic assessment and remediation. Eight of these standards are loaded into the MathPath database as Grade 1 prerequisite standards (flagged `is_prerequisite = TRUE`, `grade = 0`). The full 23-standard listing is provided here for reference and for future Kindergarten product planning.
+This appendix provides a complete listing of all Kindergarten Oregon 2021 Math Standards. These standards serve as the prerequisite pool for Grade 1 diagnostic assessment and remediation. Eight of these standards are loaded into the PADI.AI database as Grade 1 prerequisite standards (flagged `is_prerequisite = TRUE`, `grade = 0`). The full 23-standard listing is provided here for reference and for future Kindergarten product planning.
 
 **Kindergarten Overview — Critical Areas of Focus:**
 Kindergarten establishes the entire number sense foundation. The critical areas are: (1) representing, relating, and operating on whole numbers in a concrete setting — with objects and in authentic contexts; (2) describing shapes and space. Much of the Kindergarten curriculum focuses on developing deep understanding of counting and cardinality — the connection between quantities and the numbers that name them — rather than computation. The NCC (Numeric Reasoning: Counting and Cardinality) domain is unique to Kindergarten and has no analog in Grades 1–5.
@@ -3304,9 +3304,9 @@ Kindergarten establishes the entire number sense foundation. The critical areas 
 
 ## Kindergarten → Grade 1 Prerequisite Mapping
 
-Of the 23 Kindergarten standards, 8 are designated as Grade 1 prerequisites and loaded into the MathPath database. The remaining 15 are reference-only at this stage. The 8 loaded prerequisites are:
+Of the 23 Kindergarten standards, 8 are designated as Grade 1 prerequisites and loaded into the PADI.AI database. The remaining 15 are reference-only at this stage. The 8 loaded prerequisites are:
 
-| Kindergarten Standard | Loads Into MathPath As | Primary Grade 1 Standard Gated |
+| Kindergarten Standard | Loads Into PADI.AI As | Primary Grade 1 Standard Gated |
 |-----------------------|----------------------|--------------------------------|
 | K.OA.A.2 | Grade 0 prerequisite | 1.OA.A.1 (add/subtract within 20) |
 | K.OA.A.5 | Grade 0 prerequisite | 1.OA.C.6 (fluency within 10) |
@@ -3321,7 +3321,7 @@ Of the 23 Kindergarten standards, 8 are designated as Grade 1 prerequisites and 
 
 ## Kindergarten as Future Product Tier
 
-When MathPath expands to include Kindergarten as a full product offering (not just a prerequisite pool), the following additional work is required beyond inserting the remaining 15 standards:
+When PADI.AI expands to include Kindergarten as a full product offering (not just a prerequisite pool), the following additional work is required beyond inserting the remaining 15 standards:
 
 1. **NCC domain support**: The Counting and Cardinality domain has no analog in Grades 1–5. It requires entirely new question formats: oral counting (microphone input or tap-to-count), object counting with drag-and-match, number-to-quantity pairing. These are substantially different from any existing component.
 2. **Age-appropriate design (ages 5–6)**: Kindergarteners have larger fine-motor variability than first graders. Touch targets should be 72px minimum. Sessions should be 8–10 minutes maximum. All interactions must be audio-first with no reading required whatsoever.
@@ -3338,4 +3338,4 @@ When MathPath expands to include Kindergarten as a full product offering (not ju
 
 ---
 
-*End of Document — MathPath Oregon Multi-Grade Expansion (Grades 1, 2, 3, 5)*
+*End of Document — PADI.AI Multi-Grade Expansion (Grades 1, 2, 3, 5)*

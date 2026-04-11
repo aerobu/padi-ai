@@ -1,4 +1,4 @@
-# MathPath Oregon — Claude Code Skills & Plugins Specification
+# PADI.AI — Claude Code Skills & Plugins Specification
 
 ## Document 17 | Version 1.0 | April 2026
 
@@ -35,9 +35,9 @@
 
 ### 1.1 Purpose
 
-This document defines the complete Claude Code customization layer for MathPath Oregon — an AI-powered adaptive math learning platform serving Oregon elementary students (Grades 1–5). Claude Code is the primary development environment for this project, running on an M4 Max MacBook Pro with 64 GB of unified memory. Every line of code, every test, every deployment, and every design decision flows through Claude Code sessions.
+This document defines the complete Claude Code customization layer for PADI.AI — an AI-powered adaptive math learning platform serving Oregon elementary students (Grades 1–5). Claude Code is the primary development environment for this project, running on an M4 Max MacBook Pro with 64 GB of unified memory. Every line of code, every test, every deployment, and every design decision flows through Claude Code sessions.
 
-Without intentional customization, Claude Code operates as a general-purpose coding assistant. It generates syntactically correct code but lacks knowledge of MathPath's architectural conventions, design system tokens, Oregon math standards, COPPA compliance requirements, BKT model patterns, or the 5-stage SDLC lifecycle that governs development. This document transforms Claude Code from a general assistant into a MathPath-aware development partner through six complementary mechanisms:
+Without intentional customization, Claude Code operates as a general-purpose coding assistant. It generates syntactically correct code but lacks knowledge of PADI.AI's architectural conventions, design system tokens, Oregon math standards, COPPA compliance requirements, BKT model patterns, or the 5-stage SDLC lifecycle that governs development. This document transforms Claude Code from a general assistant into a PADI.AI-aware development partner through six complementary mechanisms:
 
 1. **CLAUDE.md** — The root context file that Claude reads at session start, providing project overview, tech stack, essential commands, and pointers to deeper context.
 2. **Modular Rule Files** (`.claude/rules/*.md`) — Path-scoped instructions that auto-load when Claude edits files matching specific glob patterns, enforcing domain-specific conventions without consuming context on unrelated tasks.
@@ -50,7 +50,7 @@ Together, these six mechanisms encode approximately 100 hours of configuration w
 
 ### 1.2 Scope
 
-This specification covers every configuration file, skill definition, hook script, slash command, subagent definition, and MCP server integration required to operate Claude Code effectively on the MathPath Oregon monorepo. It is organized as a reference document — each section is self-contained and can be consulted independently during implementation.
+This specification covers every configuration file, skill definition, hook script, slash command, subagent definition, and MCP server integration required to operate Claude Code effectively on the PADI.AI monorepo. It is organized as a reference document — each section is self-contained and can be consulted independently during implementation.
 
 ### 1.3 Key Metrics
 
@@ -71,7 +71,7 @@ This specification covers every configuration file, skill definition, hook scrip
 | Document | Relationship to This Document |
 |----------|-------------------------------|
 | ENG-000 (Foundations) | Provides repo structure, coding standards, and ADRs that rule files and skills enforce |
-| Doc 09 (Design System) | Provides design tokens, component specs, and accessibility standards embedded in the `mathpath-design-tokens` and `mathpath-component-library` skills |
+| Doc 09 (Design System) | Provides design tokens, component specs, and accessibility standards embedded in the `padi-ai-design-tokens` and `padi-ai-component-library` skills |
 | LC-001–LC-005 (Lifecycle Stages) | Provide the SDLC phases that the `sprint-lifecycle` skill enforces |
 | OPS-000 (Cross-Cutting Ops) | Provides MLOps, FinOps, SecOps, and DevSecOps standards that hooks and subagents validate |
 | Doc 16 (Multi-Grade Expansion) | Provides grade-specific UI requirements and Oregon standards that the `grade-specific-patterns` and `oregon-standards-validator` skills reference |
@@ -178,9 +178,9 @@ The 80/20 principle applies: 80% of context budget (160K tokens) remains availab
 
 ### 2.3 Skill Types
 
-Following the Claude Code community classification, MathPath skills fall into two categories:
+Following the Claude Code community classification, PADI.AI skills fall into two categories:
 
-| Type | Definition | MathPath Examples |
+| Type | Definition | PADI.AI Examples |
 |------|-----------|-------------------|
 | **Capability Uplift** | Teaches Claude something it cannot do natively — domain-specific knowledge, specialized algorithms, or external tool integration | BKT model patterns, LangGraph agent patterns, Oregon standards validation, grade-specific UI adaptation |
 | **Encoded Preference** | Encodes project-specific conventions that Claude could discover but should not have to re-learn each session — coding standards, design tokens, testing practices, deployment checklists | Design tokens, component library patterns, test coverage requirements, API contract enforcement, architecture boundaries |
@@ -190,7 +190,7 @@ Following the Claude Code community classification, MathPath skills fall into tw
 All Claude Code configuration files reside within the `.claude/` directory at the monorepo root, with the exception of `CLAUDE.md` which sits at the repository root per convention:
 
 ```
-mathpath/
+padi-ai/
 ├── CLAUDE.md                           # Root context file (~148 lines)
 ├── .claude/
 │   ├── settings.json                   # Hooks, permissions, project settings
@@ -205,11 +205,11 @@ mathpath/
 │   │   ├── database-rules.md
 │   │   └── coppa-rules.md
 │   ├── skills/                         # On-demand skill definitions
-│   │   ├── mathpath-design-tokens/
+│   │   ├── padi-ai-design-tokens/
 │   │   │   └── SKILL.md
-│   │   ├── mathpath-component-library/
+│   │   ├── padi-ai-component-library/
 │   │   │   └── SKILL.md
-│   │   ├── mathpath-test-coverage/
+│   │   ├── padi-ai-test-coverage/
 │   │   │   └── SKILL.md
 │   │   ├── bdd-scenario-writer/
 │   │   │   └── SKILL.md
@@ -261,9 +261,9 @@ The following table catalogs all 16 skills with their classification, priority, 
 
 | # | Skill Name | Category | Build/Buy/Customize | Priority | Stages | Description | Effort (hrs) |
 |---|-----------|----------|-------------------|----------|--------|-------------|--------------|
-| 1 | `mathpath-design-tokens` | Encoded Preference | Build | P0 | 1–5 | Enforces color, typography, spacing, elevation, border radius, and motion tokens from Doc 09. Validates that every component uses semantic tokens, never raw hex values or pixel literals. | 8 |
-| 2 | `mathpath-component-library` | Encoded Preference | Build | P0 | 1–5 | Enforces Atomic Design component patterns (atoms, molecules, organisms, templates) with MathPath-specific math UI components (FractionBuilder, NumberLine, MathDisplay). | 6 |
-| 3 | `mathpath-test-coverage` | Encoded Preference | Build | P0 | 1–5 | Enforces the testing pyramid — unit (70%), integration (20%), E2E (10%). Validates coverage gates: 80% line coverage for services, 90% for BKT engine, 100% for COPPA consent flows. | 6 |
+| 1 | `padi-ai-design-tokens` | Encoded Preference | Build | P0 | 1–5 | Enforces color, typography, spacing, elevation, border radius, and motion tokens from Doc 09. Validates that every component uses semantic tokens, never raw hex values or pixel literals. | 8 |
+| 2 | `padi-ai-component-library` | Encoded Preference | Build | P0 | 1–5 | Enforces Atomic Design component patterns (atoms, molecules, organisms, templates) with PADI.AI-specific math UI components (FractionBuilder, NumberLine, MathDisplay). | 6 |
+| 3 | `padi-ai-test-coverage` | Encoded Preference | Build | P0 | 1–5 | Enforces the testing pyramid — unit (70%), integration (20%), E2E (10%). Validates coverage gates: 80% line coverage for services, 90% for BKT engine, 100% for COPPA consent flows. | 6 |
 | 4 | `bdd-scenario-writer` | Capability Uplift | Build | P1 | 1–5 | Generates Gherkin `.feature` files from user story acceptance criteria defined in LC-001 through LC-005. Produces scenarios with Given/When/Then steps mapped to Playwright step definitions. | 5 |
 | 5 | `security-coppa-compliance` | Capability Uplift | Build | P0 | 1–5 | Validates COPPA compliance (parental consent, data minimization, PII encryption, retention limits) and OWASP API Security Top 10. Blocks code that collects child PII without consent checks. | 8 |
 | 6 | `sprint-lifecycle` | Encoded Preference | Build | P0 | 1–5 | Enforces the 7-phase SDLC gate: PRD → Design → Architecture → Implement → Test → QA → Ops. Validates that each phase's entry/exit criteria are met before proceeding. | 7 |
@@ -290,10 +290,10 @@ The following table catalogs all 16 skills with their classification, priority, 
 
 ## 4. CLAUDE.md Template
 
-The following is the complete, ready-to-use root `CLAUDE.md` file for the MathPath Oregon monorepo. It follows the Claude Code best practice of staying under 200 lines and using progressive disclosure to reference rule files and skills for domain-specific depth.
+The following is the complete, ready-to-use root `CLAUDE.md` file for the PADI.AI monorepo. It follows the Claude Code best practice of staying under 200 lines and using progressive disclosure to reference rule files and skills for domain-specific depth.
 
 ```markdown
-# MathPath Oregon
+# PADI.AI
 
 AI-powered adaptive math learning platform for Oregon elementary students (Grades 1–5).
 Built with Bayesian Knowledge Tracing (BKT) and LLM tutoring. Targeting COPPA compliance.
@@ -344,7 +344,7 @@ make deploy-prod                  # Deploy to production (requires approval)
 ## Repository Structure
 
 ```
-mathpath/
+padi-ai/
 ├── apps/web/                  # Next.js 15 frontend (App Router)
 │   └── src/app/, components/, hooks/, lib/, stores/, styles/
 ├── apps/api/                  # FastAPI backend
@@ -388,7 +388,7 @@ mathpath/
 
 ## Stage Awareness
 
-MathPath is built in 5 stages over 20 months. Always check which stage is active:
+PADI.AI is built in 5 stages over 20 months. Always check which stage is active:
 - **Stage 1** (Mo 1–3): Standards DB & Diagnostic Assessment
 - **Stage 2** (Mo 4–6): Learning Plan Generator + AI Question Gen
 - **Stage 3** (Mo 7–10): Adaptive Practice Engine + LangGraph Tutoring
@@ -412,8 +412,8 @@ Domain-specific rules auto-load based on the files being edited:
 - COPPA compliance → `.claude/rules/coppa-rules.md`
 
 Skills provide deep expertise on demand. Key skills:
-- `mathpath-design-tokens` — Color, typography, spacing token enforcement
-- `mathpath-test-coverage` — Testing pyramid and coverage gates
+- `padi-ai-design-tokens` — Color, typography, spacing token enforcement
+- `padi-ai-test-coverage` — Testing pyramid and coverage gates
 - `security-coppa-compliance` — COPPA + OWASP compliance checks
 - `sprint-lifecycle` — 7-phase SDLC gate enforcement
 - `bkt-model-patterns` — pyBKT implementation patterns
@@ -441,7 +441,7 @@ Rule files live in `.claude/rules/` and auto-load based on `globs:` frontmatter 
 globs: apps/web/**/*.tsx, apps/web/**/*.ts, packages/ui/**/*.tsx, packages/math-renderer/**/*.tsx
 ---
 
-# Frontend Rules — MathPath Oregon
+# Frontend Rules — PADI.AI
 
 ## Framework
 - React 19 with Next.js 15 App Router. Use Server Components by default; add "use client" only when needed (hooks, event handlers, browser APIs).
@@ -461,7 +461,7 @@ globs: apps/web/**/*.tsx, apps/web/**/*.ts, packages/ui/**/*.tsx, packages/math-
 
 ## Imports
 - Absolute imports via `@/` alias for `apps/web/src/`.
-- Internal packages via `@mathpath/ui`, `@mathpath/math-renderer`, `@mathpath/types`.
+- Internal packages via `@padi-ai/ui`, `@padi-ai/math-renderer`, `@padi-ai/types`.
 - Never import from `apps/api/` — frontend and backend communicate only via HTTP.
 
 ## Naming
@@ -472,8 +472,8 @@ globs: apps/web/**/*.tsx, apps/web/**/*.ts, packages/ui/**/*.tsx, packages/math-
 - Test files: `ComponentName.test.tsx` colocated in component folder.
 
 ## Math Rendering
-- All mathematical expressions use KaTeX via `@mathpath/math-renderer`.
-- KaTeX components must be dynamically imported: `const MathDisplay = dynamic(() => import("@mathpath/math-renderer").then(m => m.MathDisplay), { ssr: false })`.
+- All mathematical expressions use KaTeX via `@padi-ai/math-renderer`.
+- KaTeX components must be dynamically imported: `const MathDisplay = dynamic(() => import("@padi-ai/math-renderer").then(m => m.MathDisplay), { ssr: false })`.
 - Use `type-math-display` (28px) for block equations, `type-math-inline` (18px) for inline.
 - Student input fields for numbers use `type-math-input` (24px JetBrains Mono).
 
@@ -491,7 +491,7 @@ globs: apps/web/**/*.tsx, apps/web/**/*.ts, packages/ui/**/*.tsx, packages/math-
 globs: apps/api/**/*.py, services/**/*.py
 ---
 
-# Backend Rules — MathPath Oregon
+# Backend Rules — PADI.AI
 
 ## Framework
 - FastAPI 0.115+ with async everywhere. Every route handler is `async def`.
@@ -513,7 +513,7 @@ globs: apps/api/**/*.py, services/**/*.py
 - LLM calls via `await llm_client.ainvoke()` — never synchronous `.invoke()`.
 
 ## Error Handling
-- Custom exception hierarchy in `core/exceptions.py`. All exceptions extend `MathPathError`.
+- Custom exception hierarchy in `core/exceptions.py`. All exceptions extend `PadiAiError`.
 - Route handlers catch service exceptions and map to HTTP status codes via exception handlers.
 - Never return raw 500 errors. Always structured `ErrorResponse(detail=..., code=...)`.
 - Log exceptions with `structlog` — include `request_id`, `user_id`, `student_id` in context.
@@ -543,7 +543,7 @@ globs: apps/api/**/*.py, services/**/*.py
 globs: services/agent-engine/**/*.py, services/question-generator/**/*.py
 ---
 
-# Agent Rules — MathPath Oregon
+# Agent Rules — PADI.AI
 
 ## Framework
 - LangGraph 0.2 for all agent workflows. Graphs defined in `services/agent-engine/src/graphs/`.
@@ -597,7 +597,7 @@ globs: services/agent-engine/**/*.py, services/question-generator/**/*.py
 globs: **/tests/**/*.py, **/tests/**/*.ts, **/tests/**/*.tsx, **/*.test.ts, **/*.test.tsx, **/*.spec.ts, **/features/**/*.feature
 ---
 
-# Test Rules — MathPath Oregon
+# Test Rules — PADI.AI
 
 ## Testing Pyramid
 - **Unit tests (70%):** Isolated component/function tests. Mock all dependencies.
@@ -651,14 +651,14 @@ globs: **/tests/**/*.py, **/tests/**/*.ts, **/tests/**/*.tsx, **/*.test.ts, **/*
 globs: infrastructure/**/*.tf, infrastructure/**/*.yml, infrastructure/**/*.yaml, .github/workflows/**/*.yml, infrastructure/docker/**
 ---
 
-# Infrastructure Rules — MathPath Oregon
+# Infrastructure Rules — PADI.AI
 
 ## Terraform
 - Terraform 1.7+ with AWS provider 5.x.
 - All resources in modules: `infrastructure/terraform/modules/{ecs,rds,elasticache,s3,cloudfront,secrets,vpc,monitoring}`.
 - Environment-specific configs in `infrastructure/terraform/environments/{staging,production}/`.
 - Remote state in S3 + DynamoDB lock table. Never local state in production.
-- Every resource must have `tags = { Project = "mathpath", Environment = var.environment, ManagedBy = "terraform" }`.
+- Every resource must have `tags = { Project = "padi-ai", Environment = var.environment, ManagedBy = "terraform" }`.
 - No inline policies. Use IAM policy documents and attachments.
 
 ## Docker
@@ -694,14 +694,14 @@ globs: infrastructure/**/*.tf, infrastructure/**/*.yml, infrastructure/**/*.yaml
 globs: packages/ui/**/*.tsx, packages/ui/**/*.ts, packages/ui/**/*.css, packages/math-renderer/**/*.tsx, apps/web/src/styles/**/*.css, apps/web/src/components/**/*.tsx
 ---
 
-# Design System Rules — MathPath Oregon
+# Design System Rules — PADI.AI
 
 ## Token Enforcement
 - ALWAYS use semantic design tokens. NEVER use raw hex values (`#4CAF50`), pixel literals (`16px`), or hardcoded font names.
 - Color tokens: `color-bg-primary`, `color-text-body`, `color-accent-primary`, etc. (see Doc 09 §4.1).
 - Spacing tokens: `space-1` (4px) through `space-13` (96px). All spacing is multiples of 4px.
 - Typography tokens: `type-body-lg` (18px student), `type-display-md` (24px), `type-math-input` (24px JetBrains Mono).
-- Load skill `mathpath-design-tokens` for the complete token reference.
+- Load skill `padi-ai-design-tokens` for the complete token reference.
 
 ## Color Rules
 - No red for wrong answers. Use gentle shake animation + neutral feedback color.
@@ -745,7 +745,7 @@ globs: packages/ui/**/*.tsx, packages/ui/**/*.ts, packages/ui/**/*.css, packages
 globs: apps/api/src/db/**/*.py, apps/api/alembic/**/*.py, apps/api/src/repository/**/*.py, services/bkt-engine/src/repository/**/*.py
 ---
 
-# Database Rules — MathPath Oregon
+# Database Rules — PADI.AI
 
 ## PostgreSQL 17
 - Extensions in use: pgvector 0.7, pgcrypto, ltree, pg_trgm.
@@ -797,7 +797,7 @@ globs: apps/api/src/db/**/*.py, apps/api/alembic/**/*.py, apps/api/src/repositor
 globs: apps/api/src/core/security.py, apps/api/src/service/consent_service.py, apps/api/src/api/v1/auth.py, apps/api/src/api/v1/parents.py, apps/api/src/db/tables/consent.py, apps/api/src/db/tables/audit_log.py, apps/web/src/app/(auth)/**/*.tsx, apps/web/src/app/(onboarding)/**/*.tsx
 ---
 
-# COPPA Compliance Rules — MathPath Oregon
+# COPPA Compliance Rules — PADI.AI
 
 ## Core COPPA Requirements (FTC 2025 Rule Update)
 - No PII collection from children under 13 without verifiable parental consent.
@@ -842,20 +842,20 @@ Each skill is defined in a `SKILL.md` file within `.claude/skills/<skill-name>/`
 
 ---
 
-### 6.1 mathpath-design-tokens
+### 6.1 padi-ai-design-tokens
 
-**File:** `.claude/skills/mathpath-design-tokens/SKILL.md`
+**File:** `.claude/skills/padi-ai-design-tokens/SKILL.md`
 
 ```markdown
 ---
-name: mathpath-design-tokens
-description: "Enforces MathPath Oregon design tokens for color, typography, spacing, elevation, border radius, and motion. Validates that all UI code uses semantic tokens from Doc 09 — never raw hex values, pixel literals, or hardcoded font names. Activates when editing .tsx, .css, or Tailwind config files."
+name: padi-ai-design-tokens
+description: "Enforces PADI.AI design tokens for color, typography, spacing, elevation, border radius, and motion. Validates that all UI code uses semantic tokens from Doc 09 — never raw hex values, pixel literals, or hardcoded font names. Activates when editing .tsx, .css, or Tailwind config files."
 allowed-tools: Read Grep Edit Write Bash
 ---
 
-# MathPath Design Token Enforcement
+# PADI.AI Design Token Enforcement
 
-When generating or editing UI code for MathPath Oregon, enforce these design tokens from the
+When generating or editing UI code for PADI.AI, enforce these design tokens from the
 UI/UX Design System (Doc 09). Every visual property must reference a semantic token — never a
 raw value.
 
@@ -1000,18 +1000,18 @@ When reviewing or generating code, flag these violations:
 
 ---
 
-### 6.2 mathpath-component-library
+### 6.2 padi-ai-component-library
 
-**File:** `.claude/skills/mathpath-component-library/SKILL.md`
+**File:** `.claude/skills/padi-ai-component-library/SKILL.md`
 
 ```markdown
 ---
-name: mathpath-component-library
-description: "Enforces Atomic Design component patterns for MathPath Oregon. Provides templates for atoms (packages/ui/), molecules, organisms, and templates. Includes math-specific UI component patterns: FractionBuilder, NumberLine, MathDisplay, MathInput."
+name: padi-ai-component-library
+description: "Enforces Atomic Design component patterns for PADI.AI. Provides templates for atoms (packages/ui/), molecules, organisms, and templates. Includes math-specific UI component patterns: FractionBuilder, NumberLine, MathDisplay, MathInput."
 allowed-tools: Read Grep Edit Write
 ---
 
-# MathPath Component Library Patterns
+# PADI.AI Component Library Patterns
 
 ## Atomic Design Hierarchy
 
@@ -1136,18 +1136,18 @@ Interactive number line with snap-to-value functionality.
 
 ---
 
-### 6.3 mathpath-test-coverage
+### 6.3 padi-ai-test-coverage
 
-**File:** `.claude/skills/mathpath-test-coverage/SKILL.md`
+**File:** `.claude/skills/padi-ai-test-coverage/SKILL.md`
 
 ```markdown
 ---
-name: mathpath-test-coverage
-description: "Enforces the MathPath Oregon testing pyramid and coverage gates. Validates unit (70%), integration (20%), and E2E (10%) test distribution. Checks coverage thresholds: 80% services, 90% BKT, 100% COPPA. Provides test patterns for Vitest, pytest, and Playwright."
+name: padi-ai-test-coverage
+description: "Enforces the PADI.AI testing pyramid and coverage gates. Validates unit (70%), integration (20%), and E2E (10%) test distribution. Checks coverage thresholds: 80% services, 90% BKT, 100% COPPA. Provides test patterns for Vitest, pytest, and Playwright."
 allowed-tools: Read Grep Bash
 ---
 
-# MathPath Test Coverage Enforcement
+# PADI.AI Test Coverage Enforcement
 
 ## Testing Pyramid Requirements
 
@@ -1266,14 +1266,14 @@ The following must have 100% coverage:
 ```markdown
 ---
 name: bdd-scenario-writer
-description: "Generates Gherkin .feature files from user story acceptance criteria in MathPath lifecycle documents (LC-001 through LC-005). Maps Given/When/Then steps to Playwright step definitions. Activates when creating test scenarios or implementing user stories."
+description: "Generates Gherkin .feature files from user story acceptance criteria in PADI.AI lifecycle documents (LC-001 through LC-005). Maps Given/When/Then steps to Playwright step definitions. Activates when creating test scenarios or implementing user stories."
 allowed-tools: Read Grep Write
 ---
 
 # BDD Scenario Writer
 
 ## Purpose
-Convert user story acceptance criteria from MathPath lifecycle documents into executable
+Convert user story acceptance criteria from PADI.AI lifecycle documents into executable
 Gherkin scenarios. Each acceptance criterion becomes at least one scenario. Complex criteria
 with multiple conditions generate scenario outlines with data tables.
 
@@ -1291,9 +1291,9 @@ Feature files go in `apps/api/tests/features/` (backend) or `apps/web/tests/feat
 # File: apps/api/tests/features/diagnostic_assessment.feature
 
 Feature: Diagnostic Assessment
-  As a student starting MathPath Oregon
+  As a student starting PADI.AI
   I want to complete a diagnostic assessment
-  So that MathPath can identify my math strengths and gaps
+  So that PADI.AI can identify my math strengths and gaps
 
   Background:
     Given a parent account with active COPPA consent
@@ -1381,7 +1381,7 @@ async def start_diagnostic(client, parent_with_consent, student_name):
 ```markdown
 ---
 name: security-coppa-compliance
-description: "Validates COPPA compliance and OWASP API Security Top 10 for MathPath Oregon. Checks for PII exposure, missing consent guards, data minimization violations, and common API security vulnerabilities. Critical for a children's education platform. Blocks code that collects child PII without consent checks."
+description: "Validates COPPA compliance and OWASP API Security Top 10 for PADI.AI. Checks for PII exposure, missing consent guards, data minimization violations, and common API security vulnerabilities. Critical for a children's education platform. Blocks code that collects child PII without consent checks."
 allowed-tools: Read Grep Bash Edit
 ---
 
@@ -1431,7 +1431,7 @@ grep -rn "Column.*String" apps/api/src/db/tables/ | grep -v "encrypted\|hash\|_i
 
 ## OWASP API Security Top 10 Checks
 
-| # | Vulnerability | MathPath Defense | Verification |
+| # | Vulnerability | PADI.AI Defense | Verification |
 |---|--------------|-----------------|-------------|
 | API1 | Broken Object Level Authorization | Ownership check in every repository query: `WHERE student.parent_id = current_user.id` | Review repo queries |
 | API2 | Broken Authentication | Auth0 JWT with RS256 + JWKS rotation. Token refresh in secure httpOnly cookies | Check middleware |
@@ -1463,7 +1463,7 @@ All LLM-generated content shown to students must pass through the content safety
 ```markdown
 ---
 name: sprint-lifecycle
-description: "Enforces the 7-phase SDLC gate for MathPath Oregon: PRD → Design → Architecture → Implement → Test → QA → Ops. Validates entry/exit criteria for each phase. Prevents skipping phases. Maps to the 5-stage development plan (Months 1–20)."
+description: "Enforces the 7-phase SDLC gate for PADI.AI: PRD → Design → Architecture → Implement → Test → QA → Ops. Validates entry/exit criteria for each phase. Prevents skipping phases. Maps to the 5-stage development plan (Months 1–20)."
 disable-model-invocation: true
 allowed-tools: Read Grep
 ---
@@ -1472,7 +1472,7 @@ allowed-tools: Read Grep
 
 ## The 7-Phase SDLC Model
 
-Every feature in MathPath follows this lifecycle. Phases are sequential gates — a feature
+Every feature in PADI.AI follows this lifecycle. Phases are sequential gates — a feature
 cannot advance to the next phase until the current phase's exit criteria are met.
 
 ```
@@ -1590,7 +1590,7 @@ When implementing a feature:
 ```markdown
 ---
 name: user-story-tracker
-description: "Tracks implementation progress against user stories from MathPath lifecycle documents (LC-001 through LC-005). Maps code changes to story acceptance criteria and reports completion status. Use with /custom:story-status command."
+description: "Tracks implementation progress against user stories from PADI.AI lifecycle documents (LC-001 through LC-005). Maps code changes to story acceptance criteria and reports completion status. Use with /custom:story-status command."
 disable-model-invocation: true
 allowed-tools: Read Grep
 ---
@@ -1763,7 +1763,7 @@ echo "=== Architecture check complete ==="
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|
-| TS packages | `@mathpath/<name>` | `@mathpath/ui`, `@mathpath/types` |
+| TS packages | `@padi-ai/<name>` | `@padi-ai/ui`, `@padi-ai/types` |
 | Python services | `services/<name>/` | `services/bkt-engine/` |
 | API routes | `/api/v1/<resource>` | `/api/v1/assessments` |
 | DB tables | snake_case plural | `assessment_responses` |
@@ -1777,15 +1777,15 @@ echo "=== Architecture check complete ==="
 ```markdown
 ---
 name: bkt-model-patterns
-description: "Provides pyBKT implementation patterns for MathPath Oregon: parameter initialization from research baselines, Roster API usage, mastery threshold configuration, calibration routines, and integration with the diagnostic question selection engine. Domain-specific knowledge for Bayesian Knowledge Tracing in educational technology."
+description: "Provides pyBKT implementation patterns for PADI.AI: parameter initialization from research baselines, Roster API usage, mastery threshold configuration, calibration routines, and integration with the diagnostic question selection engine. Domain-specific knowledge for Bayesian Knowledge Tracing in educational technology."
 allowed-tools: Read Grep Write Edit
 ---
 
-# BKT Model Patterns for MathPath Oregon
+# BKT Model Patterns for PADI.AI
 
 ## Overview
 Bayesian Knowledge Tracing (BKT) estimates the probability that a student has mastered a skill
-based on their sequence of correct/incorrect responses. MathPath uses pyBKT 1.4 as the core
+based on their sequence of correct/incorrect responses. PADI.AI uses pyBKT 1.4 as the core
 library with custom extensions for per-student priors, real-time mastery updates, and
 integration with the question selection engine.
 
@@ -1904,7 +1904,7 @@ MIN_OBSERVATIONS = {
 from pyBKT.models import Model
 
 def create_bkt_model(skill_params: dict) -> Model:
-    """Create a pyBKT model with MathPath parameters."""
+    """Create a pyBKT model with PADI.AI parameters."""
     model = Model(seed=42, num_fits=5)
     model.coef_ = {
         "default": {
@@ -2002,15 +2002,15 @@ def select_difficulty(p_mastery: float) -> int:
 ```markdown
 ---
 name: langgraph-agent-patterns
-description: "Multi-agent orchestration patterns for LangGraph 0.2 in MathPath Oregon. Covers graph definition, TypedDict state schemas, node implementations, conditional edges, tool definitions, checkpointing, and LLM provider abstraction. Used for tutoring, diagnostic, and learning plan agent workflows."
+description: "Multi-agent orchestration patterns for LangGraph 0.2 in PADI.AI. Covers graph definition, TypedDict state schemas, node implementations, conditional edges, tool definitions, checkpointing, and LLM provider abstraction. Used for tutoring, diagnostic, and learning plan agent workflows."
 allowed-tools: Read Grep Write Edit
 ---
 
-# LangGraph Agent Patterns for MathPath Oregon
+# LangGraph Agent Patterns for PADI.AI
 
 ## Agent Architecture
 
-MathPath uses three primary LangGraph graphs:
+PADI.AI uses three primary LangGraph graphs:
 
 | Graph | Location | LLM | Purpose | Stage |
 |-------|----------|-----|---------|-------|
@@ -2440,7 +2440,7 @@ echo "=== Standards validation complete ==="
 ```markdown
 ---
 name: grade-specific-patterns
-description: "Age-appropriate UI adaptation rules for MathPath Oregon Grades 1–5. Covers touch target sizes, font minimums, TTS requirements, interaction modalities, session length caps, and visual complexity per grade band. Based on Doc 16 multi-grade expansion requirements."
+description: "Age-appropriate UI adaptation rules for PADI.AI Grades 1–5. Covers touch target sizes, font minimums, TTS requirements, interaction modalities, session length caps, and visual complexity per grade band. Based on Doc 16 multi-grade expansion requirements."
 allowed-tools: Read Grep Write
 ---
 
@@ -2527,7 +2527,7 @@ const SESSION_CAPS: Record<number, number> = {
 ```markdown
 ---
 name: strategic-compaction
-description: "Context management strategy for Claude Code sessions on MathPath Oregon. Defines when to trigger /compact, what must be preserved via PreCompact hooks, recovery procedures after compaction, and multi-session patterns for the 200K token context window."
+description: "Context management strategy for Claude Code sessions on PADI.AI. Defines when to trigger /compact, what must be preserved via PreCompact hooks, recovery procedures after compaction, and multi-session patterns for the 200K token context window."
 allowed-tools: Read Bash
 ---
 
@@ -2617,7 +2617,7 @@ For long features that span multiple sessions:
 ```markdown
 ---
 name: llm-cost-optimizer
-description: "Token usage tracking, model routing rules, cost alerts, and per-student cost attribution for MathPath Oregon. Implements the FinOps framework from OPS-000. Ensures LLM costs stay within budget by routing to the right model for each task."
+description: "Token usage tracking, model routing rules, cost alerts, and per-student cost attribution for PADI.AI. Implements the FinOps framework from OPS-000. Ensures LLM costs stay within budget by routing to the right model for each task."
 allowed-tools: Read Grep Bash
 ---
 
@@ -2703,7 +2703,7 @@ MODEL_PRICING = {
 ```markdown
 ---
 name: accessibility-enforcer
-description: "WCAG AA/AAA enforcement for MathPath Oregon. Validates ARIA attributes, keyboard navigation, screen reader compatibility, focus management, prefers-reduced-motion support, color contrast, and touch target sizes. AAA standard required for student-facing content."
+description: "WCAG AA/AAA enforcement for PADI.AI. Validates ARIA attributes, keyboard navigation, screen reader compatibility, focus management, prefers-reduced-motion support, color contrast, and touch target sizes. AAA standard required for student-facing content."
 allowed-tools: Read Grep Bash Edit
 ---
 
@@ -3045,7 +3045,7 @@ Summary:
 ```markdown
 ---
 name: spec-search
-description: "Search the 24-document MathPath specification suite for requirements, decisions, or standards. Searches product docs (01–17), engineering docs (ENG-000–ENG-006), and lifecycle docs."
+description: "Search the 24-document PADI.AI specification suite for requirements, decisions, or standards. Searches product docs (01–17), engineering docs (ENG-000–ENG-006), and lifecycle docs."
 argument-hint: "[search-query] e.g., 'COPPA consent flow' or 'BKT parameters'"
 allowed-tools: Read Grep Bash
 ---
@@ -3053,7 +3053,7 @@ allowed-tools: Read Grep Bash
 # Spec Search: $ARGUMENTS
 
 ## Search Scope
-Search across all MathPath specification documents:
+Search across all PADI.AI specification documents:
 
 ### Product Documents (docs/)
 - `docs/01-strategy.md` — Business strategy & market analysis
@@ -3196,7 +3196,7 @@ Report all violations with specific remediation guidance.
 
 ## 8. Hook Configuration
 
-Hooks are configured in `.claude/settings.json` and fire at specific lifecycle events during a Claude Code session. Each hook runs a command, sends an HTTP request, or injects a prompt. The following configuration provides the complete hook setup for MathPath Oregon.
+Hooks are configured in `.claude/settings.json` and fire at specific lifecycle events during a Claude Code session. Each hook runs a command, sends an HTTP request, or injects a prompt. The following configuration provides the complete hook setup for PADI.AI.
 
 ### 8.1 Complete settings.json Hook Configuration
 
@@ -3260,7 +3260,7 @@ Hooks are configured in `.claude/settings.json` and fire at specific lifecycle e
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Review the subagent's output for quality. Verify: (1) code follows MathPath conventions, (2) tests are included, (3) no COPPA violations, (4) design tokens used correctly. Summarize any issues found. Input: $ARGUMENTS"
+            "prompt": "Review the subagent's output for quality. Verify: (1) code follows PADI.AI conventions, (2) tests are included, (3) no COPPA violations, (4) design tokens used correctly. Summarize any issues found. Input: $ARGUMENTS"
           }
         ]
       }
@@ -3310,7 +3310,7 @@ Hooks are configured in `.claude/settings.json` and fire at specific lifecycle e
 
 set -euo pipefail
 
-echo "=== MathPath Oregon — Session Startup ==="
+echo "=== PADI.AI — Session Startup ==="
 
 # 1. Detect current development stage from active branch or environment
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
@@ -3322,8 +3322,8 @@ PYTHON_VERSION=$(python3 --version 2>/dev/null || echo "not installed")
 echo "Node: $NODE_VERSION | Python: $PYTHON_VERSION"
 
 # 3. Check if Docker services are running
-POSTGRES_RUNNING=$(docker ps --filter "name=mathpath-postgres" --format "{{.Status}}" 2>/dev/null || echo "not running")
-REDIS_RUNNING=$(docker ps --filter "name=mathpath-redis" --format "{{.Status}}" 2>/dev/null || echo "not running")
+POSTGRES_RUNNING=$(docker ps --filter "name=padi-ai-postgres" --format "{{.Status}}" 2>/dev/null || echo "not running")
+REDIS_RUNNING=$(docker ps --filter "name=padi-ai-redis" --format "{{.Status}}" 2>/dev/null || echo "not running")
 echo "PostgreSQL: $POSTGRES_RUNNING | Redis: $REDIS_RUNNING"
 
 # 4. Report current stage context
@@ -3601,7 +3601,7 @@ model: claude-sonnet-4-6-20250414
 
 # Test Runner Agent
 
-You are a test execution specialist for MathPath Oregon. Your job is to:
+You are a test execution specialist for PADI.AI. Your job is to:
 
 1. Identify which tests to run based on the provided context.
 2. Execute the test suite.
@@ -3659,7 +3659,7 @@ model: claude-sonnet-4-6-20250414
 
 # Security Scanner Agent
 
-You are a security specialist for MathPath Oregon, a children's education platform subject to
+You are a security specialist for PADI.AI, a children's education platform subject to
 COPPA regulations. Your job is to identify security and compliance issues.
 
 ## Scan Procedures
@@ -3734,14 +3734,14 @@ COPPA Compliance: [PASS/FAIL]
 ```markdown
 ---
 name: spec-researcher
-description: "Searches the 24-document MathPath specification suite for requirements, design decisions, and standards. Returns relevant excerpts with document references. Use when implementing features that need requirement traceability."
+description: "Searches the 24-document PADI.AI specification suite for requirements, design decisions, and standards. Returns relevant excerpts with document references. Use when implementing features that need requirement traceability."
 allowed-tools: Read Grep Bash
 model: claude-sonnet-4-6-20250414
 ---
 
 # Spec Researcher Agent
 
-You are a requirements researcher for MathPath Oregon. Your job is to find relevant
+You are a requirements researcher for PADI.AI. Your job is to find relevant
 specifications, requirements, and design decisions from the 24-document suite.
 
 ## Document Index
@@ -3791,14 +3791,14 @@ Summary: [1-2 sentence synthesis of all findings]
 ```markdown
 ---
 name: code-reviewer
-description: "Reviews code changes against MathPath engineering standards, design system tokens, architecture boundaries, and COPPA compliance. Provides actionable feedback with severity levels."
+description: "Reviews code changes against PADI.AI engineering standards, design system tokens, architecture boundaries, and COPPA compliance. Provides actionable feedback with severity levels."
 allowed-tools: Read Grep Bash
 model: claude-sonnet-4-6-20250414
 ---
 
 # Code Reviewer Agent
 
-You are a senior code reviewer for MathPath Oregon. Review the provided code changes against
+You are a senior code reviewer for PADI.AI. Review the provided code changes against
 the project's engineering standards.
 
 ## Review Checklist
@@ -3871,7 +3871,7 @@ model: claude-sonnet-4-6-20250414
 
 # Grade Content Validator Agent
 
-You are a math content validation specialist for MathPath Oregon. Your job is to verify that
+You are a math content validation specialist for PADI.AI. Your job is to verify that
 math questions, hints, and explanations are correct, aligned to Oregon standards, and
 appropriate for the target grade level.
 
@@ -3923,7 +3923,7 @@ Revision notes (if any): [specific fixes needed]
 ```
 ## 10. MCP Server Configuration
 
-MCP (Model Context Protocol) servers extend Claude Code's capabilities by connecting to external services. MathPath Oregon uses six MCP servers for GitHub integration, database access, design-to-code sync, browser testing, error monitoring, and documentation lookup.
+MCP (Model Context Protocol) servers extend Claude Code's capabilities by connecting to external services. PADI.AI uses six MCP servers for GitHub integration, database access, design-to-code sync, browser testing, error monitoring, and documentation lookup.
 
 ### 10.1 GitHub MCP Server
 
@@ -3978,7 +3978,7 @@ claude mcp add --scope project postgres -- npx -y @modelcontextprotocol/server-p
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-postgres"],
       "env": {
-        "DATABASE_URL": "postgresql://mathpath:mathpath@localhost:5432/mathpath_dev"
+        "DATABASE_URL": "postgresql://padi:padi_ai@localhost:5432/padi_ai_dev"
       }
     }
   }
@@ -4032,8 +4032,8 @@ claude mcp add --scope project figma -- npx -y @anthropic/figma-mcp-server
 - Sprint lifecycle Phase 2 (Design) — review Figma mockups before implementation.
 
 **Integration with skills:**
-- `mathpath-design-tokens` — Compare implemented tokens against Figma variable collections.
-- `mathpath-component-library` — Extract component specs from Figma frames.
+- `padi-ai-design-tokens` — Compare implemented tokens against Figma variable collections.
+- `padi-ai-component-library` — Extract component specs from Figma frames.
 - `sprint-lifecycle` — Use Figma MCP during Design phase to verify designs are complete before Implementation.
 
 ---
@@ -4070,7 +4070,7 @@ claude mcp add --scope project playwright -- npx -y @anthropic/playwright-mcp-se
 - Testing cross-browser behavior (Chrome, Safari, Firefox)
 
 **Integration with skills:**
-- `mathpath-test-coverage` — Run E2E tests and verify coverage of P0 user journeys.
+- `padi-ai-test-coverage` — Run E2E tests and verify coverage of P0 user journeys.
 - `accessibility-enforcer` — Run axe accessibility audit on rendered pages.
 - `bdd-scenario-writer` — Execute Gherkin scenarios against the running application.
 
@@ -4094,8 +4094,8 @@ claude mcp add --scope project sentry -- npx -y @sentry/mcp-server
       "args": ["-y", "@sentry/mcp-server"],
       "env": {
         "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
-        "SENTRY_ORG": "mathpath-oregon",
-        "SENTRY_PROJECT": "mathpath-api"
+        "SENTRY_ORG": "padi-ai",
+        "SENTRY_PROJECT": "padi-ai-api"
       }
     }
   }
@@ -4168,7 +4168,7 @@ claude mcp add --scope project context7 -- npx -y @upstash/context7-mcp@latest
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-postgres"],
       "env": {
-        "DATABASE_URL": "postgresql://mathpath:mathpath@localhost:5432/mathpath_dev"
+        "DATABASE_URL": "postgresql://padi:padi_ai@localhost:5432/padi_ai_dev"
       }
     },
     "figma": {
@@ -4190,8 +4190,8 @@ claude mcp add --scope project context7 -- npx -y @upstash/context7-mcp@latest
       "args": ["-y", "@sentry/mcp-server"],
       "env": {
         "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
-        "SENTRY_ORG": "mathpath-oregon",
-        "SENTRY_PROJECT": "mathpath-api"
+        "SENTRY_ORG": "padi-ai",
+        "SENTRY_PROJECT": "padi-ai-api"
       }
     },
     "context7": {
@@ -4210,7 +4210,7 @@ claude mcp add --scope project context7 -- npx -y @upstash/context7-mcp@latest
 
 ### 11.1 The Context Budget
 
-Claude Code operates with a ~200K token context window. This section defines how to manage this finite resource across the complex MathPath Oregon codebase.
+Claude Code operates with a ~200K token context window. This section defines how to manage this finite resource across the complex PADI.AI codebase.
 
 #### Token Budget Allocation
 
@@ -4358,8 +4358,8 @@ After compaction (manual `/compact` or automatic):
 
 | Item | Effort | Deliverable | Priority |
 |------|--------|-------------|----------|
-| `mathpath-design-tokens` | 8 hrs | Full token reference skill | P0 |
-| `mathpath-test-coverage` | 6 hrs | Testing pyramid enforcement skill | P0 |
+| `padi-ai-design-tokens` | 8 hrs | Full token reference skill | P0 |
+| `padi-ai-test-coverage` | 6 hrs | Testing pyramid enforcement skill | P0 |
 | `architecture-enforcer` | 6 hrs | Boundary enforcement + validation script | P0 |
 | `api-contract-enforcement` | 4 hrs | OpenAPI/Pydantic/TS contract validation | P0 |
 | **Phase 2 Total** | **~24 hrs** | 4 core skills |
@@ -4402,7 +4402,7 @@ After compaction (manual `/compact` or automatic):
 
 | Item | Effort | Deliverable |
 |------|--------|-------------|
-| Remaining skills: `mathpath-component-library` | 3 hrs | Component patterns skill |
+| Remaining skills: `padi-ai-component-library` | 3 hrs | Component patterns skill |
 | Remaining skills: `user-story-tracker` | 2 hrs | Story tracking skill |
 | Remaining skills: `langgraph-agent-patterns` | 4 hrs | LangGraph patterns skill |
 | Remaining skills: `oregon-standards-validator` | 2 hrs | Standards validation skill |
@@ -4427,9 +4427,9 @@ This matrix shows which skills, hooks, commands, and subagents are relevant at e
 | Skill / Component | S1 | S2 | S3 | S4 | S5 | Notes |
 |-------------------|:--:|:--:|:--:|:--:|:--:|-------|
 | **Skills** | | | | | | |
-| `mathpath-design-tokens` | ● | ● | ● | ● | ● | All stages — UI exists in every stage |
-| `mathpath-component-library` | ● | ● | ● | ● | ● | All stages |
-| `mathpath-test-coverage` | ● | ● | ● | ● | ● | All stages |
+| `padi-ai-design-tokens` | ● | ● | ● | ● | ● | All stages — UI exists in every stage |
+| `padi-ai-component-library` | ● | ● | ● | ● | ● | All stages |
+| `padi-ai-test-coverage` | ● | ● | ● | ● | ● | All stages |
 | `bdd-scenario-writer` | ● | ● | ● | ● | ● | All stages |
 | `security-coppa-compliance` | ● | ● | ● | ● | ● | All stages — COPPA always applies |
 | `sprint-lifecycle` | ● | ● | ● | ● | ● | All stages |
@@ -4470,9 +4470,9 @@ This matrix shows which skills, hooks, commands, and subagents are relevant at e
 
 | Skill / Component | PRD | Design | Arch | Impl | Test | QA | Ops |
 |-------------------|:---:|:------:|:----:|:----:|:----:|:--:|:---:|
-| `mathpath-design-tokens` | | ● | | ● | | ● | |
-| `mathpath-component-library` | | ● | | ● | | ● | |
-| `mathpath-test-coverage` | | | | | ● | | |
+| `padi-ai-design-tokens` | | ● | | ● | | ● | |
+| `padi-ai-component-library` | | ● | | ● | | ● | |
+| `padi-ai-test-coverage` | | | | | ● | | |
 | `bdd-scenario-writer` | ● | | | | ● | | |
 | `security-coppa-compliance` | | | ● | ● | ● | ● | ● |
 | `sprint-lifecycle` | ● | ● | ● | ● | ● | ● | ● |
@@ -4505,34 +4505,34 @@ This section evaluates each skill against existing community resources to determ
 
 | Skill | Community Option | Install Command | Customization Needed | Decision | Rationale |
 |-------|-----------------|-----------------|---------------------|----------|-----------|
-| `mathpath-design-tokens` | Frontend Design skill (277K installs) | `/install anthropics/skills#frontend-design` | Heavy — MathPath has its own token system | **Build custom** | The community skill enforces general design principles. MathPath needs exact token values from Doc 09 (specific hex codes, type scale, spacing) that no generic skill provides. |
-| `mathpath-component-library` | Vercel Composition Patterns | `/install vercel/skills#composition-patterns` | Heavy — MathPath uses Atomic Design + math components | **Build custom** | Vercel patterns are useful but generic. MathPath needs FractionBuilder, NumberLine, and other math-specific patterns. |
-| `mathpath-test-coverage` | TDD Workflow (marketplace) | `/install anthropics/skills#tdd-workflow` | Moderate — add MathPath coverage gates | **Build custom** | TDD skill enforces test-first workflow but not project-specific coverage thresholds (90% BKT, 100% COPPA). |
+| `padi-ai-design-tokens` | Frontend Design skill (277K installs) | `/install anthropics/skills#frontend-design` | Heavy — PADI.AI has its own token system | **Build custom** | The community skill enforces general design principles. PADI.AI needs exact token values from Doc 09 (specific hex codes, type scale, spacing) that no generic skill provides. |
+| `padi-ai-component-library` | Vercel Composition Patterns | `/install vercel/skills#composition-patterns` | Heavy — PADI.AI uses Atomic Design + math components | **Build custom** | Vercel patterns are useful but generic. PADI.AI needs FractionBuilder, NumberLine, and other math-specific patterns. |
+| `padi-ai-test-coverage` | TDD Workflow (marketplace) | `/install anthropics/skills#tdd-workflow` | Moderate — add PADI.AI coverage gates | **Build custom** | TDD skill enforces test-first workflow but not project-specific coverage thresholds (90% BKT, 100% COPPA). |
 | `bdd-scenario-writer` | None | — | N/A | **Build from scratch** | No community skill generates Gherkin from user story acceptance criteria with project-specific step definitions. |
 | `security-coppa-compliance` | Trail of Bits Security | `/install trailofbits/skills#security` | Heavy — add COPPA-specific checks | **Build custom** | Trail of Bits covers general security (CodeQL, Semgrep) but nothing COPPA-specific. Children's privacy law requires custom rules. |
-| `sprint-lifecycle` | None | — | N/A | **Build from scratch** | The 7-phase SDLC gate model is unique to MathPath. No community skill enforces project-specific lifecycle phases. |
-| `user-story-tracker` | None | — | N/A | **Build from scratch** | Tightly coupled to MathPath's lifecycle documents and story ID format. |
-| `architecture-enforcer` | Superpowers (40.9K stars) | `/install obra/superpowers` | Moderate — extract boundary enforcement patterns | **Build custom** | Superpowers provides general multi-step planning but not MathPath-specific boundary rules. Can borrow planning patterns. |
+| `sprint-lifecycle` | None | — | N/A | **Build from scratch** | The 7-phase SDLC gate model is unique to PADI.AI. No community skill enforces project-specific lifecycle phases. |
+| `user-story-tracker` | None | — | N/A | **Build from scratch** | Tightly coupled to PADI.AI's lifecycle documents and story ID format. |
+| `architecture-enforcer` | Superpowers (40.9K stars) | `/install obra/superpowers` | Moderate — extract boundary enforcement patterns | **Build custom** | Superpowers provides general multi-step planning but not PADI.AI-specific boundary rules. Can borrow planning patterns. |
 | `bkt-model-patterns` | None | — | N/A | **Build from scratch** | Bayesian Knowledge Tracing is a niche educational technology domain. No community resources exist. |
-| `langgraph-agent-patterns` | None specific to LangGraph 0.2 | — | N/A | **Build from scratch** | LangGraph patterns are evolving rapidly. Community skills exist for general agent patterns but not the specific graph architectures MathPath needs. |
+| `langgraph-agent-patterns` | None specific to LangGraph 0.2 | — | N/A | **Build from scratch** | LangGraph patterns are evolving rapidly. Community skills exist for general agent patterns but not the specific graph architectures PADI.AI needs. |
 | `api-contract-enforcement` | None | — | N/A | **Build from scratch** | Contract enforcement between Pydantic v2 and TypeScript types is project-specific. |
 | `oregon-standards-validator` | None | — | N/A | **Build from scratch** | Oregon math standards are domain-specific educational content. No community skill exists. |
 | `grade-specific-patterns` | None | — | N/A | **Build from scratch** | Grade-band-specific UI rules are unique to children's educational software. |
-| `strategic-compaction` | Simplify skill (community) | `/install community/simplify` | Light — add MathPath-specific preservation rules | **Build custom** | The Simplify skill helps with code simplification. Compaction strategy is broader — context preservation, recovery, multi-session patterns. |
+| `strategic-compaction` | Simplify skill (community) | `/install community/simplify` | Light — add PADI.AI-specific preservation rules | **Build custom** | The Simplify skill helps with code simplification. Compaction strategy is broader — context preservation, recovery, multi-session patterns. |
 | `llm-cost-optimizer` | None | — | N/A | **Build from scratch** | Per-student cost attribution with model routing is project-specific. |
-| `accessibility-enforcer` | Vercel Web Design Guidelines | `/install vercel/skills#web-guidelines` | Moderate — add AAA for student content, math accessibility | **Build custom** | Vercel guidelines cover 100+ accessibility rules. MathPath needs AAA (not just AA) for student content and math-specific accessibility (KaTeX aria-labels, fraction builder keyboard nav). |
+| `accessibility-enforcer` | Vercel Web Design Guidelines | `/install vercel/skills#web-guidelines` | Moderate — add AAA for student content, math accessibility | **Build custom** | Vercel guidelines cover 100+ accessibility rules. PADI.AI needs AAA (not just AA) for student content and math-specific accessibility (KaTeX aria-labels, fraction builder keyboard nav). |
 
 ### 14.2 Summary
 
 | Decision | Count | Skills |
 |----------|-------|--------|
 | Build from scratch | 9 | bdd-scenario-writer, sprint-lifecycle, user-story-tracker, bkt-model-patterns, langgraph-agent-patterns, api-contract-enforcement, oregon-standards-validator, grade-specific-patterns, llm-cost-optimizer |
-| Build custom (inspired by community) | 7 | mathpath-design-tokens, mathpath-component-library, mathpath-test-coverage, security-coppa-compliance, architecture-enforcer, strategic-compaction, accessibility-enforcer |
-| Use community directly | 0 | — (all require at least moderate customization for MathPath's domain) |
+| Build custom (inspired by community) | 7 | padi-ai-design-tokens, padi-ai-component-library, padi-ai-test-coverage, security-coppa-compliance, architecture-enforcer, strategic-compaction, accessibility-enforcer |
+| Use community directly | 0 | — (all require at least moderate customization for PADI.AI's domain) |
 
 ### 14.3 Recommended Community Skills to Install Alongside
 
-While none replace MathPath custom skills, these community skills complement them:
+While none replace PADI.AI custom skills, these community skills complement them:
 
 | Community Skill | Purpose | Install |
 |----------------|---------|---------|
@@ -4549,7 +4549,7 @@ While none replace MathPath custom skills, these community skills complement the
 ### 15.1 Complete File Tree
 
 ```
-mathpath/
+padi-ai/
 ├── CLAUDE.md                              # Root context (148 lines)
 ├── .mcp.json                              # MCP server config (6 servers)
 ├── .claude/
@@ -4579,9 +4579,9 @@ mathpath/
 │   │   ├── database-rules.md              # **/db/**/*.py, **/alembic/**/*
 │   │   └── coppa-rules.md                 # **/security.py, **/consent*
 │   ├── skills/                            # Skill definitions (16 skills)
-│   │   ├── mathpath-design-tokens/SKILL.md
-│   │   ├── mathpath-component-library/SKILL.md
-│   │   ├── mathpath-test-coverage/SKILL.md
+│   │   ├── padi-ai-design-tokens/SKILL.md
+│   │   ├── padi-ai-component-library/SKILL.md
+│   │   ├── padi-ai-test-coverage/SKILL.md
 │   │   ├── bdd-scenario-writer/SKILL.md
 │   │   ├── security-coppa-compliance/SKILL.md
 │   │   ├── sprint-lifecycle/SKILL.md
@@ -4663,4 +4663,4 @@ For daily use, the following commands and patterns should be memorized:
 
 ---
 
-*End of Document CC-017 — MathPath Oregon Claude Code Skills & Plugins Specification*
+*End of Document CC-017 — PADI.AI Claude Code Skills & Plugins Specification*

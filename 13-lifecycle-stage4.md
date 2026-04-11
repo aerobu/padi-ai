@@ -1,4 +1,4 @@
-# MathPath Oregon — SDLC Lifecycle Document
+# PADI.AI — SDLC Lifecycle Document
 ## Stage 4: End-of-Grade Assessment & Teacher/Parent Reporting — MVP Milestone
 ### Months 11–14 | Document ID: LC-004 | Version 1.0
 
@@ -7,7 +7,7 @@
 **Reviewers:** Backend Engineering, Frontend Engineering, Curriculum, Legal (FERPA/COPPA), MLOps  
 **Dependencies:** LC-001 (Stage 1), LC-002 (Stage 2), LC-003 (Stage 3)  
 **Epic Reference:** MATH-400 series  
-**MVP Milestone:** ✅ Stage 4 Completion = MathPath Oregon MVP  
+**MVP Milestone:** ✅ Stage 4 Completion = PADI.AI MVP  
 **Last Updated:** 2026-04-04  
 
 ---
@@ -28,7 +28,7 @@
 
 ### 1.1 Overview — What Stage 4 Adds to the System
 
-Stage 4 is the MVP milestone. It closes the MathPath Oregon learning loop by adding summative assessment, automated reporting, teacher and parent dashboards, and the infrastructure hardening required for production readiness. Every component is purpose-built to complement the adaptive practice engine from Stage 3 without adding unnecessary complexity.
+Stage 4 is the MVP milestone. It closes the PADI.AI learning loop by adding summative assessment, automated reporting, teacher and parent dashboards, and the infrastructure hardening required for production readiness. Every component is purpose-built to complement the adaptive practice engine from Stage 3 without adding unnecessary complexity.
 
 The three principal additions are:
 
@@ -48,7 +48,7 @@ The three principal additions are:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                  MathPath Oregon — Stage 4 MVP Container Diagram              │
+│                  PADI.AI — Stage 4 MVP Container Diagram              │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                                │
 │  ┌────────────────────────────┐      ┌─────────────────────────────────────┐  │
@@ -365,7 +365,7 @@ PgBouncer runs as an ECS sidecar container alongside the FastAPI API server in `
 **Configuration (`pgbouncer.ini`):**
 ```ini
 [databases]
-mathpath = host=rds-postgres.region.rds.amazonaws.com port=5432 dbname=mathpath
+padi_ai = host=rds-postgres.region.rds.amazonaws.com port=5432 dbname=padi_ai
 
 [pgbouncer]
 pool_mode = transaction
@@ -655,7 +655,7 @@ CloudFront sits in front of the Vercel frontend deployment, caching static asset
 - AC1: Assessment complete email is dispatched to parent within 5 minutes of EOG submission.
 - AC2: Email contains: proficiency level, one-sentence interpretation, top 3 remediation skills identified, link to full PDF report (presigned URL), CTA to open student's practice.
 - AC3: Email is rendered in responsive HTML with plain-text fallback.
-- AC4: Email is sent from `updates@mathpathOregon.com` with DKIM/SPF/DMARC configured.
+- AC4: Email is sent from `updates@padi.ai` with DKIM/SPF/DMARC configured.
 - AC5: Email delivery is logged in `notification_log` with `ses_message_id` for delivery tracking.
 
 ---
@@ -843,7 +843,7 @@ CloudFront sits in front of the Vercel frontend deployment, caching static asset
 
 **Acceptance Criteria:**
 - AC1: "Share with Teacher" generates a presigned PDF URL (90-day expiry) and optionally emails it to a teacher address.
-- AC2: Share flow shows teacher email input; if teacher has a MathPath account, it also grants `teacher_student_access` (view level).
+- AC2: Share flow shows teacher email input; if teacher has a PADI.AI account, it also grants `teacher_student_access` (view level).
 - AC3: All share events are logged in `report_shares` with: parent_id, teacher_email, report_id, shared_at, expires_at, revoked_at.
 - AC4: Parent can view all active shares at `/settings/sharing` and revoke any share.
 - AC5: Revoking a share invalidates the presigned URL within 5 minutes.
@@ -960,7 +960,7 @@ CloudFront sits in front of the Vercel frontend deployment, caching static asset
 
 **Acceptance Criteria:** (See also US-412 AC1–AC5 — same story covered from different angle.)
 - AC1: Email dispatched within 5 minutes of EOG completion (SQS queue lag tolerance).
-- AC2: Email subject: "[Student Name] completed their MathPath Oregon End-of-Grade Assessment."
+- AC2: Email subject: "[Student Name] completed their PADI.AI End-of-Grade Assessment."
 - AC3: Email body matches the FR-16.4 template exactly (student name, proficiency level, plain-language interpretation, top 3 remediation skills, PDF link).
 - AC4: Email is also sent to teacher(s) with active `teacher_student_access` records (teacher template: less personal, more data-focused).
 - AC5: Email delivery status tracked via SES SNS feedback loop; bounces logged in `notification_log.bounced`.
@@ -1066,7 +1066,7 @@ CloudFront sits in front of the Vercel frontend deployment, caching static asset
 > As an **engineer**, I want CloudFront configured in front of the Vercel frontend to cache static assets so that Oregon students experience faster page loads.
 
 **Acceptance Criteria:**
-- AC1: CloudFront distribution created with Vercel as origin; custom domain `app.mathpathOregon.com` points to CloudFront.
+- AC1: CloudFront distribution created with Vercel as origin; custom domain `app.padi.ai` points to CloudFront.
 - AC2: `/_next/static/*` cached with `max-age=31536000, immutable`.
 - AC3: `/api/*` and auth-gated routes are not cached (pass-through).
 - AC4: Security headers applied at CloudFront (HSTS, CSP, X-Frame-Options, X-Content-Type-Options).
@@ -1981,7 +1981,7 @@ test.describe('Teacher Dashboard', () => {
     ]);
 
     const filename = download.suggestedFilename();
-    expect(filename).toMatch(/^mathpath-roster-\d{4}-\d{2}-\d{2}\.csv$/);
+    expect(filename).toMatch(/^padi-ai-roster-\d{4}-\d{2}-\d{2}\.csv$/);
 
     const csvContent = await download.path().then(p => require('fs').readFileSync(p, 'utf-8'));
     expect(csvContent).toContain('student_first_name');
@@ -2227,7 +2227,7 @@ Feature: Email and In-App Notification System
     And Sarah has weekly_summary notifications enabled
     When Sunday 7:00 PM Pacific Time is reached
     Then Sarah should receive a weekly_summary email
-    And the email subject should match "[Student Name]'s MathPath Oregon Update"
+    And the email subject should match "[Student Name]'s PADI.AI Update"
 
   Scenario: Inactivity alert sent after 7 days without practice
     Given student "Alex" last had a practice session 7 days ago
@@ -3031,7 +3031,7 @@ jobs:
   - name: Trivy — API container scan
     uses: aquasecurity/trivy-action@master
     with:
-      image-ref: 'mathpath-api:${{ github.sha }}'
+      image-ref: 'padi-ai-api:${{ github.sha }}'
       format: 'sarif'
       exit-code: '1'  # Fail build on CRITICAL CVEs
       severity: 'CRITICAL,HIGH'
@@ -3052,13 +3052,13 @@ jobs:
       - name: OWASP ZAP scan — Staging
         uses: zaproxy/action-full-scan@v0.8.0
         with:
-          target: 'https://staging.mathpathOregon.com'
+          target: 'https://staging.padi.ai'
           rules_file_name: '.zap/rules.tsv'
           fail_action: true
 
       # SBOM generation
       - name: Generate SBOM — API
-        run: syft mathpath-api:latest -o cyclonedx-json > sbom-api.json
+        run: syft padi-ai-api:latest -o cyclonedx-json > sbom-api.json
 
       # LLM contract test (weekly golden set)
       - name: LLM behavioral contract tests
@@ -3215,7 +3215,7 @@ Emails cannot be tested for visual fidelity purely by unit tests. A manual conte
 - [ ] Unsubscribe link in footer (CAN-SPAM compliance)
 - [ ] Plain-text fallback renders correctly (no raw HTML tags)
 - [ ] No student email address appears in any email template
-- [ ] From address is `updates@mathpathOregon.com` (not a no-reply address for transactional emails)
+- [ ] From address is `updates@padi.ai` (not a no-reply address for transactional emails)
 
 ---
 
@@ -3422,5 +3422,5 @@ This section consolidates the definitive pass/fail criteria for the Stage 4 MVP 
 
 ---
 
-*Document: `docs/13-lifecycle-stage4.md` | Stage 4 of 5 | MathPath Oregon SDLC Series*  
+*Document: `docs/13-lifecycle-stage4.md` | Stage 4 of 5 | PADI.AI SDLC Series*  
 *References: `docs/06-prd-stage4.md`, `eng-docs/ENG-004-stage4.md`, `eng-docs/ENG-000-foundations.md`, `eng-docs/ENG-006-crosscutting.md`*

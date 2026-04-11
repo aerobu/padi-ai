@@ -1,4 +1,4 @@
-# Product Plan: MathPath Oregon
+# Product Plan: PADI.AI
 
 *Version 1.0 — April 2026 | Confidential — Internal Planning Document*
 
@@ -8,14 +8,14 @@
 
 ### Summary
 
-MathPath Oregon is an AI-powered adaptive math learning platform purpose-built for Oregon 4th graders. It combines a precision diagnostic assessment (BKT + IRT psychometrics), a state-specific standards database (29 Oregon Grade 4 standards, 2021 edition), and an AI question generation pipeline (Claude Sonnet, GPT-4o, o3-mini via LangGraph multi-agent architecture) to deliver truly personalized math instruction — one that diagnoses each student's exact skill gaps, identifies the prerequisite Grade 3 concepts blocking Grade 4 progress, and generates infinitely varied practice until mastery is real and measured.
+PADI.AI is an AI-powered adaptive math learning platform purpose-built for Oregon 4th graders. It combines a precision diagnostic assessment (BKT + IRT psychometrics), a state-specific standards database (29 Oregon Grade 4 standards, 2021 edition), and an AI question generation pipeline (Claude Sonnet, GPT-4o, o3-mini via LangGraph multi-agent architecture) to deliver truly personalized math instruction — one that diagnoses each student's exact skill gaps, identifies the prerequisite Grade 3 concepts blocking Grade 4 progress, and generates infinitely varied practice until mastery is real and measured.
 
-Oregon's 4th graders pass the state math proficiency bar at only 31% (NAEP 2024), eight points below the national average. MathPath's thesis is that this is a solvable problem — but only with a platform that starts from the root cause (unaddressed prerequisite gaps) rather than drilling more grade-level content at a student who lacks the foundation to understand it.
+Oregon's 4th graders pass the state math proficiency bar at only 31% (NAEP 2024), eight points below the national average. PADI.AI's thesis is that this is a solvable problem — but only with a platform that starts from the root cause (unaddressed prerequisite gaps) rather than drilling more grade-level content at a student who lacks the foundation to understand it.
 
 The platform serves three user types:
 - **Students (primary):** Oregon 4th graders (ages 9–10) who interact with the adaptive practice interface daily
 - **Parents:** Guardians who manage their child's account, monitor progress, and receive weekly reports
-- **Teachers:** 4th grade classroom teachers who use MathPath as a differentiation tool and track class-level performance
+- **Teachers:** 4th grade classroom teachers who use PADI.AI as a differentiation tool and track class-level performance
 
 ---
 
@@ -34,7 +34,7 @@ The platform serves three user types:
 
 **Parent Journey:**
 1. Sees SBAC results / teacher feedback showing child is below proficiency → searches for help
-2. Finds MathPath via Facebook group / Google ad / school newsletter
+2. Finds PADI.AI via Facebook group / Google ad / school newsletter
 3. Starts free diagnostic (no payment required)
 4. Receives diagnostic results: skill map showing which of 29 standards are mastered vs. gap
 5. "Aha moment": sees specific gaps (e.g., "Your child hasn't mastered multiplying fractions — here's why it matters for middle school")
@@ -43,12 +43,12 @@ The platform serves three user types:
 8. Views parent dashboard: skill map progress, session history, projected SBAC readiness
 
 **Teacher Journey:**
-1. Discovers MathPath via colleague recommendation, OETC conference, or founder outreach
+1. Discovers PADI.AI via colleague recommendation, OETC conference, or founder outreach
 2. Signs up for classroom trial (free for 30 days with ≥15 students)
 3. Sends home parent invitation links to students
 4. Views class dashboard: distribution of mastery across 29 standards for all students
 5. Identifies class-wide gaps (e.g., "22 of 25 students have a gap in 4.NF.B") → plans targeted small-group instruction
-6. Uses MathPath as daily "math warm-up" (15 min individual practice) while circulating for small-group work
+6. Uses PADI.AI as daily "math warm-up" (15 min individual practice) while circulating for small-group work
 7. Receives monthly outcome report: class-level proficiency gains vs. diagnostic baseline
 8. Shares outcome report with principal as evidence of SBAC readiness progress
 
@@ -60,19 +60,19 @@ The platform serves three user types:
 - **Background:** 38-year-old parent of two in Beaverton, OR. Works as a dental hygienist, partner works in tech. Family income ~$120K. Her 4th grader, Noah, received an SBAC score report in October showing "Level 1 — Below Standard" in math for the second consecutive year.
 - **Goals:** Understand why Noah is struggling, find a solution that works without requiring a private tutor ($80–$120/hour is too expensive), help Noah build confidence before middle school
 - **Frustrations:** IXL is "just more homework" — Noah hates it; Khan Academy videos are too long; she can't tell if any of these tools are actually working; she doesn't know enough math to help herself
-- **How MathPath helps:** Free diagnostic gives Maria a concrete, plain-language answer to "where exactly is Noah?" The skill map converts abstract SBAC scores into specific, actionable gaps ("Noah hasn't mastered understanding fractions on a number line — this is blocking his ability to do fraction addition"). Weekly email digest keeps Maria informed without requiring her to log in. The parent dashboard lets her see progress in real time. She feels like MathPath is a partner, not just another app.
+- **How PADI.AI helps:** Free diagnostic gives Maria a concrete, plain-language answer to "where exactly is Noah?" The skill map converts abstract SBAC scores into specific, actionable gaps ("Noah hasn't mastered understanding fractions on a number line — this is blocking his ability to do fraction addition"). Weekly email digest keeps Maria informed without requiring her to log in. The parent dashboard lets her see progress in real time. She feels like PADI.AI is a partner, not just another app.
 
 **Persona 2: Jaylen, the Struggling Student**
 - **Background:** 9-year-old 4th grader at a Title I school in Portland. Lives with his grandmother, who is his primary caregiver. His classroom has 27 students; his teacher has limited time for individual differentiation. He's been told he "struggles with math" but doesn't know why.
 - **Goals:** Stop feeling "dumb at math"; get through math class without anxiety; eventually feel like he "gets it"
 - **Frustrations:** Math class moves too fast; he feels embarrassed when he doesn't know an answer; he doesn't know what he's supposed to review because he doesn't know what he doesn't know
-- **How MathPath helps:** The diagnostic tells Jaylen (in child-friendly language) exactly what to work on — removing the anxiety of not knowing where to start. The adaptive engine never shows him problems that are too hard (it backs up to where he actually is). The multi-agent tutor gives hints without judgment — he can ask "I don't understand" as many times as he needs. Progress celebrations (mastery markers, streak counts) give Jaylen daily micro-wins that rebuild his math identity.
+- **How PADI.AI helps:** The diagnostic tells Jaylen (in child-friendly language) exactly what to work on — removing the anxiety of not knowing where to start. The adaptive engine never shows him problems that are too hard (it backs up to where he actually is). The multi-agent tutor gives hints without judgment — he can ask "I don't understand" as many times as he needs. Progress celebrations (mastery markers, streak counts) give Jaylen daily micro-wins that rebuild his math identity.
 
 **Persona 3: Ms. Nguyen, the Overwhelmed Teacher**
 - **Background:** 4th grade teacher at an elementary school in Salem-Keizer SD. 12 years of teaching experience. Has 26 students, 9 of whom are below grade level in math. Uses IXL for practice but finds that students are "just clicking through" without real learning. Her SBAC scores have stagnated for 3 years.
 - **Goals:** Find a differentiation tool that actually diagnoses and remediates gaps without requiring her to individually assess each student; prove to her principal that she has a plan for her below-grade-level students; reduce the administrative burden of tracking 26 individual student progress trajectories
 - **Frustrations:** IXL gives her a lot of data but not actionable insights; DreamBox requires too much setup and the district won't pay for it; she doesn't have time to manually differentiate instruction for 9 students with different gaps; parent communication about math progress takes hours every month
-- **How MathPath helps:** Diagnostic run in first week of school gives Ms. Nguyen a class-level heat map across all 29 standards — immediately actionable for grouping students. Class dashboard shows her which standards are blocking the most students, so she can plan whole-class re-teaching sessions targeted at the most common gaps. Monthly outcome report is pre-formatted for sharing with her principal. Parent dashboard means parents self-serve progress info, reducing her email load.
+- **How PADI.AI helps:** Diagnostic run in first week of school gives Ms. Nguyen a class-level heat map across all 29 standards — immediately actionable for grouping students. Class dashboard shows her which standards are blocking the most students, so she can plan whole-class re-teaching sessions targeted at the most common gaps. Monthly outcome report is pre-formatted for sharing with her principal. Parent dashboard means parents self-serve progress info, reducing her email load.
 
 ---
 
@@ -96,7 +96,7 @@ The platform serves three user types:
 
 ### MVP (Minimum Viable Product) — First Release to Real Users
 
-**Definition:** The first version of MathPath released to actual students and parents. Designed to deliver the core value proposition (diagnostic + personalized learning plan + adaptive practice) with the minimum feature set required to make that delivery trustworthy, useful, and safe. The MVP is a consumer product (parent-paid) targeting individual families.
+**Definition:** The first version of PADI.AI released to actual students and parents. Designed to deliver the core value proposition (diagnostic + personalized learning plan + adaptive practice) with the minimum feature set required to make that delivery trustworthy, useful, and safe. The MVP is a consumer product (parent-paid) targeting individual families.
 
 **Core value delivered by MVP:** A parent can sign up, their 4th grader completes a diagnostic, they receive a clear skill map, and their child can practice math adaptively for 3+ months with measurable learning gains — all on a COPPA-compliant, reliable platform.
 
@@ -130,7 +130,7 @@ The platform serves three user types:
 
 ### MMP (Minimum Marketable Product) — First Version Worth Selling Broadly
 
-**Definition:** The first version of MathPath worth marketing to schools and districts as well as consumers. Adds the polish, institutional features, monetization infrastructure, and outcome reporting needed for B2B sales. The MMP is when MathPath becomes a credible commercial product — not just a beta app.
+**Definition:** The first version of PADI.AI worth marketing to schools and districts as well as consumers. Adds the polish, institutional features, monetization infrastructure, and outcome reporting needed for B2B sales. The MMP is when PADI.AI becomes a credible commercial product — not just a beta app.
 
 **MMP builds on MVP and adds:**
 | # | Feature | Description |
@@ -154,7 +154,7 @@ The platform serves three user types:
 
 ### Full Product v1.0 — Complete First-Generation Product
 
-**Definition:** The production-ready, fully-featured first generation of MathPath. All core learning features complete. Ready for district-level sales, independent outcome evaluation, and Series A fundraising. Includes multi-grade content (Grades 3–5), full assessment suite, and advanced analytics.
+**Definition:** The production-ready, fully-featured first generation of PADI.AI. All core learning features complete. Ready for district-level sales, independent outcome evaluation, and Series A fundraising. Includes multi-grade content (Grades 3–5), full assessment suite, and advanced analytics.
 
 **Full Product v1.0 adds to MMP:**
 | # | Feature | Description |
@@ -194,18 +194,18 @@ The platform serves three user types:
 | M13 | Multi-agent tutoring hints (3-level scaffolding) | MVP | Month 7, Week 2 | Students can request hints during practice; 3-level progressive hints generated by LangGraph hint agent; hints are mathematically correct and grade-appropriate | Question generation pipeline (M04) |
 | M14 | Freemium payment flow (Stripe) | MVP | Month 7, Week 4 | Stripe integration complete; free tier (diagnostic + 2 weeks) gated; Pro upgrade flow functional; subscription management (cancel, upgrade, downgrade) working; test with 5 real payment transactions | Auth system (M07) |
 | M15 | Beta outcome data review | Validation | Month 8, Week 2 | Analysis of 8-week beta data: diagnostic accuracy agreement ≥80%, parent NPS ≥40, question flag rate ≤10%, ≥3 students showing measurable learning gain; go/no-go decision for MVP launch | Beta launch (M12) |
-| M16 | MVP public launch | MVP | Month 10, Week 1 | MathPath Pro publicly available; Stripe accepting payments; App stable (99% uptime over launch week); first 10 paying customers within 2 weeks of launch | All MVP features complete; Stripe (M14); COPPA review |
+| M16 | MVP public launch | MVP | Month 10, Week 1 | PADI.AI Pro publicly available; Stripe accepting payments; App stable (99% uptime over launch week); first 10 paying customers within 2 weeks of launch | All MVP features complete; Stripe (M14); COPPA review |
 | M17 | First paying customer (consumer) | MVP | Month 10, Week 2 | First Pro subscriber signs up and pays ($14.99); confirmation email sent; subscription active | MVP launch (M16) |
 | M18 | 100 active students milestone | MVP | Month 11 | 100 students have completed the diagnostic and started the learning plan (paid + free); engagement rate ≥3 sessions/week for ≥50% of active students | MVP launch (M16) |
 | M19 | Teacher/classroom dashboard v1.0 | MMP | Month 13, Week 2 | Teacher can view class roster, per-student skill maps, class-level standard distribution heatmap; teacher can send parent invitation links; classroom-level session activity summary | MVP complete; DPA template drafted |
-| M20 | First school partnership (pilot, non-paying) | MMP | Month 14 | ≥1 Oregon elementary school with ≥15 students using MathPath in classroom; signed pilot agreement; teacher NPS collected at end of 4-week pilot | Teacher dashboard (M19); FERPA DPA template |
+| M20 | First school partnership (pilot, non-paying) | MMP | Month 14 | ≥1 Oregon elementary school with ≥15 students using PADI.AI in classroom; signed pilot agreement; teacher NPS collected at end of 4-week pilot | Teacher dashboard (M19); FERPA DPA template |
 | M21 | COPPA/FERPA compliance formal review | MMP | Month 14, Week 4 | Third-party attorney review of data collection flows, DPA template, privacy policy, student data retention policies; all issues resolved; DPA template ready for school signatures | Auth system (M07); legal counsel engaged |
 | M22 | Summative assessment feature | MMP | Month 15, Week 2 | 8-week summative assessment functional; SBAC-format questions; results compared to diagnostic baseline; parent and teacher outcome reports generated | Question generation pipeline; BKT model |
 | M23 | Monthly outcome reports (parent + teacher) | MMP | Month 15, Week 4 | Automated PDF generation of monthly outcome reports for parents (student-level) and teachers (class-level); SBAC alignment language; first reports sent to all active users | Summative assessment (M22) |
 | M24 | MMP launch & classroom license pricing | MMP | Month 16, Week 1 | MMP feature set complete; classroom license purchase flow functional ($8/student/year); school billing (PO + invoice support); 3+ schools in paid or pilot relationship | Teacher dashboard (M19); compliance review (M21); Stripe school billing |
 | M25 | 500 active monthly students milestone | MMP | Month 17 | 500 students actively practicing (≥1 session in trailing 30 days); consumer + school combined | MMP launch (M24) |
 | M26 | First paying school partnership | MMP | Month 18 | First school signs annual classroom license; purchase order received; DPA signed; school billing active | Compliance review (M21); teacher dashboard (M19) |
-| M27 | Outcome data for investor/press narrative | MMP | Month 20 | Internal study of ≥100 students with ≥30 hours MathPath use showing ≥20% proficiency gain vs. diagnostic baseline; report formatted for sharing with investors and press | 100+ students with sufficient data (from Month 10+) |
+| M27 | Outcome data for investor/press narrative | MMP | Month 20 | Internal study of ≥100 students with ≥30 hours PADI.AI use showing ≥20% proficiency gain vs. diagnostic baseline; report formatted for sharing with investors and press | 100+ students with sufficient data (from Month 10+) |
 | M28 | Grade 5 curriculum launch | Full v1.0 | Month 22 | All Oregon Grade 5 Math Standards (24 standards) in database; Grade 5 adaptive practice functional; Grade 5 diagnostic available; first Grade 5 students onboarded | Grade 4 platform stable; standards DB extension |
 | M29 | SSO (Google Classroom / Clever) | Full v1.0 | Month 22, Week 4 | Teachers can provision student accounts via Google Classroom or Clever; roster sync automated; SSO login for student and teacher | MMP complete; Google Workspace API; Clever API |
 | M30 | Series A readiness metrics achieved | Full v1.0 | Month 24 | ARR ≥ $200K; 1,500+ active monthly students; 5+ paying school partnerships; independent outcome data published or in progress; 12+ months runway | All above milestones |
@@ -391,7 +391,7 @@ The platform serves three user types:
 - Dependencies: F26; SendGrid or AWS SES
 
 **F28: In-App "Flag a Problem" Button**
-- User story: *As a parent or student, I want to flag a question that seems wrong or confusing so that the MathPath team can review it and fix it quickly.*
+- User story: *As a parent or student, I want to flag a question that seems wrong or confusing so that the PADI.AI team can review it and fix it quickly.*
 - Priority: P1
 - Effort: S
 - Dependencies: F21; F12
@@ -406,7 +406,7 @@ The platform serves three user types:
 
 ### Stage 3 (Months 7–10): Adaptive Practice & Tutoring → MVP
 
-**Goal:** Complete all MVP features, launch Stripe payment flow, polish the student and parent experience, and launch the MVP publicly. End state: MathPath Pro is available to any Oregon parent.
+**Goal:** Complete all MVP features, launch Stripe payment flow, polish the student and parent experience, and launch the MVP publicly. End state: PADI.AI Pro is available to any Oregon parent.
 
 ---
 
@@ -435,19 +435,19 @@ The platform serves three user types:
 - Dependencies: F21
 
 **F34: Mobile-Responsive UI Audit & Fixes**
-- User story: *As a parent whose child uses a tablet, I want the MathPath interface to work perfectly on a tablet browser so that my child can practice comfortably without needing a laptop.*
+- User story: *As a parent whose child uses a tablet, I want the PADI.AI interface to work perfectly on a tablet browser so that my child can practice comfortably without needing a laptop.*
 - Priority: P0
 - Effort: M
 - Dependencies: F16, F21, F26
 
 **F35: WCAG 2.1 AA Accessibility Audit**
-- User story: *As a student with a visual or cognitive accessibility need, I want MathPath to meet accessibility standards so that I can use it without barriers.*
+- User story: *As a student with a visual or cognitive accessibility need, I want PADI.AI to meet accessibility standards so that I can use it without barriers.*
 - Priority: P1
 - Effort: M
 - Dependencies: F16, F21; accessibility audit tool (Axe, Lighthouse)
 
 **F36: Performance Optimization (< 2s page load)**
-- User story: *As a student on a home internet connection, I want MathPath to load quickly so that slow loading doesn't interrupt my practice session.*
+- User story: *As a student on a home internet connection, I want PADI.AI to load quickly so that slow loading doesn't interrupt my practice session.*
 - Priority: P1
 - Effort: M
 - Dependencies: F11; Redis caching layer; CDN configuration
@@ -471,7 +471,7 @@ The platform serves three user types:
 - Dependencies: F16, F21, F30; student-safe analytics (no PII to third-party analytics)
 
 **F40: MVP Launch Marketing Landing Page**
-- User story: *As a potential customer, I want to visit a clear landing page that explains what MathPath does, shows the diagnostic results example, and makes it easy to start for free, so that I understand the value immediately.*
+- User story: *As a potential customer, I want to visit a clear landing page that explains what PADI.AI does, shows the diagnostic results example, and makes it easy to start for free, so that I understand the value immediately.*
 - Priority: P0
 - Effort: M
 - Dependencies: Design system; Next.js
@@ -515,7 +515,7 @@ The platform serves three user types:
 - Dependencies: F14; F44
 
 **F46: FERPA-Compliant Data Processing (DPA Template)**
-- User story: *As a school administrator, I want to sign a Data Processing Agreement with MathPath that clearly defines how student data is handled, so that my district can approve MathPath for classroom use.*
+- User story: *As a school administrator, I want to sign a Data Processing Agreement with PADI.AI that clearly defines how student data is handled, so that my district can approve PADI.AI for classroom use.*
 - Priority: P0
 - Effort: S (engineering: data isolation); L (legal: DPA drafting)
 - Dependencies: Legal counsel; F11 data architecture
@@ -533,7 +533,7 @@ The platform serves three user types:
 - Dependencies: F44; F17
 
 **F49: Classroom License Billing (Stripe)**
-- User story: *As a school administrator, I want to purchase a classroom license for my grade level by credit card or purchase order so that MathPath can be funded through our school budget.*
+- User story: *As a school administrator, I want to purchase a classroom license for my grade level by credit card or purchase order so that PADI.AI can be funded through our school budget.*
 - Priority: P0
 - Effort: M
 - Dependencies: F30; Stripe invoicing
@@ -553,7 +553,7 @@ The platform serves three user types:
 ---
 
 **F51: Multi-Child Family Accounts**
-- User story: *As a parent with two Oregon elementary students, I want to manage both children from one account at a family price, so that MathPath is affordable for my whole family.*
+- User story: *As a parent with two Oregon elementary students, I want to manage both children from one account at a family price, so that PADI.AI is affordable for my whole family.*
 - Priority: P1
 - Effort: M
 - Dependencies: F14, F15, F30
@@ -565,7 +565,7 @@ The platform serves three user types:
 - Dependencies: F51, F30
 
 **F53: Annual Subscription Flow ($99/year)**
-- User story: *As a parent who is committed to MathPath long-term, I want to pay annually at a discount so that I save money and MathPath has predictable revenue.*
+- User story: *As a parent who is committed to PADI.AI long-term, I want to pay annually at a discount so that I save money and PADI.AI has predictable revenue.*
 - Priority: P1
 - Effort: S
 - Dependencies: F30
@@ -583,7 +583,7 @@ The platform serves three user types:
 - Dependencies: F20, F21
 
 **F56: Parent-Controlled Practice Schedule**
-- User story: *As a parent, I want to set a recommended daily practice time (e.g., 4:30–5:00 PM on school days) so that MathPath fits into our family routine.*
+- User story: *As a parent, I want to set a recommended daily practice time (e.g., 4:30–5:00 PM on school days) so that PADI.AI fits into our family routine.*
 - Priority: P2
 - Effort: S
 - Dependencies: F14, F27
@@ -607,13 +607,13 @@ The platform serves three user types:
 - Dependencies: F08, F28, F39
 
 **F60: SOC 2 Type I Controls Documentation**
-- User story: *As a school district procurement officer, I want to see MathPath's SOC 2 Type I report so that I can satisfy our district's IT security review requirements.*
+- User story: *As a school district procurement officer, I want to see PADI.AI's SOC 2 Type I report so that I can satisfy our district's IT security review requirements.*
 - Priority: P1
 - Effort: L (6–8 weeks with Vanta/Drata)
 - Dependencies: F11 infrastructure; Vanta or Drata account (~$500/month)
 
 **F61: MMP Launch & PR**
-- User story: *As a potential school customer who reads EdSurge, I want to see a press article about MathPath's outcome data so that I can discover and evaluate MathPath without the MathPath team having to cold-outreach me.*
+- User story: *As a potential school customer who reads EdSurge, I want to see a press article about PADI.AI's outcome data so that I can discover and evaluate PADI.AI without the PADI.AI team having to cold-outreach me.*
 - Priority: P1 (operational)
 - Effort: M (founder time)
 - Dependencies: Outcome data (M27); press kit
@@ -627,13 +627,13 @@ The platform serves three user types:
 ---
 
 **F62: Grade 5 Oregon Standards Database**
-- User story: *As a 5th grade student, I want MathPath to have a personalized learning path for my grade level so that I can continue my math mastery journey.*
+- User story: *As a 5th grade student, I want PADI.AI to have a personalized learning path for my grade level so that I can continue my math mastery journey.*
 - Priority: P0 (for expansion)
 - Effort: M
 - Dependencies: F01 methodology; 2021 Oregon Grade 5 Standards document
 
 **F63: Grade 5 Diagnostic & Adaptive Practice**
-- User story: *As a parent of a 5th grader, I want MathPath to offer the same diagnostic-first adaptive practice for Grade 5 that it offers for Grade 4 so that my child can benefit too.*
+- User story: *As a parent of a 5th grader, I want PADI.AI to offer the same diagnostic-first adaptive practice for Grade 5 that it offers for Grade 4 so that my child can benefit too.*
 - Priority: P0 (for expansion)
 - Effort: L
 - Dependencies: F62; F05, F20
@@ -645,7 +645,7 @@ The platform serves three user types:
 - Dependencies: F45; Google Classroom API
 
 **F65: SSO — Clever Integration**
-- User story: *As a district IT administrator, I want MathPath to integrate with Clever so that student authentication and roster provisioning are handled through our existing district identity system.*
+- User story: *As a district IT administrator, I want PADI.AI to integrate with Clever so that student authentication and roster provisioning are handled through our existing district identity system.*
 - Priority: P1
 - Effort: L
 - Dependencies: F45; Clever API
@@ -657,13 +657,13 @@ The platform serves three user types:
 - Dependencies: F44; multi-school data model
 
 **F67: SBAC Readiness Prediction Model**
-- User story: *As a teacher, I want MathPath to predict which of my students are at risk of scoring below proficient on the spring SBAC so that I can prioritize intervention before the test.*
+- User story: *As a teacher, I want PADI.AI to predict which of my students are at risk of scoring below proficient on the spring SBAC so that I can prioritize intervention before the test.*
 - Priority: P1
 - Effort: L
 - Dependencies: F41; F24; ML model trained on BKT data + SBAC outcomes
 
 **F68: Multilingual UI — Spanish (ES)**
-- User story: *As a Spanish-speaking parent, I want the MathPath parent dashboard and email reports in Spanish so that I can understand my child's progress without needing an interpreter.*
+- User story: *As a Spanish-speaking parent, I want the PADI.AI parent dashboard and email reports in Spanish so that I can understand my child's progress without needing an interpreter.*
 - Priority: P1
 - Effort: M
 - Dependencies: F26, F27; professional translation; i18n library
@@ -675,13 +675,13 @@ The platform serves three user types:
 - Dependencies: F21, F32
 
 **F70: District License Billing & Contract Flow**
-- User story: *As a district business administrator, I want to receive a formal proposal, sign a multi-year district license agreement, and be invoiced annually, so that MathPath can be funded through our district EdTech budget.*
+- User story: *As a district business administrator, I want to receive a formal proposal, sign a multi-year district license agreement, and be invoiced annually, so that PADI.AI can be funded through our district EdTech budget.*
 - Priority: P0 (for district revenue)
 - Effort: M
 - Dependencies: F49; contract template; legal review
 
 **F71: University Research Partnership Data Export**
-- User story: *As a university researcher partnered with MathPath, I want to access anonymized student outcome data via a secure, IRB-compliant data export so that I can conduct independent outcome evaluation.*
+- User story: *As a university researcher partnered with PADI.AI, I want to access anonymized student outcome data via a secure, IRB-compliant data export so that I can conduct independent outcome evaluation.*
 - Priority: P1
 - Effort: M
 - Dependencies: F41; F24; IRB-compliant anonymization pipeline; university research partner identified
@@ -788,7 +788,7 @@ A key non-engineering resource needed from Stage 2 onward. This is a part-time c
 
 ### Solo Development Mode — Revised Timeline & Assumptions
 
-> **Updated April 2026:** MathPath Oregon is being built by a single developer using Claude Code AI agents as the primary development force multiplier. This section supersedes the team-based estimates above for planning purposes.
+> **Updated April 2026:** PADI.AI is being built by a single developer using Claude Code AI agents as the primary development force multiplier. This section supersedes the team-based estimates above for planning purposes.
 
 #### Development Model
 
@@ -1041,7 +1041,7 @@ MMP Launch (M24)
 | Stage 6 (Months 21–24): Full Product | +4 weeks | SSO integrations (Google, Clever) have approval processes with 4–8 week review queues |
 | **Total recommended buffer** | **+17 weeks** | Apply as 2-week buffers at end of each stage rather than lumped at end |
 
-**Buffering approach:** Do not compress buffers to hit dates. MathPath's credibility with schools depends entirely on reliability and quality. A 2-week delay in MVP launch is recoverable. Shipping a bad diagnostic to schools is not. Quality gate > timeline.
+**Buffering approach:** Do not compress buffers to hit dates. PADI.AI's credibility with schools depends entirely on reliability and quality. A 2-week delay in MVP launch is recoverable. Shipping a bad diagnostic to schools is not. Quality gate > timeline.
 
 **Go/No-Go Criteria at Each Stage:**
 
@@ -1055,4 +1055,4 @@ MMP Launch (M24)
 
 ---
 
-*Document prepared by MathPath Oregon founding team — April 2026. All estimates are projections based on comparable EdTech product development experience. Timelines assume two full-time founders with full-stack engineering capability and one part-time math education consultant.*
+*Document prepared by PADI.AI founding team — April 2026. All estimates are projections based on comparable EdTech product development experience. Timelines assume two full-time founders with full-stack engineering capability and one part-time math education consultant.*

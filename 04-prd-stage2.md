@@ -1,5 +1,5 @@
 # PRD Stage 2: Personalized Learning Plan Generator
-## MathPath Oregon | Version 1.0 | Target Completion: Month 6
+## PADI.AI | Version 1.0 | Target Completion: Month 6
 
 ---
 
@@ -30,7 +30,7 @@ The learning plan is the product's core value proposition to parents: a clear, a
 
 ### What "Personalized Learning Plan" Means in This System
 
-A learning plan in MathPath Oregon is a **hierarchically structured, dependency-sorted sequence of learning modules**, where:
+A learning plan in PADI.AI is a **hierarchically structured, dependency-sorted sequence of learning modules**, where:
 
 - **The sequence** is determined by the skill dependency graph (FR-6): foundational skills first, derived skills after. A student who needs both 3.OA.C.7 and 4.NBT.B.5 sees multiplication facts before multi-digit multiplication.
 - **The content** of each module is calibrated to the student's BKT P(mastered) state: a student at P(mastered) = 0.10 starts with foundational concept-building questions; a student at P(mastered) = 0.50 starts with application-level practice.
@@ -640,7 +640,7 @@ async def generate_learning_plan(student_id: str) -> str:  # returns plan_id
     )
     
     # Step 10: Publish plan_generated event
-    await redis.xadd('mathpath:events', {
+    await redis.xadd('padi:events', {
         'event_type': 'plan_generated',
         'student_id': student_id,
         'plan_id': plan_id,
@@ -779,7 +779,7 @@ Full prompt template for o3-mini question generation (see also Section 2.6 for c
 
 ```
 SYSTEM:
-You are an expert elementary mathematics question writer creating content for MathPath Oregon,
+You are an expert elementary mathematics question writer creating content for PADI.AI,
 an adaptive math learning app for Oregon 4th graders. You write questions that are:
 - Mathematically accurate and unambiguous
 - Written at a 4th-grade reading level (Flesch-Kincaid Grade Level 3-5)
@@ -1027,7 +1027,7 @@ Promotion to `questions` table is done by a daily batch job that:
 
 To avoid generating semantically duplicate questions:
 - Before generating a new question for a `(standard_code, difficulty_level, question_type, context_type)` combination, check if the pool already has ≥ 20 validated questions for that combination. If yes, skip generation for that combination.
-- A Redis set `mathpath:gen:pool:{standard_code}:{difficulty}:{type}:{context}` tracks current count. Updated when questions are promoted.
+- A Redis set `padi:gen:pool:{standard_code}:{difficulty}:{type}:{context}` tracks current count. Updated when questions are promoted.
 - Embedding-based deduplication: new generated questions are embedded using a lightweight sentence embedding model (all-MiniLM-L6-v2, 384 dimensions, stored in pgvector). Before storing a new question, compute cosine similarity against all questions for the same standard. If any question has cosine similarity > 0.92, the new question is flagged as a near-duplicate and discarded.
 
 ```python
@@ -1143,7 +1143,7 @@ Respond with JSON:
 - **Claude Haiku** (alignment + safety): 2 calls/question × 200 tokens average = 400 tokens/call. Haiku pricing ~$0.00025/1K input. Cost per question: ~$0.0001. Negligible.
 - **Rate limiting**: A global rate limiter (token bucket, implemented in Redis) caps o3-mini calls at 500 RPM to stay within API tier limits. Workers check rate limit before each API call.
 - **Cost tracking**: Each LLM API call records tokens used and estimated cost in `generation_jobs.llm_cost_usd`. A daily alert fires if daily LLM spend exceeds $5.
-- **Budget hard stop**: A Redis counter `mathpath:llm:daily_spend_cents` accumulates daily spend. If it exceeds 1000 cents ($10), generation workers stop accepting new jobs for the remainder of the day and alert the ops team.
+- **Budget hard stop**: A Redis counter `padi:llm:daily_spend_cents` accumulates daily spend. If it exceeds 1000 cents ($10), generation workers stop accepting new jobs for the remainder of the day and alert the ops team.
 
 **FR-8.12 — Generation Job Management**
 
@@ -1153,7 +1153,7 @@ Generation jobs are managed via the `generation_jobs` table and Celery:
 # Celery task definition
 from celery import Celery
 
-app = Celery('mathpath', broker='redis://redis:6379/1')
+app = Celery('padi-ai', broker='redis://redis:6379/1')
 
 @app.task(max_retries=2, default_retry_delay=60)
 def generate_question_batch(job_id: str):
@@ -1355,7 +1355,7 @@ Initial badge set at Stage 2 launch:
 | `fast_learner` | Fast Learner | Master a module in 2 or fewer sessions | Rocket |
 | `oregon_explorer` | Oregon Explorer | Complete 5 word problems with Oregon context | State outline |
 
-Badge award events are published to Redis Streams (`mathpath:events`) and consumed by a badge worker that checks conditions and inserts into `student_badges` table. The student dashboard polls for new badges on load and shows a celebration animation (confetti + modal) for any badge earned since last login.
+Badge award events are published to Redis Streams (`padi:events`) and consumed by a badge worker that checks conditions and inserts into `student_badges` table. The student dashboard polls for new badges on load and shows a celebration animation (confetti + modal) for any badge earned since last login.
 
 **FR-9.8 — Mobile-Responsive Layout**
 
@@ -1463,7 +1463,7 @@ The parent dashboard prominently features the recommended next action:
 **FR-10.7 — Weekly Summary Email**
 
 An optional weekly email (opt-in, default: enabled) is sent to the parent every Sunday at 6 PM Pacific with:
-- Subject: "Jayden's MathPath Week in Review — [Date Range]"
+- Subject: "Jayden's PADI.AI Week in Review — [Date Range]"
 - Content: time spent, sessions completed, skills mastered this week, current streak, encouragement, CTA to view full plan.
 - Template: HTML email, responsive, tested on Gmail, Apple Mail, Outlook.
 - Unsubscribe link in every email (CANSPAM compliance).
@@ -1758,7 +1758,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS
 
 ## 2.5 API Endpoints
 
-All new Stage 2 endpoints. Base URL: `https://api.mathpath.org/api/v1`
+All new Stage 2 endpoints. Base URL: `https://api.padi.ai/api/v1`
 
 ---
 
@@ -2233,7 +2233,7 @@ Full production prompt templates for all LLM calls in the Stage 2 pipeline.
 
 ```
 SYSTEM:
-You are an expert elementary mathematics question writer for MathPath Oregon, an adaptive 
+You are an expert elementary mathematics question writer for PADI.AI, an adaptive 
 math learning app for Oregon 4th graders (typically age 9). Your questions are used in an 
 adaptive learning system and must meet strict quality standards.
 
@@ -2512,7 +2512,7 @@ Respond with ONLY this JSON:
 - [ ] AC-13.6: Deduplication: generating a semantically identical question (cosine similarity > 0.92) to an existing question results in the new question being discarded (not stored).
 - [ ] AC-13.7: Pipeline throughput: 4 workers sustain ≥ 100 validated questions per hour in a load test (simulated with mocked LLM responses).
 - [ ] AC-13.8: LLM cost tracking: each completed generation job records a non-zero `llm_cost_usd` value in the `generation_jobs` table.
-- [ ] AC-13.9: Daily spend hard stop: when `mathpath:llm:daily_spend_cents` > 1000, new generation jobs are not dequeued by workers (verified in integration test with mocked Redis counter).
+- [ ] AC-13.9: Daily spend hard stop: when `padi:llm:daily_spend_cents` > 1000, new generation jobs are not dequeued by workers (verified in integration test with mocked Redis counter).
 - [ ] AC-13.10: By the end of a simulated 30-day generation run (using mocked LLM, pipeline runs real validation logic), the `questions` table contains ≥ 5,000 validated records.
 - [ ] AC-13.11: Every generated question for standard code X is rejected if the alignment verification model returns `tests_the_standard: false` with high confidence. Verified via test with a deliberately off-standard question injected into pipeline.
 
@@ -2570,5 +2570,5 @@ Respond with ONLY this JSON:
 ---
 
 *End of PRD Stage 2 — Version 1.0*  
-*MathPath Oregon | Personalized Learning Plan Generator*  
+*PADI.AI | Personalized Learning Plan Generator*  
 *Target Completion: Month 6*

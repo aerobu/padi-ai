@@ -1,4 +1,4 @@
-# Product Strategy: MathPath Oregon
+# Product Strategy: PADI.AI
 
 *Version 1.0 — April 2026 | Confidential — Internal Strategy Document*
 
@@ -10,11 +10,11 @@
 
 **"Every Oregon child arrives at middle school mathematically confident — regardless of zip code, income, or prior performance."**
 
-By 2036, MathPath Oregon becomes the default adaptive math infrastructure for Oregon elementary education: a platform trusted by districts, beloved by families, and validated by measurable learning-outcome data showing sustained proficiency gains above the national average. We expand from Oregon into the Pacific Northwest and ultimately serve any state willing to build a rigorous, standards-aligned, AI-driven math learning layer for its students. In doing so, we disprove the education technology industry's "5% problem" — the historical ceiling of ~5% outcome improvement — and replace it with a new standard: 20%+ proficiency lift, documented and reproducible.
+By 2036, PADI.AI becomes the default adaptive math infrastructure for Oregon elementary education: a platform trusted by districts, beloved by families, and validated by measurable learning-outcome data showing sustained proficiency gains above the national average. We expand from Oregon into the Pacific Northwest and ultimately serve any state willing to build a rigorous, standards-aligned, AI-driven math learning layer for its students. In doing so, we disprove the education technology industry's "5% problem" — the historical ceiling of ~5% outcome improvement — and replace it with a new standard: 20%+ proficiency lift, documented and reproducible.
 
 ### Mission Statement
 
-**"MathPath Oregon closes the math proficiency gap for Oregon 4th graders by delivering AI-generated, standards-exact adaptive instruction — diagnosing exactly where each student is, building personalized learning paths from the ground up, and continuously adapting until mastery is real."**
+**"PADI.AI closes the math proficiency gap for Oregon 4th graders by delivering AI-generated, standards-exact adaptive instruction — diagnosing exactly where each student is, building personalized learning paths from the ground up, and continuously adapting until mastery is real."**
 
 The mission is specific: Oregon, 4th grade, math. We are not trying to be everything to every learner. We are building the deepest, most accurate math learning experience for one cohort in one state — and doing it better than anything that exists today.
 
@@ -30,13 +30,13 @@ Our core belief: **children learn math when instruction meets them precisely whe
 
 ### Product Category Definition
 
-MathPath Oregon is an **AI-powered adaptive standards mastery platform** — a category distinct from:
+PADI.AI is an **AI-powered adaptive standards mastery platform** — a category distinct from:
 
 - **Drill-and-practice apps** (IXL, Prodigy): These generate repetitive exercises mapped to standards but do not diagnose prerequisite gaps, adapt at the sub-concept level in real-time, or use frontier LLMs to generate infinite novel question variations.
 - **Video-lecture platforms** (Khan Academy, Zearn): These deliver content but rely on passive consumption; mastery is inferred rather than measured via psychometric models.
 - **Game-based learning apps** (DreamBox, Prodigy): These use engagement mechanics (game loops, badges) to drive retention but sacrifice instructional fidelity for fun; their adaptive algorithms are proprietary black boxes with limited validation.
 
-MathPath Oregon occupies a distinct position: **diagnostic-first, prerequisite-aware, standards-exact, AI-generated adaptive instruction** — closer in ambition to a private math tutor than to a gamified practice app.
+PADI.AI occupies a distinct position: **diagnostic-first, prerequisite-aware, standards-exact, AI-generated adaptive instruction** — closer in ambition to a private math tutor than to a gamified practice app.
 
 ### Target Customer Segments
 
@@ -63,7 +63,7 @@ MathPath Oregon occupies a distinct position: **diagnostic-first, prerequisite-a
 
 ### Positioning Statement
 
-> **"For Oregon families and teachers with 4th graders who are struggling in math, MathPath Oregon is the AI-powered adaptive standards mastery platform that delivers measurable proficiency gains by diagnosing and remediating the exact prerequisite gaps blocking each student — unlike IXL, DreamBox, and Khan Academy, which practice at grade level without addressing the 3rd-grade foundational gaps that cause most 4th-grade math failure — because MathPath is the only platform built on the Oregon-specific 2021 Math Standards, powered by frontier AI that generates unlimited novel practice problems, and guided by a diagnostic-first BKT+IRT adaptive engine that never advances a student until mastery is real."**
+> **"For Oregon families and teachers with 4th graders who are struggling in math, PADI.AI is the AI-powered adaptive standards mastery platform that delivers measurable proficiency gains by diagnosing and remediating the exact prerequisite gaps blocking each student — unlike IXL, DreamBox, and Khan Academy, which practice at grade level without addressing the 3rd-grade foundational gaps that cause most 4th-grade math failure — because PADI.AI is the only platform built on the Oregon-specific 2021 Math Standards, powered by frontier AI that generates unlimited novel practice problems, and guided by a diagnostic-first BKT+IRT adaptive engine that never advances a student until mastery is real."**
 
 ### Brand Pillars
 
@@ -71,7 +71,7 @@ MathPath Oregon occupies a distinct position: **diagnostic-first, prerequisite-a
 
 2. **Depth** — We go deeper than any competitor on standards fidelity. We built our standards database from the CC-licensed 2021 Oregon Math Standards — 29 standards across 5 domains — not a generic Common Core mapping. Every question we generate is tagged to a specific standard, sub-skill, and prerequisite chain. Depth is not a feature; it is our foundation.
 
-3. **Equity** — Oregon's math crisis is not evenly distributed. Rural schools, low-income families, and students of color bear a disproportionate share of the 69% non-proficiency rate. MathPath is designed to serve these students first: a free diagnostic tier ensures access, Title I pricing makes school adoption affordable, and our platform works on any device with a browser.
+3. **Equity** — Oregon's math crisis is not evenly distributed. Rural schools, low-income families, and students of color bear a disproportionate share of the 69% non-proficiency rate. PADI.AI is designed to serve these students first: a free diagnostic tier ensures access, Title I pricing makes school adoption affordable, and our platform works on any device with a browser.
 
 4. **Trustworthiness** — We serve children under 13. COPPA and FERPA compliance is non-negotiable. We never sell student data. Our AI question generation pipeline has a human validation layer that maintains ≥75% accuracy before any question reaches a student. Parents have full visibility and control over their child's data.
 
@@ -81,23 +81,23 @@ MathPath Oregon occupies a distinct position: **diagnostic-first, prerequisite-a
 
 ### Differentiator 1: Oregon-Specific Standards Fidelity
 
-**What it is:** MathPath is built on the 2021 Oregon Mathematics Standards (CC-licensed), specifically mapping all 29 Grade 4 standards across 5 domains: Operations & Algebraic Thinking (OA), Number & Operations in Base Ten (NBT), Number & Operations — Fractions (NF), Measurement & Data (MD), and Geometry (G). Every question, every learning plan, every diagnostic item, and every mastery assessment is tagged directly to one of these 29 standards — not to a generic "Common Core" label that may not perfectly match Oregon's current adopted version.
+**What it is:** PADI.AI is built on the 2021 Oregon Mathematics Standards (CC-licensed), specifically mapping all 29 Grade 4 standards across 5 domains: Operations & Algebraic Thinking (OA), Number & Operations in Base Ten (NBT), Number & Operations — Fractions (NF), Measurement & Data (MD), and Geometry (G). Every question, every learning plan, every diagnostic item, and every mastery assessment is tagged directly to one of these 29 standards — not to a generic "Common Core" label that may not perfectly match Oregon's current adopted version.
 
-**Why this matters vs. generic CC platforms:** The 2021 Oregon Math Standards differ from generic CC in several important ways: Oregon added specific computational fluency expectations, adjusted sequencing of fraction concepts, and embedded mathematical practices into domain-specific standards in ways that reflect Oregon's instructional philosophy. Platforms like IXL and Khan Academy use the Common Core State Standards as their reference, which creates alignment gaps for Oregon teachers trying to prepare students for Oregon's SBAC assessment. When a teacher uses MathPath and sees "Standard 4.NBT.B.5 — Multiply multi-digit numbers using strategies based on place value and properties of operations," they know that label maps exactly to what Oregon's SBAC will assess. This is not a minor convenience — it is the difference between a platform being usable in a classroom for standards-based instruction versus being a supplemental drill tool with a generic label.
+**Why this matters vs. generic CC platforms:** The 2021 Oregon Math Standards differ from generic CC in several important ways: Oregon added specific computational fluency expectations, adjusted sequencing of fraction concepts, and embedded mathematical practices into domain-specific standards in ways that reflect Oregon's instructional philosophy. Platforms like IXL and Khan Academy use the Common Core State Standards as their reference, which creates alignment gaps for Oregon teachers trying to prepare students for Oregon's SBAC assessment. When a teacher uses PADI.AI and sees "Standard 4.NBT.B.5 — Multiply multi-digit numbers using strategies based on place value and properties of operations," they know that label maps exactly to what Oregon's SBAC will assess. This is not a minor convenience — it is the difference between a platform being usable in a classroom for standards-based instruction versus being a supplemental drill tool with a generic label.
 
 **The competitive moat:** Building this Oregon-specific standards database required manually cross-referencing the 2021 Oregon standards document, the Oregon SBAC blueprint, and the ODE's grade-by-grade progressions — work that no national competitor has done for a state with 600,000 K-12 students. As we expand to Washington and California, we will build the same state-specific depth, creating a compounding moat: no national competitor can afford to go this deep for every state.
 
 ### Differentiator 2: AI-Generated Adaptive Content with Frontier LLMs
 
-**What it is:** MathPath does not rely on a static question bank. Every practice problem is generated on-demand by a multi-agent pipeline using Claude Sonnet (Anthropic), GPT-4o (OpenAI), and o3-mini (OpenAI) — with a validation layer that checks mathematical correctness, grade-level language appropriateness, and standard alignment before any question reaches a student. The generation pipeline is built on LangGraph, enabling a structured agent workflow: a Generator agent creates the question, a Validator agent checks mathematical accuracy and language complexity, a Standard Tagger agent confirms alignment, and a Difficulty Calibrator agent adjusts parameters based on the student's current BKT probability.
+**What it is:** PADI.AI does not rely on a static question bank. Every practice problem is generated on-demand by a multi-agent pipeline using Claude Sonnet (Anthropic), GPT-4o (OpenAI), and o3-mini (OpenAI) — with a validation layer that checks mathematical correctness, grade-level language appropriateness, and standard alignment before any question reaches a student. The generation pipeline is built on LangGraph, enabling a structured agent workflow: a Generator agent creates the question, a Validator agent checks mathematical accuracy and language complexity, a Standard Tagger agent confirms alignment, and a Difficulty Calibrator agent adjusts parameters based on the student's current BKT probability.
 
-**The infinite variety advantage:** Static question banks (IXL, Zearn) are finite. A motivated student practicing a concept 20 times starts seeing repeated or near-identical questions, reducing the cognitive load that drives learning. More insidiously, students can memorize specific question-answer pairs rather than developing underlying procedural fluency. MathPath generates genuinely novel questions for every practice session — changing surface structure (numbers, context, word problem scenario) while holding the underlying mathematical concept constant. This means a student practicing 4.NF.B.3 (adding fractions with like denominators) encounters a different real-world scenario, different denominator, and different number combination every time, forcing genuine concept application rather than pattern memorization.
+**The infinite variety advantage:** Static question banks (IXL, Zearn) are finite. A motivated student practicing a concept 20 times starts seeing repeated or near-identical questions, reducing the cognitive load that drives learning. More insidiously, students can memorize specific question-answer pairs rather than developing underlying procedural fluency. PADI.AI generates genuinely novel questions for every practice session — changing surface structure (numbers, context, word problem scenario) while holding the underlying mathematical concept constant. This means a student practicing 4.NF.B.3 (adding fractions with like denominators) encounters a different real-world scenario, different denominator, and different number combination every time, forcing genuine concept application rather than pattern memorization.
 
 **The 75%+ validated accuracy standard:** AI-generated math content has a known failure mode: LLMs occasionally generate mathematically incorrect questions or answers, particularly for multi-step problems or complex fraction operations. Our validation pipeline addresses this: the Validator agent checks every generated question's answer programmatically (using Python's SymPy library for algebraic verification where possible) and semantically (using a second LLM pass). Questions that fail validation are rejected and regenerated. Human reviewers spot-check a 10% sample weekly. Our internal target is ≥75% first-pass validation rate; rejected questions are logged and used to fine-tune generation prompts. This is not a minor engineering detail — it is the trust layer that makes teacher and parent adoption possible.
 
 ### Differentiator 3: Structured Diagnostic-to-Mastery Pipeline
 
-**What it is:** MathPath's core instructional architecture is not "practice until you get 80% correct three times in a row" (the implicit model of most competitors). It is a structured six-stage pipeline:
+**What it is:** PADI.AI's core instructional architecture is not "practice until you get 80% correct three times in a row" (the implicit model of most competitors). It is a structured six-stage pipeline:
 
 1. **Diagnostic Entry Assessment** — Adaptive 20-30 item assessment on entry, using IRT item calibration to efficiently estimate the student's ability level across all 29 Grade 4 standards in approximately 20-25 minutes.
 2. **Gap Analysis vs. Grade Baseline** — The diagnostic output is compared to the Oregon Grade 4 standard-by-standard expected mastery sequence to identify which standards the student has mastered, which are in progress, and which are blocked by prerequisite gaps.
@@ -106,15 +106,15 @@ MathPath Oregon occupies a distinct position: **diagnostic-first, prerequisite-a
 5. **End-of-Grade Summative Assessment** — Periodic full-coverage assessment (every 8-10 weeks) that mirrors SBAC format and validates BKT estimates against held-out items. Results are reported in the same language Oregon teachers use.
 6. **Continued Remediation Loop** — Standards not yet mastered cycle back into the learning plan. The system never marks a student "done" until they have demonstrated mastery across all 29 Grade 4 standards at the specified BKT threshold (P(mastery) ≥ 0.90).
 
-**Why this beats "practice until mastery":** The simplest adaptive model — "practice this concept until you get enough correct answers" — fails because correct answers alone are a noisy signal. A student can answer 3 of 4 fraction questions correctly by applying a procedural trick learned by rote, while the BKT model correctly detects that their slip rate and guess rate indicate fragile, not genuine, mastery. More importantly, the structured pipeline sequences remediation intelligently: rather than practicing Grade 4 content the student cannot yet access, MathPath backs up to Grade 3 prerequisite gaps, fills them, and then returns to Grade 4 content — a strategy no competitor implements systematically.
+**Why this beats "practice until mastery":** The simplest adaptive model — "practice this concept until you get enough correct answers" — fails because correct answers alone are a noisy signal. A student can answer 3 of 4 fraction questions correctly by applying a procedural trick learned by rote, while the BKT model correctly detects that their slip rate and guess rate indicate fragile, not genuine, mastery. More importantly, the structured pipeline sequences remediation intelligently: rather than practicing Grade 4 content the student cannot yet access, PADI.AI backs up to Grade 3 prerequisite gaps, fills them, and then returns to Grade 4 content — a strategy no competitor implements systematically.
 
 ### Differentiator 4: Prerequisite Remediation (3rd-Grade Gap Identification)
 
-**What it is:** When MathPath's diagnostic identifies that a student's struggles with Grade 4 content are rooted in unmastered Grade 3 concepts, the system automatically loads Grade 3 Oregon Math Standards content and sequences it before the Grade 4 concept. For example, a student who cannot access 4.NF (fractions) because they never mastered 3.NF.A.1 (understanding fractions as part of a whole) will receive targeted 3.NF practice first — invisible to the student, who simply sees "today's math challenge," but critical to building the cognitive foundation for Grade 4 fraction operations.
+**What it is:** When PADI.AI's diagnostic identifies that a student's struggles with Grade 4 content are rooted in unmastered Grade 3 concepts, the system automatically loads Grade 3 Oregon Math Standards content and sequences it before the Grade 4 concept. For example, a student who cannot access 4.NF (fractions) because they never mastered 3.NF.A.1 (understanding fractions as part of a whole) will receive targeted 3.NF practice first — invisible to the student, who simply sees "today's math challenge," but critical to building the cognitive foundation for Grade 4 fraction operations.
 
 **Why no competitor does this well:** This is the most important differentiator and the one most clearly explained by incentive structures. IXL, Khan Academy, and DreamBox are all designed around grade-level content. Their business model is "4th grade math for 4th graders." Systematically routing a 4th grader to 3rd grade content creates three problems for them: (1) parents perceive it as regression and may cancel subscriptions, (2) their standards alignment is designed for single-grade use, not cross-grade prerequisite chains, and (3) their content libraries, while broad, are not designed with explicit prerequisite relationships between Grade 3 and Grade 4 standards.
 
-MathPath solves this by: (a) building the prerequisite graph explicitly as a data structure (not an implicit assumption), where each Grade 4 standard has a documented set of Grade 3 (and in some cases Grade 2) prerequisites; (b) framing prerequisite remediation as "building your math foundation" rather than "going back to easier content," which preserves student motivation; and (c) making the prerequisite chain visible in parent and teacher dashboards so adults understand the pedagogical rationale. This is the mechanism by which we expect to beat the "5% problem" — the prerequisite gap is the primary driver of stalled progress, and we are the only platform that addresses it structurally.
+PADI.AI solves this by: (a) building the prerequisite graph explicitly as a data structure (not an implicit assumption), where each Grade 4 standard has a documented set of Grade 3 (and in some cases Grade 2) prerequisites; (b) framing prerequisite remediation as "building your math foundation" rather than "going back to easier content," which preserves student motivation; and (c) making the prerequisite chain visible in parent and teacher dashboards so adults understand the pedagogical rationale. This is the mechanism by which we expect to beat the "5% problem" — the prerequisite gap is the primary driver of stalled progress, and we are the only platform that addresses it structurally.
 
 ---
 
@@ -168,7 +168,7 @@ MathPath solves this by: (a) building the prerequisite graph explicitly as a dat
 **Channel strategy:**
 - **Oregon education Facebook groups** (primary): "Oregon Parents for Public Education," "Beaverton School District Parents," "Portland Public Schools Families" — post outcome data from beta, offer first-month free trial
 - **Nextdoor** (primary): Geo-targeted posts in Oregon cities with large elementary school populations (Portland, Salem, Eugene, Beaverton, Hillsboro, Bend)
-- **School newsletters** (secondary): Partner with 5–10 individual teachers from Phase 1 beta to include MathPath in their class newsletter as a recommended resource
+- **School newsletters** (secondary): Partner with 5–10 individual teachers from Phase 1 beta to include PADI.AI in their class newsletter as a recommended resource
 - **Oregon PTA chapters** (secondary): Attend Oregon PTA meetings in Beaverton and Portland; sponsor one Oregon PTA newsletter ad ($500–$1,000 test budget)
 - **Google Ads** (test): Small-budget ($1,000/month) test campaign targeting "Oregon math tutor 4th grade," "Oregon SBAC prep math," "math help 4th grade Oregon"
 - **SBAC results season (Oct–Nov)**: Heavy push in September–November when families receive state test score reports and urgency is highest
@@ -193,7 +193,7 @@ MathPath solves this by: (a) building the prerequisite graph explicitly as a dat
 - ≥15% free-to-paid conversion (target: 75 paying families by Month 12)
 - Monthly Recurring Revenue (MRR): ~$1,125 (75 × $14.99) by Month 12
 - Collect 3-month outcome data showing ≥10% average proficiency gain vs. diagnostic baseline
-- Establish 1–2 school partnerships (teacher using MathPath in classroom, providing school-level outcome data)
+- Establish 1–2 school partnerships (teacher using PADI.AI in classroom, providing school-level outcome data)
 
 ---
 
@@ -209,7 +209,7 @@ MathPath solves this by: (a) building the prerequisite graph explicitly as a dat
 **Channel strategy:**
 - **Direct school sales:** Founder-led outreach to principals and instructional coaches in target districts (Beaverton SD, Portland Public, Salem-Keizer, Hillsboro SD, Eugene 4J)
 - **EdTech conferences:** Oregon OETC (Oregon Educational Technology Conference, February annually) — exhibit booth + presentation on outcome data; ISTE (national; attend as attendee first year)
-- **Title I coordinator outreach:** Email + phone outreach to Title I coordinators in Oregon's 40+ Title I-eligible elementary schools in Portland metro area; position MathPath as a ESSA-fundable intervention tool
+- **Title I coordinator outreach:** Email + phone outreach to Title I coordinators in Oregon's 40+ Title I-eligible elementary schools in Portland metro area; position PADI.AI as a ESSA-fundable intervention tool
 - **Outcome data PR:** If Phase 2 generates strong outcome data (≥15% proficiency gain), pitch to Oregon newspapers (The Oregonian, Salem Statesman Journal) and education publications (EdSurge)
 
 **School pricing model:**
@@ -228,7 +228,7 @@ MathPath solves this by: (a) building the prerequisite graph explicitly as a dat
 - 1,500+ active monthly students (school + consumer combined)
 - MRR: ~$4,000–$6,000 (consumer) + first school license revenue
 - Net Promoter Score from teachers: ≥50
-- Publishable outcome data: ≥20% average proficiency gain for students with ≥30 hours of MathPath use
+- Publishable outcome data: ≥20% average proficiency gain for students with ≥30 hours of PADI.AI use
 
 ---
 
@@ -263,7 +263,7 @@ MathPath solves this by: (a) building the prerequisite graph explicitly as a dat
 
 ### Claim
 
-> MathPath Oregon will improve student math proficiency rates by **15–25 percentage points** among engaged students (defined as ≥10 completed sessions), compared to the ~5% real-world improvement documented for current platforms (Holt, 2024).
+> PADI.AI will improve student math proficiency rates by **15–25 percentage points** among engaged students (defined as ≥10 completed sessions), compared to the ~5% real-world improvement documented for current platforms (Holt, 2024).
 
 ### Why Existing Platforms Achieve Only ~5%
 
@@ -271,11 +271,11 @@ Holt (2024) analyzed 14 studies of platforms including i-Ready, DreamBox, Khan A
 
 The root cause: these are **answer-level feedback systems**. VanLehn (2011) showed answer-level systems achieve only d = 0.30 regardless of sophistication. Reaching d = 0.76 (near-equivalent to human tutoring) requires step-level feedback — which requires an AI tutoring agent.
 
-### MathPath's Four Evidence-Backed Mechanisms
+### PADI.AI's Four Evidence-Backed Mechanisms
 
 **Mechanism 1 — Prerequisite Gap Remediation First**
 
-Existing platforms place students into grade-level content regardless of foundational mastery. MathPath diagnoses and remediates 3rd-grade prerequisite skills *before* exposing students to 4th-grade content. The What Works Clearinghouse practice guide on elementary math intervention (Fuchs et al., 2021) rates prerequisite-grounded instruction as its highest-evidence recommendation for students struggling with math. Fuchs et al. (2008) demonstrated that unaddressed foundational skill gaps are the primary driver of persistent difficulty across elementary grades.
+Existing platforms place students into grade-level content regardless of foundational mastery. PADI.AI diagnoses and remediates 3rd-grade prerequisite skills *before* exposing students to 4th-grade content. The What Works Clearinghouse practice guide on elementary math intervention (Fuchs et al., 2021) rates prerequisite-grounded instruction as its highest-evidence recommendation for students struggling with math. Fuchs et al. (2008) demonstrated that unaddressed foundational skill gaps are the primary driver of persistent difficulty across elementary grades.
 
 **Mechanism 2 — Step-Level Socratic Feedback (d = 0.76 vs. d = 0.30)**
 
@@ -284,19 +284,19 @@ VanLehn (2011) compared tutoring modalities across 62 studies:
 - Step-level intelligent tutoring systems (ITS with Socratic guidance): effect size **d = 0.76**
 - Human tutors: effect size **d = 0.79**
 
-MathPath's Tutor Agent guides students through reasoning steps rather than simply marking answers right or wrong — moving from the d = 0.30 to the d = 0.76 band.
+PADI.AI's Tutor Agent guides students through reasoning steps rather than simply marking answers right or wrong — moving from the d = 0.30 to the d = 0.76 band.
 
 **Mechanism 3 — BKT Mastery Gating + Spaced Practice**
 
-MathPath prevents students from advancing past a skill until BKT probability of mastery reaches P(mastered) ≥ 0.85. This operationalizes Bloom's (1984) mastery learning approach, which meta-analyses show produces effect sizes of d = 0.5–1.0 (Ma et al., 2014; Kulik & Fletcher, 2016). Combined with spaced re-exposure to previously mastered skills — Cepeda et al. (2006) synthesized 839 assessments showing spaced practice outperforms massed practice in 95% of cases — this creates durable retention rather than shallow fluency.
+PADI.AI prevents students from advancing past a skill until BKT probability of mastery reaches P(mastered) ≥ 0.85. This operationalizes Bloom's (1984) mastery learning approach, which meta-analyses show produces effect sizes of d = 0.5–1.0 (Ma et al., 2014; Kulik & Fletcher, 2016). Combined with spaced re-exposure to previously mastered skills — Cepeda et al. (2006) synthesized 839 assessments showing spaced practice outperforms massed practice in 95% of cases — this creates durable retention rather than shallow fluency.
 
 **Mechanism 4 — Error-Type Classification**
 
-MathPath's Assessment Agent classifies error types (procedural vs. conceptual, specific misconception categories) rather than marking responses as correct/incorrect. The IES spaced practice guide (Pashler et al., 2007) identifies targeted error correction as one of the highest-evidence instructional strategies. Different error types require different instructional interventions; MathPath routes each error type to a different hint strategy.
+PADI.AI's Assessment Agent classifies error types (procedural vs. conceptual, specific misconception categories) rather than marking responses as correct/incorrect. The IES spaced practice guide (Pashler et al., 2007) identifies targeted error correction as one of the highest-evidence instructional strategies. Different error types require different instructional interventions; PADI.AI routes each error type to a different hint strategy.
 
 ### Why We Expect to Beat the 2-Sigma Ceiling
 
-Bloom (1984) identified that one-to-one mastery tutoring produces d ≈ 2.0 vs. conventional classroom instruction — the "2 sigma problem." MathPath approximates the components of 1-on-1 tutoring: step-level feedback, error-specific guidance, prerequisite-aware sequencing, and mastery-gated advancement. Recent meta-analyses of intelligent tutoring systems show mean effect sizes of g = 0.42–0.66 vs. conventional instruction (Ma et al., 2014; Kulik & Fletcher, 2016) — well above the ~5% threshold.
+Bloom (1984) identified that one-to-one mastery tutoring produces d ≈ 2.0 vs. conventional classroom instruction — the "2 sigma problem." PADI.AI approximates the components of 1-on-1 tutoring: step-level feedback, error-specific guidance, prerequisite-aware sequencing, and mastery-gated advancement. Recent meta-analyses of intelligent tutoring systems show mean effect sizes of g = 0.42–0.66 vs. conventional instruction (Ma et al., 2014; Kulik & Fletcher, 2016) — well above the ~5% threshold.
 
 ### Measurement Plan
 
@@ -396,7 +396,7 @@ Bloom (1984) identified that one-to-one mastery tutoring produces d ≈ 2.0 vs. 
 2. Post-COVID math recovery still ongoing — federal ESSER III funds (some extended to 2026) available for math intervention tools
 3. AI in EdTech is early — most competitors have not yet deployed frontier LLM question generation; 12–18 month window before major players catch up
 4. Parent demand for supplemental math tools is high and growing — tutoring market expanded significantly post-COVID; families already paying $50–$200/month for human tutors
-5. Oregon DOE's Math Recovery Initiative — state-level alignment opportunity; MathPath could become a recommended tool
+5. Oregon DOE's Math Recovery Initiative — state-level alignment opportunity; PADI.AI could become a recommended tool
 6. Title I equity angle — bipartisan political support for equity-focused EdTech; grant funding available
 7. Adjacent grade expansion (Grades 3, 5, 6) is relatively fast once Grade 4 content is proven — same platform, same engine, new standards layer
 8. Washington and California market entry — two of the largest and most similar state standards markets adjacent to Oregon
@@ -436,7 +436,7 @@ Every student interaction (question attempt, hint request, time-on-task, error p
 Our standards database is not just a list of Oregon standards — it is a directed dependency graph where every standard has documented prerequisite relationships to prior-grade standards. This graph was built by hand, informed by ODE's grade-level progressions and Oregon's SBAC blueprint. It is the structural foundation of our prerequisite remediation differentiator. While the Oregon standards themselves are CC-licensed, the dependency graph and the pedagogical sequencing logic are proprietary. This graph becomes more sophisticated as we learn which prerequisite gaps most frequently block which Grade 4 standards — a data advantage that grows with use.
 
 **Moat 3: School/District Relationships and Data Sharing Agreements**
-Every school that signs a DPA (Data Processing Agreement) with MathPath creates institutional switching costs. Districts that use our platform for 2+ years have student progress data, historical outcome reports, and staff familiarity that makes switching to a competitor costly. The relationship itself — with principals, instructional coaches, and curriculum coordinators — is a durable asset.
+Every school that signs a DPA (Data Processing Agreement) with PADI.AI creates institutional switching costs. Districts that use our platform for 2+ years have student progress data, historical outcome reports, and staff familiarity that makes switching to a competitor costly. The relationship itself — with principals, instructional coaches, and curriculum coordinators — is a durable asset.
 
 **Moat 4: Oregon-Specific Brand Identity**
 "Built in Oregon, for Oregon" is not just marketing — it is a genuine competitive positioning that a national platform cannot replicate. Oregon teachers and parents feel a connection to a locally-built product. Our presence at OETC, relationships with Oregon DOE, and community-level engagement in Oregon education circles create a brand that national platforms cannot easily displace.
@@ -503,7 +503,7 @@ Every school that signs a DPA (Data Processing Agreement) with MathPath creates 
 - KR2.3: ≥ 5 school partnerships (at least 2 paying) by Month 24
 
 **Objective 3: Prove Learning Outcomes**
-- KR3.1: Publish internal outcome report showing average ≥ 20% proficiency gain for students with ≥ 30 hours MathPath use by Month 20
+- KR3.1: Publish internal outcome report showing average ≥ 20% proficiency gain for students with ≥ 30 hours PADI.AI use by Month 20
 - KR3.2: Partner with 1 university researcher for independent outcome evaluation by Month 18
 - KR3.3: ≥ 70% of students who complete full diagnostic + 8-week learning plan advance at least 3 standard masteries
 
@@ -561,4 +561,4 @@ Every school that signs a DPA (Data Processing Agreement) with MathPath creates 
 
 ---
 
-*Document prepared by MathPath Oregon founding team — April 2026. All financial projections are estimates based on comparable EdTech market data. Outcome projections are targets, not guarantees.*
+*Document prepared by PADI.AI founding team — April 2026. All financial projections are estimates based on comparable EdTech market data. Outcome projections are targets, not guarantees.*

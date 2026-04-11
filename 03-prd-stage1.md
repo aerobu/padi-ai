@@ -1,5 +1,5 @@
 # PRD Stage 1: Standards Database & Diagnostic Assessment Engine
-## MathPath Oregon | Version 1.0 | Target Completion: Month 3
+## PADI.AI | Version 1.0 | Target Completion: Month 3
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### Stage Summary
 
-Stage 1 establishes the foundational infrastructure of MathPath Oregon — the Oregon math standards database, the initial question bank, the COPPA-compliant parent/student account system, and the diagnostic assessment engine. Every downstream feature (personalized learning plans, adaptive practice, end-of-grade assessment, remediation) depends on the artifacts produced here: accurate knowledge of what a student currently knows and where their gaps lie.
+Stage 1 establishes the foundational infrastructure of PADI.AI — the Oregon math standards database, the initial question bank, the COPPA-compliant parent/student account system, and the diagnostic assessment engine. Every downstream feature (personalized learning plans, adaptive practice, end-of-grade assessment, remediation) depends on the artifacts produced here: accurate knowledge of what a student currently knows and where their gaps lie.
 
 The diagnostic assessment is the product's first impression. A new student sits down, takes a 35–45 question adaptive assessment that samples all 9 critical Grade 3 prerequisite skills and 4–5 domains of Grade 4 content, and within 60 minutes receives a structured skill-by-skill proficiency profile. That profile is both a parent-facing diagnostic report and the machine-readable BKT (Bayesian Knowledge Tracing) initial state vector that drives every subsequent adaptive decision. Accuracy here is non-negotiable: if a student's P(mastered) is initialized incorrectly, the entire learning plan will be miscalibrated.
 
@@ -33,7 +33,7 @@ The diagnostic assessment is the product's first impression. A new student sits 
 
 - **Foundation readiness**: Deliver a working standards database (29 Grade 4 + 9 Grade 3 prerequisite standards), question bank (~132 seed questions), and adaptive diagnostic engine by Month 3, enabling all subsequent stages to build on a stable base.
 - **COPPA/FERPA compliance from day one**: Establish verifiable parental consent, encrypted PII storage, and data deletion workflows before any student data is collected, reducing legal risk to zero for the launch cohort.
-- **Diagnostic accuracy**: Achieve ≥85% agreement between MathPath diagnostic proficiency classifications and teacher-reported proficiency on a 50-student pilot cohort, validating BKT initialization quality.
+- **Diagnostic accuracy**: Achieve ≥85% agreement between PADI.AI diagnostic proficiency classifications and teacher-reported proficiency on a 50-student pilot cohort, validating BKT initialization quality.
 - **Parent trust**: Deliver a parent dashboard that makes the diagnostic results legible and actionable within 5 minutes of assessment completion, establishing the product's credibility with the primary paying customer.
 - **Platform scalability baseline**: Infrastructure must support 1,000 concurrent assessment sessions from day one, accommodating initial school-district pilots without degradation.
 
@@ -72,7 +72,7 @@ The diagnostic assessment is the product's first impression. A new student sits 
 ### Persona 1: Parent (Account Creator)
 **Name**: Maria, 38, Portland OR  
 **Context**: Mother of 9-year-old Jayden, who is entering 4th grade. Maria is concerned that Jayden struggled with multiplication facts in 3rd grade and wants to understand where he stands before the school year begins. She is comfortable with smartphones and tablets but not a technical user.  
-**Goals**: Create an account quickly; understand what the diagnostic measures; trust that her child's data is safe; receive a clear, plain-language report of results; understand what MathPath will do to help Jayden close gaps.  
+**Goals**: Create an account quickly; understand what the diagnostic measures; trust that her child's data is safe; receive a clear, plain-language report of results; understand what PADI.AI will do to help Jayden close gaps.  
 **Pain points**: COPPA consent flows that are too long or confusing; results reports that use jargon without explanation; unclear data privacy policies; apps that feel designed for teachers, not parents.  
 **Device context**: iPhone 15 or iPad (primary); Mac laptop (secondary).  
 **Stage 1 touchpoints**: Registration, consent flow, child profile creation, parent results dashboard, PDF export.
@@ -117,9 +117,9 @@ The diagnostic assessment is the product's first impression. A new student sits 
   - How data is used (personalized learning, progress tracking, service improvement — never sold to third parties)
   - Who has access to the data (parent, student, future: teacher with parent consent, platform operators)
   - Data retention policy (data retained while account is active; deleted within 30 days of deletion request)
-  - Contact information for privacy inquiries (privacy@mathpath.org)
+  - Contact information for privacy inquiries (privacy@padi.ai)
   - Full link to Privacy Policy and Terms of Service
-- The parent SHALL explicitly check two separate checkboxes: (1) "I have read and agree to the Privacy Policy" and (2) "I provide verifiable parental consent for my child to use MathPath Oregon"
+- The parent SHALL explicitly check two separate checkboxes: (1) "I have read and agree to the Privacy Policy" and (2) "I provide verifiable parental consent for my child to use PADI.AI"
 - Checkboxes SHALL NOT be pre-checked.
 - Consent SHALL be timestamped with ISO 8601 UTC timestamp, IP address (hashed), user agent string, and stored in the `consent_records` table.
 - The system SHALL store consent records indefinitely (not subject to deletion with account deletion) per legal requirements.
@@ -269,7 +269,7 @@ CREATE INDEX idx_standards_code ON standards(code);
 
 **FR-2.3 — Full Seed Data: Grade 3 Prerequisite Standards (9 Standards)**
 
-These 9 standards are the critical prerequisite skills that MathPath Oregon targets for remediation. They represent skills a student should have mastered exiting Grade 3.
+These 9 standards are the critical prerequisite skills that PADI.AI targets for remediation. They represent skills a student should have mastered exiting Grade 3.
 
 | code | domain | description | DOK |
 |------|--------|-------------|-----|
@@ -795,7 +795,7 @@ On final answer submission:
 5. Overall proficiency level calculated.
 6. Assessment record updated: `status = 'completed'`, `completed_at = NOW()`, `overall_level = '...'`.
 7. A `diagnostic_completed` event is published to the application event queue (Redis Streams). This event triggers the learning plan generation pipeline in Stage 2.
-8. Parent notification email sent: "Your child's MathPath diagnostic is complete. View results →" (with link to parent results dashboard).
+8. Parent notification email sent: "Your child's PADI.AI diagnostic is complete. View results →" (with link to parent results dashboard).
 
 **FR-4.12 — Anti-Gaming Measures**
 
@@ -843,16 +843,16 @@ Upon completing the last question:
 - Each bar is color-coded: orange (Below Par), blue (On Par), green (Above Par).
 - Skill names use child-friendly language: "Multiplication Facts" (not "3.OA.C.7"), "Adding Fractions" (not "3.NF.A.1 / 4.NF.B.3"), etc. A mapping table between standard codes and child-friendly names SHALL be maintained in the codebase.
 - Encouraging, non-judgmental copy: "You've got some cool things to learn!" (Below Par) vs. "You're on the path — keep going!" (On Par) vs. "You're ahead of the pack!" (Above Par).
-- A "What's Next?" section teases the learning plan: "MathPath is building your personal math journey. Come back tomorrow to start!" (or "Start now →" if learning plan is ready).
+- A "What's Next?" section teases the learning plan: "PADI.AI is building your personal math journey. Come back tomorrow to start!" (or "Start now →" if learning plan is ready).
 - No numeric percentages shown to the student — only visual bars and level labels.
 
 **FR-5.2 — Parent-Facing Results Screen**
 
-- Section 1: Summary — Child name, overall level, date completed, brief plain-language summary ("Jayden completed the MathPath diagnostic. Here's what we found:").
+- Section 1: Summary — Child name, overall level, date completed, brief plain-language summary ("Jayden completed the PADI.AI diagnostic. Here's what we found:").
 - Section 2: Prerequisite Skills — Table with columns: Skill Name, Standard Code, Result (Below Par / On Par / Above Par), Questions Answered, Accuracy %. Color-coded rows.
 - Section 3: Grade 4 Domain Preview — Donut chart or bar chart showing approximate readiness per domain. Grayed-out domains not yet assessed.
 - Section 4: What This Means — 3–5 bullet points written by a math educator explaining the implications of the results in plain language. Example: "Jayden showed strong addition and subtraction but needs support with multiplication facts, which are foundational for all of 4th grade math."
-- Section 5: What MathPath Will Do — Brief explanation of the adaptive learning plan that will be generated (Stage 2), with estimated weeks to grade-level proficiency.
+- Section 5: What PADI.AI Will Do — Brief explanation of the adaptive learning plan that will be generated (Stage 2), with estimated weeks to grade-level proficiency.
 - Section 6: Tips for Parents — 2–3 actionable suggestions the parent can do at home.
 
 **FR-5.3 — Skill-by-Skill Proficiency Visualization**
@@ -886,14 +886,14 @@ Upon completing the last question:
 **FR-5.7 — "What Comes Next" Preview**
 
 - A dedicated card at the bottom of the results screen (both student and parent views) previews the personalized learning plan.
-- Student view: "MathPath is building your personal adventure map! [Module icon] Multiplication Facts → [Module icon] Fractions → [Module icon] ..."  (shows first 2–3 modules from the generated plan, or a placeholder if the plan isn't generated yet).
+- Student view: "PADI.AI is building your personal adventure map! [Module icon] Multiplication Facts → [Module icon] Fractions → [Module icon] ..."  (shows first 2–3 modules from the generated plan, or a placeholder if the plan isn't generated yet).
 - Parent view: "Jayden's learning plan is being prepared. It will include approximately [N] modules, starting with [Skill Name]. Estimated time to grade-level proficiency: [X weeks] with 20 minutes/day." (these estimates come from Stage 2 learning plan generation).
 - CTA: "Start Learning Now" (active once learning plan is generated in Stage 2) or "Learning plan coming soon..." (grayed out until Stage 2 is ready for the student).
 
 **FR-5.8 — PDF/Print Export**
 
 - A "Download Report (PDF)" button on the parent results screen generates a printable PDF summary.
-- PDF contents: MathPath Oregon branding header, student name (first name only), date, overall level, per-skill breakdown table with accuracy percentages, gap summary, plain-language interpretation, "What comes next" preview.
+- PDF contents: PADI.AI branding header, student name (first name only), date, overall level, per-skill breakdown table with accuracy percentages, gap summary, plain-language interpretation, "What comes next" preview.
 - PDF generated server-side using WeasyPrint (Python) or Puppeteer (Node) with a dedicated `/api/v1/students/:student_id/diagnostic-report.pdf` endpoint.
 - PDF is NOT cached (regenerated on each request to ensure freshness); response time target: < 10 seconds.
 - PDF metadata SHALL NOT include the child's full name or date of birth.
@@ -1260,7 +1260,7 @@ CREATE INDEX idx_sss_proficiency ON student_skill_states(proficiency_level);
 
 ## 1.6 API Endpoints
 
-Base URL: `https://api.mathpath.org/api/v1`  
+Base URL: `https://api.padi.ai/api/v1`  
 All endpoints return `Content-Type: application/json`.  
 All protected endpoints require `Authorization: Bearer <access_token>` header.  
 All responses include `request_id` header for tracing.
@@ -1349,7 +1349,7 @@ Authenticate a parent account.
   }
 }
 ```
-*(Refresh token set as HTTP-only cookie `mathpath_refresh`)*
+*(Refresh token set as HTTP-only cookie `padi_refresh`)*
 
 **Response 401**:
 ```json
@@ -2053,5 +2053,5 @@ S-14 (Student Results) ←──── S-15 (Parent Results) ←─────�
 ---
 
 *End of PRD Stage 1 — Version 1.0*  
-*MathPath Oregon | Standards Database & Diagnostic Assessment Engine*  
+*PADI.AI | Standards Database & Diagnostic Assessment Engine*  
 *Target Completion: Month 3*

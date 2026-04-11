@@ -1,6 +1,6 @@
-# Contributing to MathPath Oregon
+# Contributing to PADI.AI
 
-Thank you for your interest in contributing to MathPath Oregon! This project is currently in pre-MVP development (Stage 0–1). Contributions are welcome, but please read this guide first.
+Thank you for your interest in contributing to PADI.AI! This project is currently in pre-MVP development (Stage 0–1). Contributions are welcome, but please read this guide first.
 
 ---
 
@@ -25,14 +25,14 @@ If you're interested in contributing now (Stages 0–1), please contact the main
 ### First-Time Setup
 ```bash
 # Clone the repo
-git clone git@github.com:aerobu/mathpath-oregon.git
-cd mathpath-oregon
+git clone git@github.com:aerobu/padi-ai.git
+cd padi-ai
 
 # Install dependencies
 pnpm install
 
 # Pull environment variables from Vercel
-vercel link --yes --project mathpath-oregon
+vercel link --yes --project padi-ai
 vercel env pull .env.local --yes
 
 # Start local infrastructure
@@ -142,7 +142,7 @@ cd apps/web
 pnpm test:e2e
 
 # Run against staging environment
-pnpm test:e2e --baseURL=https://staging.mathpath.local
+pnpm test:e2e --baseURL=https://staging.padi.local
 ```
 
 ### Coverage Thresholds
@@ -250,7 +250,7 @@ All checks must pass before merging.
 
 ### Staging Deployment
 Merging to `main` automatically deploys to staging:
-- Frontend: `https://staging.mathpath.local` (Vercel)
+- Frontend: `https://staging.padi.local` (Vercel)
 - API: Fargate staging cluster (AWS)
 
 Manual testing required before production promotion.

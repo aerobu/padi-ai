@@ -1,8 +1,8 @@
-# Software Development Plan: MathPath Oregon
+# Software Development Plan: PADI.AI
 
 > **Document Version:** 1.0  
 > **Last Updated:** April 2, 2026  
-> **Authors:** Engineering Team — MathPath Oregon  
+> **Authors:** Engineering Team — PADI.AI  
 > **Status:** Active Reference  
 
 ---
@@ -341,7 +341,7 @@ orchestrator_agent → END (on session_complete)
 **Auth0 tenant configuration:**
 - `age_gate` Action runs on every signup: if `date_of_birth` indicates user is under 13, route to COPPA consent flow
 - `parent_consent_status` claim added to JWT — backend validates this on all student API calls
-- Separate user roles: `student`, `parent`, `teacher`, `district_admin`, `mathpath_admin`
+- Separate user roles: `student`, `parent`, `teacher`, `district_admin`, `padi_admin`
 
 ---
 
@@ -527,7 +527,7 @@ orchestrator_agent → END (on session_complete)
   3. TypeScript strict mode is enabled and `tsc --noEmit` passes.
   4. Base `<Layout>` component wraps all pages with consistent nav placeholder and footer.
   5. KaTeX CSS is loaded globally; a test component renders `\frac{1}{2}` correctly.
-- **Technical Notes:** Use Next.js 15 App Router. Install `katex` and `react-katex`. Add KaTeX CSS to `app/layout.tsx` via `import 'katex/dist/katex.min.css'`. Custom font: Use `next/font/google` to load `Nunito` (friendly, readable for children). Color palette: primary blue `#1a6eb5`, success green `#22c55e`, warning amber `#f59e0b`, surface white/light gray. Design tokens defined in `tailwind.config.ts` as `colors.mathpath.*`. Add `@/components/ui/` directory with `Button`, `Card`, `Badge` base components built on Tailwind.
+- **Technical Notes:** Use Next.js 15 App Router. Install `katex` and `react-katex`. Add KaTeX CSS to `app/layout.tsx` via `import 'katex/dist/katex.min.css'`. Custom font: Use `next/font/google` to load `Nunito` (friendly, readable for children). Color palette: primary blue `#1a6eb5`, success green `#22c55e`, warning amber `#f59e0b`, surface white/light gray. Design tokens defined in `tailwind.config.ts` as `colors.padi.*`. Add `@/components/ui/` directory with `Button`, `Card`, `Badge` base components built on Tailwind.
 - **Dependencies:** S1-001
 
 ---
@@ -542,7 +542,7 @@ orchestrator_agent → END (on session_complete)
   3. ECS Fargate can pull images from ECR and start the FastAPI container.
   4. RDS PostgreSQL is accessible from ECS tasks but not from the public internet.
   5. All secrets (DB password, Redis URL, Auth0 credentials) are in AWS Secrets Manager, not in environment variables or code.
-- **Technical Notes:** Terraform directory structure: `infra/modules/` (vpc, rds, elasticache, ecs, cdn, secrets), `infra/environments/` (dev, staging, prod). Use `terraform workspaces` or separate `tfvars` files per environment. VPC: 2 public subnets (ALB), 2 private subnets (ECS, RDS). RDS: `db.t3.medium` in dev/staging, `db.r6g.large` in prod (Multi-AZ). Enable `pgvector` via RDS parameter group with `shared_preload_libraries = 'pgvector'`. ElastiCache: `cache.t3.micro` in dev, `cache.r6g.large` in prod. S3 buckets: `mathpath-assets-{env}` (CDN origin), `mathpath-reports-{env}` (private, for PDFs). Use `aws_secretsmanager_secret` for all credentials. Tag all resources with `Project=MathPath`, `Environment={env}`, `Stage=1`.
+- **Technical Notes:** Terraform directory structure: `infra/modules/` (vpc, rds, elasticache, ecs, cdn, secrets), `infra/environments/` (dev, staging, prod). Use `terraform workspaces` or separate `tfvars` files per environment. VPC: 2 public subnets (ALB), 2 private subnets (ECS, RDS). RDS: `db.t3.medium` in dev/staging, `db.r6g.large` in prod (Multi-AZ). Enable `pgvector` via RDS parameter group with `shared_preload_libraries = 'pgvector'`. ElastiCache: `cache.t3.micro` in dev, `cache.r6g.large` in prod. S3 buckets: `padi-ai-assets-{env}` (CDN origin), `padi-ai-reports-{env}` (private, for PDFs). Use `aws_secretsmanager_secret` for all credentials. Tag all resources with `Project=PADI.AI`, `Environment={env}`, `Stage=1`.
 - **Dependencies:** S1-001
 
 ---
@@ -557,12 +557,12 @@ orchestrator_agent → END (on session_complete)
 - **Story Points:** 5
 - **Description:** Configure Auth0 tenant with COPPA plan. Set up application clients (web app, backend API), custom database connections, API scopes, roles, and the age-gate Action that routes underage users through the parental consent flow.
 - **Acceptance Criteria:**
-  1. Auth0 tenant is configured with separate environments (mathpath-dev, mathpath-staging, mathpath-prod).
-  2. Custom roles are created: `student`, `parent`, `teacher`, `district_admin`, `mathpath_admin`.
+  1. Auth0 tenant is configured with separate environments (padi-ai-dev, padi-ai-staging, padi-ai-prod).
+  2. Custom roles are created: `student`, `parent`, `teacher`, `district_admin`, `padi_admin`.
   3. Age-gate Action triggers on signup: if `date_of_birth` indicates age < 13, user metadata is set to `consent_status: pending` and the user is not activated.
-  4. JWT tokens include custom claims: `https://mathpath.app/role`, `https://mathpath.app/consent_status`, `https://mathpath.app/grade_level`.
+  4. JWT tokens include custom claims: `https://padi.ai/role`, `https://padi.ai/consent_status`, `https://padi.ai/grade_level`.
   5. Auth0 Management API credentials are stored in AWS Secrets Manager.
-- **Technical Notes:** Auth0 Actions (Node.js): use `api.user.setUserMetadata()` to store `date_of_birth` and `consent_status`. Use `api.access.deny()` if student attempts login before parent consent is complete. Custom claim injection Action runs on `post-login` trigger. API scopes: `read:student_data`, `write:student_data`, `read:reports`, `admin:users`. Configure PKCE flow for web app (no client secret on frontend). Auth0 COPPA plan includes the "parental consent" feature — enable it and configure redirect URIs. Store Auth0 Management API `client_id` and `client_secret` in Secrets Manager as `mathpath/auth0/management`.
+- **Technical Notes:** Auth0 Actions (Node.js): use `api.user.setUserMetadata()` to store `date_of_birth` and `consent_status`. Use `api.access.deny()` if student attempts login before parent consent is complete. Custom claim injection Action runs on `post-login` trigger. API scopes: `read:student_data`, `write:student_data`, `read:reports`, `admin:users`. Configure PKCE flow for web app (no client secret on frontend). Auth0 COPPA plan includes the "parental consent" feature — enable it and configure redirect URIs. Store Auth0 Management API `client_id` and `client_secret` in Secrets Manager as `padi-ai/auth0/management`.
 - **Dependencies:** S1-004
 
 ---
@@ -577,7 +577,7 @@ orchestrator_agent → END (on session_complete)
   3. `CurrentUser` dependency injects a typed Pydantic model with `user_id`, `email`, `role`, `consent_status`.
   4. Role-based access control: `require_role("parent")` decorator returns `403 Forbidden` for non-parents.
   5. JWT validation uses Auth0's JWKS endpoint with key rotation support (keys are cached 24h).
-- **Technical Notes:** Use `python-jose[cryptography]` for JWT decode. Fetch JWKS from `https://{AUTH0_DOMAIN}/.well-known/jwks.json`. Cache JWKS in Redis (TTL: 24 hours) to avoid rate limits. Implement `async def get_current_user(token: str = Depends(oauth2_scheme))` as the base dependency. Add `require_role` decorator factory: `def require_role(*roles): return Depends(lambda user=Depends(get_current_user): check_role(user, roles))`. Type the user model: `class CurrentUser(BaseModel): user_id: str; email: str; role: Literal["student","parent","teacher","district_admin","mathpath_admin"]; consent_status: str`.
+- **Technical Notes:** Use `python-jose[cryptography]` for JWT decode. Fetch JWKS from `https://{AUTH0_DOMAIN}/.well-known/jwks.json`. Cache JWKS in Redis (TTL: 24 hours) to avoid rate limits. Implement `async def get_current_user(token: str = Depends(oauth2_scheme))` as the base dependency. Add `require_role` decorator factory: `def require_role(*roles): return Depends(lambda user=Depends(get_current_user): check_role(user, roles))`. Type the user model: `class CurrentUser(BaseModel): user_id: str; email: str; role: Literal["student","parent","teacher","district_admin","padi_admin"]; consent_status: str`.
 - **Dependencies:** S1-007
 
 ---
@@ -592,7 +592,7 @@ orchestrator_agent → END (on session_complete)
   3. A parent can create up to 5 child accounts.
   4. All student PII (first name, date of birth) is encrypted at rest using `cryptography.fernet` before storage; decrypted only within the service layer.
   5. `GET /api/v1/parent/children` returns the parent's list of child accounts (decrypted).
-- **Technical Notes:** Database models: `ParentProfile(id, auth0_user_id, email_hash, created_at)`, `StudentProfile(id, auth0_user_id, display_name_encrypted, date_of_birth_encrypted, grade_level, created_at)`, `ParentChildLink(id, parent_id, student_id, relationship_type, created_at)`. Use `cryptography.fernet.Fernet` with the key stored in Secrets Manager (`mathpath/encryption/fernet_key`). Hash email for lookup (`hashlib.sha256` + application-level salt). Never store plaintext PII. Limit child accounts via DB constraint and application check. Use `SQLAlchemy 2.0` async ORM throughout.
+- **Technical Notes:** Database models: `ParentProfile(id, auth0_user_id, email_hash, created_at)`, `StudentProfile(id, auth0_user_id, display_name_encrypted, date_of_birth_encrypted, grade_level, created_at)`, `ParentChildLink(id, parent_id, student_id, relationship_type, created_at)`. Use `cryptography.fernet.Fernet` with the key stored in Secrets Manager (`padi-ai/encryption/fernet_key`). Hash email for lookup (`hashlib.sha256` + application-level salt). Never store plaintext PII. Limit child accounts via DB constraint and application check. Use `SQLAlchemy 2.0` async ORM throughout.
 - **Dependencies:** S1-008
 
 ---
@@ -608,7 +608,7 @@ orchestrator_agent → END (on session_complete)
   4. `POST /api/v1/coppa/deny/{token}` records denial and does not activate the child account.
   5. Consent tokens expire after 7 days. A parent can request a new token via `POST /api/v1/coppa/resend/{child_id}`.
   6. The consent audit log (`coppa_consent_record`) is never modified — only append-only inserts.
-- **Technical Notes:** Consent token: signed JWT with `iss=mathpath`, `sub=child_id`, `exp=7days`, signed with HMAC-SHA256 using a secret from Secrets Manager. `CoppaConsentRecord(id, student_id, parent_id, status: Enum(pending/granted/denied/expired), token_hash, consented_at, ip_address_hash, user_agent_hash, created_at)`. Email via `boto3` SES client. HTML email template stored in `apps/api/src/templates/coppa_consent.html`. Add a Celery task that runs nightly to expire tokens older than 7 days (sets status to `expired`, deactivates Auth0 user). Never log the raw consent token.
+- **Technical Notes:** Consent token: signed JWT with `iss=padi-ai`, `sub=child_id`, `exp=7days`, signed with HMAC-SHA256 using a secret from Secrets Manager. `CoppaConsentRecord(id, student_id, parent_id, status: Enum(pending/granted/denied/expired), token_hash, consented_at, ip_address_hash, user_agent_hash, created_at)`. Email via `boto3` SES client. HTML email template stored in `apps/api/src/templates/coppa_consent.html`. Add a Celery task that runs nightly to expire tokens older than 7 days (sets status to `expired`, deactivates Auth0 user). Never log the raw consent token.
 - **Dependencies:** S1-009
 
 ---
@@ -681,14 +681,14 @@ orchestrator_agent → END (on session_complete)
 ##### S1-015 — Admin Dashboard Foundation (Next.js)
 - **Type:** Feature
 - **Story Points:** 5
-- **Description:** Create the internal admin dashboard at `/admin` in the Next.js app, accessible only to users with the `mathpath_admin` role. Implement the base layout, navigation, and protected route logic. This dashboard is used for question management, standards management, and monitoring.
+- **Description:** Create the internal admin dashboard at `/admin` in the Next.js app, accessible only to users with the `padi_admin` role. Implement the base layout, navigation, and protected route logic. This dashboard is used for question management, standards management, and monitoring.
 - **Acceptance Criteria:**
   1. `/admin` routes are protected by role check — non-admins get a 403 page.
   2. Admin layout has a sidebar with sections: Standards, Question Bank, Users, System.
   3. `/admin/standards` lists all loaded standards in a table grouped by domain.
   4. Admin pages use server components with Next.js 15 — data is fetched server-side.
   5. The admin UI is functional but not polished — it is an internal tool.
-- **Technical Notes:** Admin routes in `app/(admin)/` route group. Middleware in `middleware.ts` checks for `mathpath_admin` role in the Auth0 JWT session cookie. Use `@auth0/nextjs-auth0` `withPageAuthRequired` equivalent for App Router. Admin components use a different layout from the student-facing UI — a compact, data-dense design appropriate for internal tools. Use a simple data table component with sorting and filtering. Admin-specific styles separated into `app/(admin)/admin.css`.
+- **Technical Notes:** Admin routes in `app/(admin)/` route group. Middleware in `middleware.ts` checks for `padi_admin` role in the Auth0 JWT session cookie. Use `@auth0/nextjs-auth0` `withPageAuthRequired` equivalent for App Router. Admin components use a different layout from the student-facing UI — a compact, data-dense design appropriate for internal tools. Use a simple data table component with sorting and filtering. Admin-specific styles separated into `app/(admin)/admin.css`.
 - **Dependencies:** S1-008, S1-011, S1-013
 
 ---
@@ -703,7 +703,7 @@ orchestrator_agent → END (on session_complete)
   3. `PUT /api/v1/admin/questions/{id}` updates a question and bumps `updated_at`.
   4. `DELETE /api/v1/admin/questions/{id}` soft-deletes (sets `quality_status = retired`, does not remove the row).
   5. LaTeX validation: the API rejects questions where `stem_latex` contains syntax that KaTeX cannot parse (validated via a Python `katex` CLI check).
-- **Technical Notes:** LaTeX validation: use `subprocess.run(["node", "-e", f"katex.renderToString('{latex}')"])` or better, use a pre-spawned Node.js worker via `asyncio.subprocess` to avoid startup overhead. Consider caching validation results by hash. For `GET` with filters, use SQLAlchemy `select()` with optional `.where()` clauses built dynamically. Use `LIMIT/OFFSET` for pagination with a `cursor`-style optional enhancement. Return `X-Total-Count` header. All admin endpoints require `require_role("mathpath_admin")`.
+- **Technical Notes:** LaTeX validation: use `subprocess.run(["node", "-e", f"katex.renderToString('{latex}')"])` or better, use a pre-spawned Node.js worker via `asyncio.subprocess` to avoid startup overhead. Consider caching validation results by hash. For `GET` with filters, use SQLAlchemy `select()` with optional `.where()` clauses built dynamically. Use `LIMIT/OFFSET` for pagination with a `cursor`-style optional enhancement. Return `X-Total-Count` header. All admin endpoints require `require_role("padi_admin")`.
 - **Dependencies:** S1-015, S1-014
 
 ---
@@ -936,43 +936,43 @@ module "elasticache_redis" {
 
 module "ecs_cluster" {
   source = "../../modules/ecs"
-  cluster_name = "mathpath-${var.environment}"
+  cluster_name = "padi-ai-${var.environment}"
   task_cpu = 512   # staging; 1024 in prod
   task_memory = 1024  # staging; 2048 in prod
 }
 
 module "ecr" {
   source = "../../modules/ecr"
-  repositories = ["mathpath-api", "mathpath-worker"]
+  repositories = ["padi-ai-api", "padi-ai-worker"]
   lifecycle_policy = { keep_last_n_images = 10 }
 }
 
 module "s3" {
   source = "../../modules/s3"
   buckets = {
-    "mathpath-assets-${var.environment}" = { versioning = false, public_read = false }
-    "mathpath-reports-${var.environment}" = { versioning = true, public_read = false }
-    "mathpath-tf-state" = { versioning = true, public_read = false }
+    "padi-ai-assets-${var.environment}" = { versioning = false, public_read = false }
+    "padi-ai-reports-${var.environment}" = { versioning = true, public_read = false }
+    "padi-ai-tf-state" = { versioning = true, public_read = false }
   }
 }
 
 module "cloudfront" {
   source = "../../modules/cloudfront"
-  origin_bucket = module.s3.buckets["mathpath-assets-${var.environment}"]
+  origin_bucket = module.s3.buckets["padi-ai-assets-${var.environment}"]
   price_class = "PriceClass_100"  # US+EU only
 }
 
 module "secrets_manager" {
   source = "../../modules/secrets"
   secrets = [
-    "mathpath/db/master_password",
-    "mathpath/redis/auth_token",
-    "mathpath/auth0/management_client_secret",
-    "mathpath/auth0/api_audience",
-    "mathpath/encryption/fernet_key",
-    "mathpath/openai/api_key",
-    "mathpath/anthropic/api_key",
-    "mathpath/ses/smtp_credentials"
+    "padi-ai/db/master_password",
+    "padi-ai/redis/auth_token",
+    "padi-ai/auth0/management_client_secret",
+    "padi-ai/auth0/api_audience",
+    "padi-ai/encryption/fernet_key",
+    "padi-ai/openai/api_key",
+    "padi-ai/anthropic/api_key",
+    "padi-ai/ses/smtp_credentials"
   ]
 }
 
@@ -989,7 +989,7 @@ module "alb" {
 |--------|------------|---------|------------|
 | Database | Docker Compose PostgreSQL | RDS db.t3.medium | RDS db.r6g.large Multi-AZ |
 | Redis | Docker Compose Redis | ElastiCache cache.t3.micro | ElastiCache cache.r6g.large |
-| Auth0 | mathpath-dev tenant | mathpath-staging tenant | mathpath-prod tenant |
+| Auth0 | padi-ai-dev tenant | padi-ai-staging tenant | padi-ai-prod tenant |
 | LLM APIs | Real APIs, usage-capped at $50/mo | Real APIs, usage-capped at $200/mo | Real APIs, no cap |
 | Email | Mailhog (local SMTP) | AWS SES, sandbox mode | AWS SES, production mode |
 | Feature Flags | All flags ON | Specific flags ON for testing | Flags controlled by LaunchDarkly |
@@ -1066,22 +1066,22 @@ Stage 1 uses a manual rolling deployment: the engineer builds the Docker image, 
 
 ```bash
 # deploy.sh
-docker build -t mathpath-api:$GIT_SHA ./apps/api
+docker build -t padi-ai-api:$GIT_SHA ./apps/api
 aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_URI
-docker tag mathpath-api:$GIT_SHA $ECR_URI/mathpath-api:$GIT_SHA
-docker push $ECR_URI/mathpath-api:$GIT_SHA
-aws ecs update-service --cluster mathpath-staging \
-  --service mathpath-api \
+docker tag padi-ai-api:$GIT_SHA $ECR_URI/padi-ai-api:$GIT_SHA
+docker push $ECR_URI/padi-ai-api:$GIT_SHA
+aws ecs update-service --cluster padi-ai-staging \
+  --service padi-ai-api \
   --force-new-deployment
-aws ecs wait services-stable --cluster mathpath-staging --services mathpath-api
+aws ecs wait services-stable --cluster padi-ai-staging --services padi-ai-api
 ```
 
 #### Rollback Procedure
 
 1. Identify the previous stable task definition revision: `aws ecs describe-services ... | jq '.services[0].taskDefinition'`
-2. Update the ECS service to the previous revision: `aws ecs update-service --task-definition mathpath-api:PREV_REVISION`
+2. Update the ECS service to the previous revision: `aws ecs update-service --task-definition padi-ai-api:PREV_REVISION`
 3. Wait for stability: `aws ecs wait services-stable ...`
-4. Verify health check: `curl https://api.staging.mathpath.app/api/v1/health`
+4. Verify health check: `curl https://api.staging.padi.ai/api/v1/health`
 5. Post incident summary in Slack #incidents channel.
 
 #### Feature Flags (Stage 1)
@@ -1435,7 +1435,7 @@ aws ecs wait services-stable --cluster mathpath-staging --services mathpath-api
 module "celery_worker" {
   # ECS Fargate service for Celery workers
   source = "../../modules/ecs_service"
-  service_name = "mathpath-worker"
+  service_name = "padi-ai-worker"
   task_cpu = 1024
   task_memory = 2048
   desired_count = 2  # staging: 1
@@ -1445,7 +1445,7 @@ module "celery_worker" {
 module "sqs_dlq" {
   # Dead-letter queue for failed Celery tasks
   source = "../../modules/sqs"
-  queues = ["mathpath-tasks-dlq", "mathpath-question-gen-dlq"]
+  queues = ["padi-ai-tasks-dlq", "padi-ai-question-gen-dlq"]
   retention_seconds = 1209600  # 14 days
 }
 
@@ -1567,9 +1567,9 @@ Stage 2 introduces Celery workers. Before deploying, drain in-flight tasks:
 ##### S3-001 — LangGraph StateGraph Architecture
 - **Type:** Infrastructure
 - **Story Points:** 8
-- **Description:** Implement the core LangGraph StateGraph for the MathPath tutoring system. Define the shared state schema, all agent nodes, conditional routing edges, and the entry/exit logic. The StateGraph must be serializable to JSON for persistence between WebSocket messages.
+- **Description:** Implement the core LangGraph StateGraph for the PADI.AI tutoring system. Define the shared state schema, all agent nodes, conditional routing edges, and the entry/exit logic. The StateGraph must be serializable to JSON for persistence between WebSocket messages.
 - **Acceptance Criteria:**
-  1. `MathPathState` TypedDict is defined with all required fields: `student_id`, `session_id`, `current_question`, `conversation_history`, `hint_level`, `bkt_updates`, `agent_decisions`, `session_metadata`.
+  1. `PADIState` TypedDict is defined with all required fields: `student_id`, `session_id`, `current_question`, `conversation_history`, `hint_level`, `bkt_updates`, `agent_decisions`, `session_metadata`.
   2. All 4 agent nodes are registered: `orchestrator_agent`, `assessment_agent`, `tutor_agent`, `question_generator_agent`.
   3. `progress_tracker_agent` is registered as a side-effect node (writes BKT updates, does not route back to orchestrator).
   4. The StateGraph compiles without errors: `graph.compile()`.
@@ -1580,7 +1580,7 @@ from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated
 import operator
 
-class MathPathState(TypedDict):
+class PADIState(TypedDict):
     student_id: str
     session_id: str
     module_id: str
@@ -1593,7 +1593,7 @@ class MathPathState(TypedDict):
     session_complete: bool
     next_action: str  # "present_question" | "evaluate_answer" | "give_hint" | "celebrate" | "end_session"
 
-graph = StateGraph(MathPathState)
+graph = StateGraph(PADIState)
 graph.add_node("orchestrator", orchestrator_agent)
 graph.add_node("assessment", assessment_agent)
 graph.add_node("tutor", tutor_agent)
@@ -1623,7 +1623,7 @@ State is serialized to Redis after each node completes, keyed by `session_id`. T
   3. Student sends `{"type": "answer", "answer": "..."}` → server processes through the StateGraph and responds with feedback + next question or tutor message.
   4. Student sends `{"type": "hint_request"}` → server routes to tutor_agent → responds with the appropriate hint.
   5. If the WebSocket disconnects, the client can reconnect to the same `session_id` and the session state is restored from Redis.
-- **Technical Notes:** Use `python-socketio` with FastAPI ASGI mounting: `app.mount("/ws", socketio.ASGIApp(sio))`. JWT validation for WebSocket: validate the token passed as a query param `?token=...` (WebSocket protocol doesn't support custom headers in all browsers). Session state management: load `MathPathState` from Redis on connect; save after each state transition. Message protocol — messages from client: `start_session`, `answer`, `hint_request`, `skip_question`, `end_session`. Messages from server: `question`, `feedback`, `hint`, `encouragement`, `session_complete`, `error`. Use `asyncio.Lock` keyed by `session_id` to prevent concurrent state writes from multiple connections. Implement exponential backoff reconnection on the client side (socket.io-client handles this automatically).
+- **Technical Notes:** Use `python-socketio` with FastAPI ASGI mounting: `app.mount("/ws", socketio.ASGIApp(sio))`. JWT validation for WebSocket: validate the token passed as a query param `?token=...` (WebSocket protocol doesn't support custom headers in all browsers). Session state management: load `PADIState` from Redis on connect; save after each state transition. Message protocol — messages from client: `start_session`, `answer`, `hint_request`, `skip_question`, `end_session`. Messages from server: `question`, `feedback`, `hint`, `encouragement`, `session_complete`, `error`. Use `asyncio.Lock` keyed by `session_id` to prevent concurrent state writes from multiple connections. Implement exponential backoff reconnection on the client side (socket.io-client handles this automatically).
 - **Dependencies:** S3-001
 
 ---
@@ -1640,7 +1640,7 @@ State is serialized to Redis after each node completes, keyed by `session_id`. T
   5. The Orchestrator's GPT-4o call uses structured output (JSON mode) and completes in < 2 seconds.
 - **Technical Notes:** 
 ```python
-async def orchestrator_agent(state: MathPathState) -> MathPathState:
+async def orchestrator_agent(state: PADIState) -> PADIState:
     """Routes session to the next appropriate agent based on state."""
     system_prompt = load_prompt("orchestrator_system")
     
@@ -1721,7 +1721,7 @@ System prompt stored in `src/prompts/orchestrator_system.txt`. Decision schema: 
   5. Claude Sonnet 4.6 response time < 4 seconds for 95th percentile.
 - **Technical Notes:** 
 ```python
-async def tutor_agent(state: MathPathState) -> MathPathState:
+async def tutor_agent(state: PADIState) -> PADIState:
     hint_level = state["hint_level"] + 1  # advance hint level
     last_response = state["response_history"][-1]
     
@@ -1780,7 +1780,7 @@ Claude system prompt stored in `src/prompts/tutor_system.j2` (Jinja2 template). 
   3. When frustration > 0.8, the Orchestrator is signaled to: reduce IRT difficulty target by 0.5, trigger tutor to acknowledge the difficulty, offer an easier question.
   4. When frustration > 0.9, a "Maybe take a short break?" message is shown with a 5-minute break timer option.
   5. Frustration score is logged per session for analytics (PostHog event `frustration_high_detected`).
-- **Technical Notes:** Frustration score computed in Assessment Agent after each response: `score = clamp(prev_score + Δ, 0.0, 1.0)`. Δ values: correct answer → -0.15; wrong (1st time) → +0.15; wrong (3rd time same question) → +0.25; hint used → +0.05; response_time > 2× median → +0.10. Moving median response time: maintain a deque of last 5 response times. Frustration state persisted in `MathPathState.frustration_score`. When frustration > 0.8, set `state["next_action"] = "encourage"` and let tutor handle it. Log to PostHog: `posthog.capture(student_id, "frustration_detected", {"level": score, "session_id": ..., "skill_node_id": ...})` — uses anonymous ID derived from `hash(student_id + salt)` for COPPA compliance.
+- **Technical Notes:** Frustration score computed in Assessment Agent after each response: `score = clamp(prev_score + Δ, 0.0, 1.0)`. Δ values: correct answer → -0.15; wrong (1st time) → +0.15; wrong (3rd time same question) → +0.25; hint used → +0.05; response_time > 2× median → +0.10. Moving median response time: maintain a deque of last 5 response times. Frustration state persisted in `PADIState.frustration_score`. When frustration > 0.8, set `state["next_action"] = "encourage"` and let tutor handle it. Log to PostHog: `posthog.capture(student_id, "frustration_detected", {"level": score, "session_id": ..., "skill_node_id": ...})` — uses anonymous ID derived from `hash(student_id + salt)` for COPPA compliance.
 - **Dependencies:** S3-004
 
 ---
@@ -1835,7 +1835,7 @@ Claude system prompt stored in `src/prompts/tutor_system.j2` (Jinja2 template). 
   3. If fewer than 3 matching questions exist, triggers background o3-mini generation (async, non-blocking) and selects from the existing pool in the meantime.
   4. Questions are never repeated within a session.
   5. The agent returns the next question within 200ms for 95% of requests (when serving from cache).
-- **Technical Notes:** Question selection query: `SELECT * FROM questions WHERE skill_node_id = $1 AND quality_status = 'approved' AND id NOT IN ($seen_ids) AND irt_b BETWEEN $theta - 0.5 AND $theta + 1.0 ORDER BY RANDOM() LIMIT 1`. If the result set has < 3 questions, schedule `generate_questions_task.delay(skill_node_id=..., count=5, irt_b=theta)` without awaiting it. Cache approved question IDs per skill in Redis (TTL: 1 hour) to avoid repeated DB queries. The "seen in session" list is maintained in `MathPathState.seen_question_ids`. Add to session before delivering to student.
+- **Technical Notes:** Question selection query: `SELECT * FROM questions WHERE skill_node_id = $1 AND quality_status = 'approved' AND id NOT IN ($seen_ids) AND irt_b BETWEEN $theta - 0.5 AND $theta + 1.0 ORDER BY RANDOM() LIMIT 1`. If the result set has < 3 questions, schedule `generate_questions_task.delay(skill_node_id=..., count=5, irt_b=theta)` without awaiting it. Cache approved question IDs per skill in Redis (TTL: 1 hour) to avoid repeated DB queries. The "seen in session" list is maintained in `PADIState.seen_question_ids`. Add to session before delivering to student.
 - **Dependencies:** S3-005, S2-006
 
 ---
@@ -1871,7 +1871,7 @@ Claude system prompt stored in `src/prompts/tutor_system.j2` (Jinja2 template). 
   3. When frustration_score > 0.7, the difficulty target is temporarily reduced by 0.5 theta units (confidence-building mode).
   4. Confidence-building mode exits when the student answers 3 consecutive questions correctly.
   5. Theta changes of > 0.5 per session are logged for analytics (unusually large changes may indicate data quality issues).
-- **Technical Notes:** Bayesian theta update (recursive): `θ_new = θ_old + I(θ_old)⁻¹ * ∂LogL/∂θ` where `I(θ)` is the Fisher information and `∂LogL/∂θ` is the score function for the latest response. This is a single Newton step — fast and sufficient for within-session updating. `student_irt_state(id, student_id, skill_node_id, theta NUMERIC, se_theta NUMERIC, response_count INT, last_updated)`. SE (standard error) = `1/sqrt(cumulative_information)`. Log to `irt_state_history` table for research purposes. Confidence-building mode flag stored in `MathPathState` as `confidence_building: bool`.
+- **Technical Notes:** Bayesian theta update (recursive): `θ_new = θ_old + I(θ_old)⁻¹ * ∂LogL/∂θ` where `I(θ)` is the Fisher information and `∂LogL/∂θ` is the score function for the latest response. This is a single Newton step — fast and sufficient for within-session updating. `student_irt_state(id, student_id, skill_node_id, theta NUMERIC, se_theta NUMERIC, response_count INT, last_updated)`. SE (standard error) = `1/sqrt(cumulative_information)`. Log to `irt_state_history` table for research purposes. Confidence-building mode flag stored in `PADIState` as `confidence_building: bool`.
 - **Dependencies:** S3-005, S3-011
 
 ---
@@ -1956,7 +1956,7 @@ Claude system prompt stored in `src/prompts/tutor_system.j2` (Jinja2 template). 
   3. 10 internal beta accounts are created and can access the full diagnostic → learning plan → practice session flow.
   4. A feedback collection form is linked from the student dashboard.
   5. On-call rotation is documented and assigned for the beta period.
-- **Technical Notes:** Beta monitoring: create a Datadog dashboard `MathPath-Stage3-Beta` with panels for `session_start_count` (per hour), `llm_call_p95_latency`, `websocket_disconnect_rate`, `bkt_update_failure_count`. Set PagerDuty alerts for: `websocket_disconnect_rate > 5%` (possible infrastructure issue), `llm_call_p95_latency > 10s` (LLM API degradation). Use LaunchDarkly to control beta access: create a `beta_users` segment and restrict `adaptive_practice_engine` flag to that segment.
+- **Technical Notes:** Beta monitoring: create a Datadog dashboard `PADI.AI-Stage3-Beta` with panels for `session_start_count` (per hour), `llm_call_p95_latency`, `websocket_disconnect_rate`, `bkt_update_failure_count`. Set PagerDuty alerts for: `websocket_disconnect_rate > 5%` (possible infrastructure issue), `llm_call_p95_latency > 10s` (LLM API degradation). Use LaunchDarkly to control beta access: create a `beta_users` segment and restrict `adaptive_practice_engine` flag to that segment.
 - **Dependencies:** S3-017
 
 ---
@@ -1968,7 +1968,7 @@ Claude system prompt stored in `src/prompts/tutor_system.j2` (Jinja2 template). 
 ```hcl
 # Stage 3: WebSocket support requires sticky sessions on ALB
 
-resource "aws_alb_target_group" "mathpath_api_ws" {
+resource "aws_alb_target_group" "padi_api_ws" {
   protocol         = "HTTP"
   stickiness {
     type            = "lb_cookie"
@@ -2000,7 +2000,7 @@ module "elasticache_redis" {
 
 # Math execution sandbox container (separate service)
 module "ecs_sandbox" {
-  service_name = "mathpath-math-sandbox"
+  service_name = "padi-ai-math-sandbox"
   task_cpu     = 256
   task_memory  = 512
   desired_count = 2
@@ -2186,7 +2186,7 @@ Stage 3 introduces WebSocket connections — rolling deployments break active se
   1. `ReportGenerator.generate_student_report(student_id, session_id) -> bytes` returns a valid PDF.
   2. Page 1: student name, overall scaled score with performance level badge, assessment date, and a 5-domain bar chart.
   3. Page 2: skill-level mastery table (skill name, proficiency icon, sessions to mastery estimate), "What to Practice Next" list (top 3 focus skills), comparison to Oregon grade average (if available).
-  4. PDF is generated in < 5 seconds and stored in S3 (`mathpath-reports-{env}/student-reports/{student_id}/{report_id}.pdf`).
+  4. PDF is generated in < 5 seconds and stored in S3 (`padi-ai-reports-{env}/student-reports/{student_id}/{report_id}.pdf`).
   5. A pre-signed S3 URL (valid 24 hours) is returned for download.
 - **Technical Notes:** Use `WeasyPrint` for HTML-to-PDF. HTML template at `src/templates/reports/student_report.html.j2`. Embed charts as inline SVGs (not images — avoids external dependencies). Domain bar chart: simple SVG `<rect>` elements with inline styles. Performance level badge: colored rounded rectangle with score text. Oregon average: hardcoded percentiles from ODE public data (update annually). Pre-signed URL: `boto3.client("s3").generate_presigned_url("get_object", Params={"Bucket": ..., "Key": ...}, ExpiresIn=86400)`. Run as Celery task triggered after summative assessment completion. Email notification to parent when report is ready (AWS SES).
 - **Dependencies:** S4-003
@@ -2293,7 +2293,7 @@ Stage 3 introduces WebSocket connections — rolling deployments break active se
   3. The student summary table respects sharing consents — students without parent opt-in show "**" for detailed skill data.
   4. PDF is generated in < 30 seconds for a class of 30 students and stored in S3.
   5. Teacher receives an email notification with a 24-hour download link when the report is ready.
-- **Technical Notes:** Class report HTML template: `src/templates/reports/class_report.html.j2`. Uses the same `WeasyPrint` pipeline as the student report. Performance distribution chart: inline SVG bar chart. Student summary table: 30 rows × 7 columns (student name, performance level, total sessions, mastery %, top skill, gap skill, last active). For privacy-respecting display: FERPA-compliant redaction — cells with no sharing consent show `—`. Page breaks: `@page { break-after: always; }` in CSS for the cover page. Include a "Report generated by MathPath Oregon" footer with date.
+- **Technical Notes:** Class report HTML template: `src/templates/reports/class_report.html.j2`. Uses the same `WeasyPrint` pipeline as the student report. Performance distribution chart: inline SVG bar chart. Student summary table: 30 rows × 7 columns (student name, performance level, total sessions, mastery %, top skill, gap skill, last active). For privacy-respecting display: FERPA-compliant redaction — cells with no sharing consent show `—`. Page breaks: `@page { break-after: always; }` in CSS for the cover page. Include a "Report generated by PADI.AI" footer with date.
 - **Dependencies:** S4-005, S4-008
 
 ---
@@ -2382,14 +2382,14 @@ module "rds_read_replica" {
 }
 
 # SES for transactional emails (parent reports, notifications)
-resource "aws_ses_configuration_set" "mathpath_transactional" {
-  name = "mathpath-transactional"
+resource "aws_ses_configuration_set" "padi_transactional" {
+  name = "padi-ai-transactional"
   delivery_options { tls_policy = "REQUIRE" }
 }
 
 # PDF report storage bucket (separate for retention policy)
-resource "aws_s3_bucket" "mathpath_reports" {
-  bucket = "mathpath-reports-${var.environment}"
+resource "aws_s3_bucket" "padi_reports" {
+  bucket = "padi-ai-reports-${var.environment}"
   lifecycle_rule {
     expiration { days = 365 }  # Reports expire after 1 year
     enabled = true
@@ -2506,7 +2506,7 @@ Launch sequence (Sprint 27 Day 1):
 | **A02 Cryptographic Failures** | PDF reports contain academic performance data (FERPA-protected) | Reports stored in S3 with SSE-KMS; pre-signed URLs expire in 1 hour; CloudFront signed URLs for CDN delivery |
 | **A03 Injection** | PDF template uses student name/data — potential XSS in HTML→PDF rendering | Jinja2 template auto-escaping enabled; WeasyPrint runs in isolated subprocess with no network access |
 | **A04 Insecure Design** | Share-with-teacher feature creates tokens with long validity | Share tokens expire in 7 days; single-use; stored as SHA-256 hash in DB — plaintext token never persisted |
-| **A05 Security Misconfiguration** | Read replica accessible only from ECS task security group | RDS security group allows inbound 5432 only from `mathpath-backend-sg`; no public accessibility |
+| **A05 Security Misconfiguration** | Read replica accessible only from ECS task security group | RDS security group allows inbound 5432 only from `padi-ai-backend-sg`; no public accessibility |
 | **A07 Auth Failures** | Teacher accounts have elevated data access | Auth0 RBAC enforced: `teacher` role required for all `/api/v1/teacher/*` routes; JWT claims validated on every request |
 
 #### COPPA-Specific Requirements (Stage 4)
@@ -2555,7 +2555,7 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Stripe Product & Price Configuration
 - **Type:** Infrastructure
 - **Story Points:** 3
-- **Description:** Configure the Stripe account with MathPath Oregon product catalog. Create products for "Individual Family Plan" (monthly + annual), "School Seat License" (per-seat annual), and "Free Trial" (30-day). Set up Stripe Tax for Oregon state sales tax auto-calculation.
+- **Description:** Configure the Stripe account with PADI.AI product catalog. Create products for "Individual Family Plan" (monthly + annual), "School Seat License" (per-seat annual), and "Free Trial" (30-day). Set up Stripe Tax for Oregon state sales tax auto-calculation.
 - **Acceptance Criteria:**
   1. Products and prices exist in Stripe dashboard (both live and test mode)
   2. Annual price has `metadata.discount_pct = 17` for display purposes
@@ -2630,7 +2630,7 @@ Launch sequence (Sprint 27 Day 1):
   2. Monthly/Annual toggle updates prices in real time without page reload; annual shows "Save 17%" badge
   3. "Start Free Trial" button (for unauthenticated or free-tier users) calls `createCheckoutSession` and redirects within 2 seconds
   4. "Current Plan" badge on the card matching the user's active subscription (no CTA for current plan)
-  5. School plan card shows "Contact Us" button linking to `mailto:schools@mathpathoregon.com` — no self-serve for schools in Sprint 29
+  5. School plan card shows "Contact Us" button linking to `mailto:schools@padi.ai` — no self-serve for schools in Sprint 29
 - **Technical Notes:** Build with Next.js App Router; `app/pricing/page.tsx`. Use Zustand `useSubscriptionStore` to hold current tier. Price toggle state: `const [billing, setBilling] = useState<'monthly'|'annual'>('monthly')`. The `createCheckoutSession` server action calls `POST /api/v1/billing/create-checkout-session` then does `window.location.href = checkout_url` (not Next.js router — Stripe redirect must be a full page navigation). Use `KaTeX`-free components here (no math on pricing page).
 - **Dependencies:** S5-004
 
@@ -2644,7 +2644,7 @@ Launch sequence (Sprint 27 Day 1):
 - **Acceptance Criteria:**
   1. `/billing/success?session_id=...` page calls `GET /api/v1/billing/session-status?session_id=...` to validate the session
   2. Shows loading spinner while polling for subscription activation (webhook may lag up to 10 seconds)
-  3. On successful activation, shows "Welcome to MathPath Oregon!" confirmation with a CTA to the dashboard
+  3. On successful activation, shows "Welcome to PADI.AI!" confirmation with a CTA to the dashboard
   4. If polling times out after 20 seconds, shows a message: "Your payment is processing. Check back in a few minutes." with a "Go to Dashboard" button
   5. Page is not indexable by search engines (`<meta name="robots" content="noindex">`)
 - **Technical Notes:** `GET /api/v1/billing/session-status` calls `stripe.checkout.Session.retrieve(session_id)` and returns `{payment_status, subscription_status}`. Frontend polls with `useEffect` + `setInterval` — abort after 10 attempts. On success, invalidate Zustand subscription store and redirect to `/dashboard`. The `session_id` parameter must be validated server-side to prevent IDOR; validate that the session's `client_reference_id` matches the authenticated user's ID.
@@ -2746,10 +2746,10 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Clever SSO Integration
 - **Type:** Feature
 - **Story Points:** 13
-- **Description:** Integrate with Clever (the dominant K-12 SSO platform) to allow school districts to provision students and teachers via their existing Clever roster data. Implement the Clever OAuth 2.0 flow, Clever API sync for rosters (sections, students, teachers), and daily sync jobs to keep MathPath rosters current with Clever district data.
+- **Description:** Integrate with Clever (the dominant K-12 SSO platform) to allow school districts to provision students and teachers via their existing Clever roster data. Implement the Clever OAuth 2.0 flow, Clever API sync for rosters (sections, students, teachers), and daily sync jobs to keep PADI.AI rosters current with Clever district data.
 - **Acceptance Criteria:**
   1. Auth0 social connection for Clever OAuth configured; students/teachers can log in with "Log in with Clever"
-  2. On first Clever login, the system creates/links the MathPath account to the Clever `user.id`
+  2. On first Clever login, the system creates/links the PADI.AI account to the Clever `user.id`
   3. `GET /api/v1/clever/sync/{school_id}` triggers an immediate roster sync for a school (idempotent)
   4. Nightly Celery beat task syncs all Clever-connected schools: adds new students, updates changed names, marks deactivated students
   5. Clever-sourced students bypass the standard COPPA email consent flow (school districts sign a DPA that covers COPPA — see S5-013); they are activated immediately
@@ -2762,14 +2762,14 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Data Processing Agreement (DPA) Workflow
 - **Type:** Feature
 - **Story Points:** 5
-- **Description:** Implement the DPA signing workflow for school/district onboarding. Before a school can activate, the school admin must review and e-sign MathPath Oregon's DPA. The DPA must be stored with the signing admin's name, title, email, and timestamp. Generate a PDF copy of the executed DPA and store in S3.
+- **Description:** Implement the DPA signing workflow for school/district onboarding. Before a school can activate, the school admin must review and e-sign PADI.AI's DPA. The DPA must be stored with the signing admin's name, title, email, and timestamp. Generate a PDF copy of the executed DPA and store in S3.
 - **Acceptance Criteria:**
   1. `GET /api/v1/schools/{school_id}/dpa/status` returns `{signed: bool, signed_at, signed_by_name, signed_by_title, pdf_url}`
   2. School admin can view the DPA HTML document at `/schools/{school_id}/onboarding/dpa`
   3. Signing action: `POST /api/v1/schools/{school_id}/dpa/sign` with `{signatory_name, signatory_title}` records the signature with server-side timestamp and IP address
   4. On signing, a PDF copy is generated (WeasyPrint) and uploaded to S3 at `dpa/{school_id}/{signed_at}.pdf`; the S3 URL is stored in `school_dpa_records`
   5. Students cannot be imported until DPA status is `signed=true`; API returns 403 with message "DPA signature required before roster import"
-- **Technical Notes:** DPA document is stored as a Jinja2 HTML template (`templates/dpa_v2.html`) with MathPath Oregon's legal language. The rendered DPA includes: school name, district name, signatory name/title, date. WeasyPrint renders the HTML + signature block to PDF. Store executed DPAs in S3 bucket `mathpath-legal-docs` (separate from student data — different retention policy: 7 years minimum). `school_dpa_records` table: `school_id, version, signed_at, signatory_name, signatory_title, signatory_email, signing_ip, pdf_s3_key`.
+- **Technical Notes:** DPA document is stored as a Jinja2 HTML template (`templates/dpa_v2.html`) with PADI.AI's legal language. The rendered DPA includes: school name, district name, signatory name/title, date. WeasyPrint renders the HTML + signature block to PDF. Store executed DPAs in S3 bucket `padi-ai-legal-docs` (separate from student data — different retention policy: 7 years minimum). `school_dpa_records` table: `school_id, version, signed_at, signatory_name, signatory_title, signatory_email, signing_ip, pdf_s3_key`.
 - **Dependencies:** S5-009
 
 ---
@@ -2783,7 +2783,7 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Student Onboarding Tutorial Flow
 - **Type:** Feature
 - **Story Points:** 8
-- **Description:** Build an interactive onboarding tutorial for first-time students. The tutorial walks the student through: (1) meet the MathPath mascot "Milo the Mathemagician," (2) how the learning path works, (3) how to answer a practice question (interactive demo), (4) what the streak and badges are. The tutorial is skippable and completable — progress is saved so it's not repeated.
+- **Description:** Build an interactive onboarding tutorial for first-time students. The tutorial walks the student through: (1) meet the PADI.AI mascot "Milo the Mathemagician," (2) how the learning path works, (3) how to answer a practice question (interactive demo), (4) what the streak and badges are. The tutorial is skippable and completable — progress is saved so it's not repeated.
 - **Acceptance Criteria:**
   1. New students see the tutorial modal on first login (triggered by `student_profiles.onboarding_completed = false`)
   2. Tutorial has 5 steps with a progress indicator; each step has an animation/illustration and a "Next" button
@@ -2889,13 +2889,13 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** PostHog Analytics Event Schema & Implementation
 - **Type:** Feature
 - **Story Points:** 8
-- **Description:** Define and implement the full PostHog analytics event schema for MathPath Oregon. Implement all events on both the frontend (PostHog JS SDK) and backend (PostHog Python SDK for server-side events). The event taxonomy covers the full user lifecycle: acquisition, activation, engagement, retention, and monetization (AARRM funnel).
+- **Description:** Define and implement the full PostHog analytics event schema for PADI.AI. Implement all events on both the frontend (PostHog JS SDK) and backend (PostHog Python SDK for server-side events). The event taxonomy covers the full user lifecycle: acquisition, activation, engagement, retention, and monetization (AARRM funnel).
 - **Acceptance Criteria:**
   1. PostHog JS SDK initialized in Next.js `_app.tsx` with user identification on login (`posthog.identify(userId, {plan, grade, school_id})`); session recording enabled (with COPPA-compliant masking of input fields)
   2. All 25 events in the event schema (see Technical Notes) are instrumented and firing in PostHog staging project
   3. PostHog Person properties updated on subscription change: `posthog.setPersonProperties({plan: "individual"})`
   4. Server-side events (AI tutor session start/end, LLM call latency) sent via PostHog Python SDK to prevent ad-blocker loss
-  5. A PostHog dashboard "MathPath AARRM Funnel" is created with the defined metrics; reviewed and approved by PM
+  5. A PostHog dashboard "PADI.AI AARRM Funnel" is created with the defined metrics; reviewed and approved by PM
 - **Technical Notes:** Full event schema:
   - **Acquisition:** `page_viewed {path}`, `signup_started`, `signup_completed {method: email|clever}`
   - **Activation:** `diagnostic_completed {score_pct, duration_min}`, `first_practice_session_completed`
@@ -2964,14 +2964,14 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Production Monitoring Dashboard & Alerting (MMP-Ready)
 - **Type:** Infrastructure
 - **Story Points:** 5
-- **Description:** Build the comprehensive Datadog monitoring infrastructure for the MMP launch. Create the "MathPath Production Health" dashboard that gives the on-call engineer a single-pane-of-glass view of the entire system. Define all PagerDuty alert policies and runbook links.
+- **Description:** Build the comprehensive Datadog monitoring infrastructure for the MMP launch. Create the "PADI.AI Production Health" dashboard that gives the on-call engineer a single-pane-of-glass view of the entire system. Define all PagerDuty alert policies and runbook links.
 - **Acceptance Criteria:**
-  1. Datadog dashboard "MathPath Production Health" includes: API p50/p95/p99 latency, error rate, ECS CPU/memory, RDS connections, Redis hit rate, LangGraph agent queue depth, Stripe webhook processing rate
+  1. Datadog dashboard "PADI.AI Production Health" includes: API p50/p95/p99 latency, error rate, ECS CPU/memory, RDS connections, Redis hit rate, LangGraph agent queue depth, Stripe webhook processing rate
   2. PagerDuty P1 alerts defined: API error rate > 5% (5-min window), RDS primary down, Redis primary down, Stripe webhook queue > 500 (payment processing at risk)
   3. PagerDuty P2 alerts: API p99 > 2s, PDF generation queue > 200, LangGraph agent timeout rate > 10%
   4. Runbook links included in every PagerDuty alert (linking to `docs/runbooks/*.md`)
   5. Synthetic monitors: 5-minute canary checks for critical user journeys (login, start practice session, complete a question)
-- **Technical Notes:** Datadog Agent deployed as an ECS sidecar on every task. Use Datadog APM (distributed tracing) for FastAPI: `ddtrace-run uvicorn ...`. For LangGraph traces: instrument with `ddtrace` spans around `graph.invoke()` calls — measure total agent orchestration time. Synthetic monitor alert: if canary fails 2 consecutive checks → P1 alert. Dashboard JSON exported to `infra/datadog/dashboards/production-health.json` and version-controlled. PagerDuty integration via Datadog's native PagerDuty notify: `@pagerduty-mathpath-p1`.
+- **Technical Notes:** Datadog Agent deployed as an ECS sidecar on every task. Use Datadog APM (distributed tracing) for FastAPI: `ddtrace-run uvicorn ...`. For LangGraph traces: instrument with `ddtrace` spans around `graph.invoke()` calls — measure total agent orchestration time. Synthetic monitor alert: if canary fails 2 consecutive checks → P1 alert. Dashboard JSON exported to `infra/datadog/dashboards/production-health.json` and version-controlled. PagerDuty integration via Datadog's native PagerDuty notify: `@pagerduty-padi-ai-p1`.
 - **Dependencies:** None
 
 ---
@@ -3001,7 +3001,7 @@ Launch sequence (Sprint 27 Day 1):
 - **Title:** Third-Party Security Audit & Penetration Test
 - **Type:** Infrastructure
 - **Story Points:** 8
-- **Description:** Engage a third-party security firm to conduct a penetration test and security audit of the MathPath Oregon platform. Prepare the audit scope document, provide the auditors with API documentation and a test environment, and remediate all critical/high findings before MMP launch.
+- **Description:** Engage a third-party security firm to conduct a penetration test and security audit of the PADI.AI platform. Prepare the audit scope document, provide the auditors with API documentation and a test environment, and remediate all critical/high findings before MMP launch.
 - **Acceptance Criteria:**
   1. Penetration test scope document finalized: in-scope surfaces are the student-facing app, parent dashboard, teacher dashboard, school admin console, and all public API endpoints
   2. Test environment (`pentest.mathpathoregon.com`) provisioned with synthetic data (no real student data) and auditor accounts at all permission levels
@@ -3061,7 +3061,7 @@ Launch sequence (Sprint 27 Day 1):
   3. Full regression run on all 5 stages' features: diagnostic assessment, learning plan, adaptive practice, summative assessment, reporting, billing, school onboarding — all passing
   4. COPPA deletion flow tested end-to-end: create parent + student, populate data, trigger deletion, verify all DB records and S3 objects are deleted within 60 seconds
   5. Cross-browser testing: Chrome, Firefox, Safari (desktop), and Chrome Mobile (iOS + Android) — all critical paths passing
-- **Technical Notes:** QA environment: use staging (`staging.mathpathoregon.com`) with a sanitized copy of the production DB (no real PII — use `Faker` to replace names/emails). Run Playwright with `--reporter=html` to generate a QA report artifact. Required Playwright test IDs for MMP gate: `test.skip` not allowed on any critical journey test (remove all skips before the gate review). Performance regression check: compare Lighthouse scores from Sprint 35 — alert if any score drops > 5 points. Memory leak check: run a 30-minute soak test with Playwright and verify no memory accumulation in the Next.js process.
+- **Technical Notes:** QA environment: use staging (`staging.padi.local`) with a sanitized copy of the production DB (no real PII — use `Faker` to replace names/emails). Run Playwright with `--reporter=html` to generate a QA report artifact. Required Playwright test IDs for MMP gate: `test.skip` not allowed on any critical journey test (remove all skips before the gate review). Performance regression check: compare Lighthouse scores from Sprint 35 — alert if any score drops > 5 points. Memory leak check: run a 30-minute soak test with Playwright and verify no memory accumulation in the Next.js process.
 - **Dependencies:** All prior Stage 5 tickets
 
 ---
@@ -3090,7 +3090,7 @@ Launch sequence (Sprint 27 Day 1):
 # Stage 5: Dedicated ECS service for async job workers
 module "worker_ecs_service" {
   source         = "../../modules/ecs_service"
-  name           = "mathpath-worker"
+  name           = "padi-ai-worker"
   image          = var.backend_image
   command        = ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=8"]
   cpu            = 1024
@@ -3103,7 +3103,7 @@ module "worker_ecs_service" {
 # Celery Beat scheduler (cron jobs: nightly Clever sync, BKT batch updates, report generation retries)
 module "celery_beat_service" {
   source        = "../../modules/ecs_service"
-  name          = "mathpath-celery-beat"
+  name          = "padi-ai-celery-beat"
   image         = var.backend_image
   command       = ["celery", "-A", "app.worker", "beat", "--loglevel=info"]
   cpu           = 256
@@ -3112,9 +3112,9 @@ module "celery_beat_service" {
 }
 
 # Cloudflare Stream (managed via Terraform Cloudflare provider)
-resource "cloudflare_stream_watermark" "mathpath" {
+resource "cloudflare_stream_watermark" "padi-ai" {
   account_id = var.cloudflare_account_id
-  name       = "MathPath Oregon"
+  name       = "PADI.AI"
   opacity    = 0.5
   padding    = 0.05
   position   = "upperRight"
@@ -3130,8 +3130,8 @@ module "pgbouncer" {
 }
 
 # WAF (AWS Web Application Firewall) for MMP launch
-resource "aws_wafv2_web_acl" "mathpath_waf" {
-  name  = "mathpath-waf-${var.environment}"
+resource "aws_wafv2_web_acl" "padi_waf" {
+  name  = "padi-ai-waf-${var.environment}"
   scope = "CLOUDFRONT"
   rule {
     name     = "AWSManagedRulesCommonRuleSet"
@@ -3174,7 +3174,7 @@ resource "aws_wafv2_web_acl" "mathpath_waf" {
 
 # SQS queue for worksheet generation (decoupled from API)
 resource "aws_sqs_queue" "worksheet_generation" {
-  name                      = "mathpath-worksheet-generation-${var.environment}"
+  name                      = "padi-ai-worksheet-generation-${var.environment}"
   visibility_timeout_seconds = 120
   message_retention_seconds  = 3600  # 1 hour — worksheets must be generated promptly
   redrive_policy = jsonencode({
@@ -3198,7 +3198,7 @@ resource "aws_sqs_queue" "worksheet_generation" {
 
 #### Secrets Management (Stage 5 Additions)
 
-New secrets added to AWS Secrets Manager under `/mathpath/{env}/`:
+New secrets added to AWS Secrets Manager under `/padi-ai/{env}/`:
 
 | Secret Key | Description |
 |-----------|-------------|
@@ -3265,7 +3265,7 @@ New secrets added to AWS Secrets Manager under `/mathpath/{env}/`:
 Stage 5 uses **fully automated blue-green deployment** via GitHub Actions. The MMP launch is a planned event with a dedicated launch runbook (see S5-030).
 
 **Stripe live mode switch:** This is the most sensitive deployment step. A separate checklist item in the launch runbook:
-1. Update `STRIPE_API_KEY` in Secrets Manager: `aws secretsmanager put-secret-value --secret-id /mathpath/prod/stripe/secret_key --secret-string "sk_live_..."`
+1. Update `STRIPE_API_KEY` in Secrets Manager: `aws secretsmanager put-secret-value --secret-id /padi-ai/prod/stripe/secret_key --secret-string "sk_live_..."`
 2. Update `STRIPE_WEBHOOK_SECRET` similarly
 3. Register the production webhook endpoint in Stripe Dashboard (live mode): `https://api.mathpathoregon.com/api/v1/billing/webhook`
 4. Verify first live-mode webhook is received and processed within 5 minutes of enabling

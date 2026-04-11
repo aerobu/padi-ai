@@ -22,7 +22,7 @@
 
 ## Executive Summary
 
-Stage 3 transforms MathPath Oregon from a content-delivery platform into a fully adaptive, AI-powered learning engine. This stage introduces the LangGraph multi-agent practice engine, real-time Bayesian Knowledge Tracing (BKT) with IRT-informed question selection, a dual memory system (working + long-term), and a Socratic tutoring agent powered by Claude Sonnet 4.6. All interactions are delivered over persistent WebSocket connections for sub-second responsiveness.
+Stage 3 transforms PADI.AI from a content-delivery platform into a fully adaptive, AI-powered learning engine. This stage introduces the LangGraph multi-agent practice engine, real-time Bayesian Knowledge Tracing (BKT) with IRT-informed question selection, a dual memory system (working + long-term), and a Socratic tutoring agent powered by Claude Sonnet 4.6. All interactions are delivered over persistent WebSocket connections for sub-second responsiveness.
 
 **Key Deliverables:**
 - LangGraph StateGraph-based adaptive practice engine with 7+ specialized agent nodes
@@ -77,7 +77,7 @@ The Agent Engine communicates with PostgreSQL and Redis **directly** (not throug
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          MathPath Oregon — Stage 3                         │
+│                          PADI.AI — Stage 3                         │
 │                         Container Diagram (C4 L2)                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
@@ -1989,7 +1989,7 @@ import jwt
 @app.websocket("/ws/practice")
 async def practice_websocket(
     websocket: WebSocket,
-    token: str = Query(...),  # JWT passed as query parameter: wss://api.mathpath.org/ws/practice?token=xxx
+    token: str = Query(...),  # JWT passed as query parameter: wss://api.padi.ai/ws/practice?token=xxx
 ):
     """
     Auth flow:
@@ -3416,7 +3416,7 @@ def select_next_item(
 
 # Increase ALB idle timeout for WebSocket connections
 resource "aws_lb" "main" {
-  name               = "mathpath-alb"
+  name               = "padi-ai-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -3434,7 +3434,7 @@ resource "aws_lb" "main" {
 
 # Target group health check — use HTTP endpoint, not WS
 resource "aws_lb_target_group" "api" {
-  name        = "mathpath-api-tg"
+  name        = "padi-ai-api-tg"
   port        = 8000
   protocol    = "HTTP"
   target_type = "ip"
@@ -3487,7 +3487,7 @@ As documented in §1.1, the Agent Engine lives within the FastAPI process. No ne
 # terraform/modules/ecs/task_definition.tf
 
 resource "aws_ecs_task_definition" "api" {
-  family                   = "mathpath-api"
+  family                   = "padi-ai-api"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   
@@ -3514,8 +3514,8 @@ resource "aws_ecs_task_definition" "api" {
         { name = "DATABASE_URL", value = var.database_url },
         { name = "REDIS_URL", value = var.redis_url },
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.question_gen.url },
-        { name = "ANTHROPIC_API_KEY_SSM", value = "/mathpath/anthropic-api-key" },
-        { name = "OPENAI_API_KEY_SSM", value = "/mathpath/openai-api-key" },
+        { name = "ANTHROPIC_API_KEY_SSM", value = "/padi-ai/anthropic-api-key" },
+        { name = "OPENAI_API_KEY_SSM", value = "/padi-ai/openai-api-key" },
       ]
       
       # Graceful shutdown for WebSocket connections
@@ -3524,7 +3524,7 @@ resource "aws_ecs_task_definition" "api" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/mathpath-api"
+          "awslogs-group"         = "/ecs/padi-ai-api"
           "awslogs-region"        = var.region
           "awslogs-stream-prefix" = "api"
         }
@@ -3541,7 +3541,7 @@ resource "aws_ecs_task_definition" "api" {
 
 # Main queue for async question generation jobs
 resource "aws_sqs_queue" "question_gen" {
-  name                       = "mathpath-question-gen"
+  name                       = "padi-ai-question-gen"
   visibility_timeout_seconds = 300     # 5 min — long enough for LLM generation
   message_retention_seconds  = 86400   # 24 hours
   receive_wait_time_seconds  = 20      # Long polling
@@ -3560,7 +3560,7 @@ resource "aws_sqs_queue" "question_gen" {
 
 # Dead letter queue
 resource "aws_sqs_queue" "question_gen_dlq" {
-  name                      = "mathpath-question-gen-dlq"
+  name                      = "padi-ai-question-gen-dlq"
   message_retention_seconds = 1209600  # 14 days — DLQ messages need investigation
   
   tags = {
@@ -3571,7 +3571,7 @@ resource "aws_sqs_queue" "question_gen_dlq" {
 
 # CloudWatch alarm on DLQ messages
 resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
-  alarm_name          = "mathpath-question-gen-dlq-messages"
+  alarm_name          = "padi-ai-question-gen-dlq-messages"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "ApproximateNumberOfMessagesVisible"
@@ -3589,7 +3589,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
 
 # IAM policy for ECS task to access SQS
 resource "aws_iam_role_policy" "ecs_sqs" {
-  name = "mathpath-ecs-sqs"
+  name = "padi-ai-ecs-sqs"
   role = aws_iam_role.ecs_task.id
 
   policy = jsonencode({
@@ -3619,7 +3619,7 @@ resource "aws_iam_role_policy" "ecs_sqs" {
 # terraform/modules/ecs/worker.tf
 
 resource "aws_ecs_task_definition" "question_worker" {
-  family                   = "mathpath-question-worker"
+  family                   = "padi-ai-question-worker"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = 512
@@ -3636,13 +3636,13 @@ resource "aws_ecs_task_definition" "question_worker" {
       environment = [
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.question_gen.url },
         { name = "DATABASE_URL", value = var.database_url },
-        { name = "OPENAI_API_KEY_SSM", value = "/mathpath/openai-api-key" },
+        { name = "OPENAI_API_KEY_SSM", value = "/padi-ai/openai-api-key" },
       ]
       
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/mathpath-question-worker"
+          "awslogs-group"         = "/ecs/padi-ai-question-worker"
           "awslogs-region"        = var.region
           "awslogs-stream-prefix" = "worker"
         }
@@ -3652,7 +3652,7 @@ resource "aws_ecs_task_definition" "question_worker" {
 }
 
 resource "aws_ecs_service" "question_worker" {
-  name            = "mathpath-question-worker"
+  name            = "padi-ai-question-worker"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.question_worker.arn
   desired_count   = 1
@@ -4091,7 +4091,7 @@ import ws from 'k6/ws';
 import { check, sleep } from 'k6';
 import { Counter, Trend } from 'k6/metrics';
 
-const wsUrl = __ENV.WS_URL || 'wss://api-staging.mathpath.org/ws/practice';
+const wsUrl = __ENV.WS_URL || 'wss://api-staging.padi.ai/ws/practice';
 const authToken = __ENV.AUTH_TOKEN || 'test-load-token';
 
 const questionLatency = new Trend('question_latency_ms');
@@ -4282,7 +4282,7 @@ All items must pass before Stage 3 is considered complete.
    redis-cli -h $REDIS_HOST KEYS "ws:conn:*" | wc -l
    
    # Compare with ECS task count
-   aws ecs describe-services --cluster mathpath --services mathpath-api \
+   aws ecs describe-services --cluster padi-ai --services padi-ai-api \
      --query 'services[0].runningCount'
    ```
 
@@ -4300,11 +4300,11 @@ All items must pass before Stage 3 is considered complete.
 3. **Check ECS task network connections:**
    ```bash
    # SSH into ECS task (via ECS Exec)
-   aws ecs execute-command --cluster mathpath --task $TASK_ID \
+   aws ecs execute-command --cluster padi-ai --task $TASK_ID \
      --container api --interactive --command "ss -s"
    
    # Count ESTABLISHED WebSocket connections
-   aws ecs execute-command --cluster mathpath --task $TASK_ID \
+   aws ecs execute-command --cluster padi-ai --task $TASK_ID \
      --container api --interactive \
      --command "ss -tn state established | grep :8000 | wc -l"
    ```

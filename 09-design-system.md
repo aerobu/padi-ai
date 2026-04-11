@@ -1,4 +1,4 @@
-# MathPath Oregon — UI/UX Design System
+# PADI.AI — UI/UX Design System
 ## Version 1.0 | April 2026 | Senior Design Engineer Reference
 
 ---
@@ -34,7 +34,7 @@
 
 ### 1.1 Mission Statement
 
-MathPath Oregon serves 9–10-year-old students who often feel anxious, frustrated, or defeated by math. The design system exists to create an environment that feels safe, modern, and empowering — never patronizing, never punishing. Every visual decision answers one question: **does this help the student focus on the math and feel capable while doing it?**
+PADI.AI serves 9–10-year-old students who often feel anxious, frustrated, or defeated by math. The design system exists to create an environment that feels safe, modern, and empowering — never patronizing, never punishing. Every visual decision answers one question: **does this help the student focus on the math and feel capable while doing it?**
 
 ### 1.2 Core Design Principles
 
@@ -114,7 +114,7 @@ This design system covers three distinct interface contexts:
 #### Demographics & Context
 - Dental hygienist; partner works in tech; household income ~$120K
 - Two children: Noah (4th grade, the student) and younger sibling
-- Discovered MathPath after Noah received SBAC Level 1 ("Below Standard") for the second year
+- Discovered PADI.AI after Noah received SBAC Level 1 ("Below Standard") for the second year
 - Comfortable with smartphones; uses apps for banking, health tracking, school communication
 - Previously tried IXL (Noah hated it) and Khan Academy (too passive)
 
@@ -423,7 +423,7 @@ This design system covers three distinct interface contexts:
 │  │  • Each gap has:                          │               │
 │  │    - Standard name in plain language       │               │
 │  │    - Why it matters (1 sentence)           │               │
-│  │    - What MathPath will do about it        │               │
+│  │    - What PADI.AI will do about it        │               │
 │  │  • [Download PDF Report]                   │               │
 │  │  • [Start Learning Plan — $14.99/mo]       │               │
 │  └──────────────────────────────────────────┘               │
@@ -561,7 +561,7 @@ In Figma, these correspond to three Variable Collections: `Primitives`, `Semanti
 
 #### Design Rationale
 
-The MathPath color system is built for three constraints simultaneously:
+The PADI.AI color system is built for three constraints simultaneously:
 1. **Children ages 9–10** reject primary-color "baby" palettes but respond to confident, modern color schemes with moments of warmth and energy
 2. **Educational focus** requires calming backgrounds that reduce cognitive load, with strategic use of accent color to direct attention to the math content
 3. **Accessibility** demands WCAG AA contrast ratios across all color pairings, with no reliance on color alone for conveying information
@@ -828,7 +828,7 @@ The question screen is the most-viewed screen in the app. Its layout is intentio
 
 ### 4.4 Elevation & Shadows
 
-Elevation creates hierarchy between surfaces. MathPath uses a restrained elevation system — most content sits on a flat surface with subtle shadow separation.
+Elevation creates hierarchy between surfaces. PADI.AI uses a restrained elevation system — most content sits on a flat surface with subtle shadow separation.
 
 | Token | Shadow Value | Usage |
 |-------|-------------|-------|
@@ -866,7 +866,7 @@ Elevation creates hierarchy between surfaces. MathPath uses a restrained elevati
 
 #### Design Rationale
 
-Motion in MathPath serves three functions:
+Motion in PADI.AI serves three functions:
 1. **Feedback** — Confirming an action happened (button press, answer submission)
 2. **Continuity** — Connecting states (question → answer → next question) to reduce cognitive disorientation
 3. **Celebration** — Rewarding achievement (skill mastery, streak milestones)
@@ -953,7 +953,7 @@ All animations MUST respect `prefers-reduced-motion: reduce`:
 
 ### 5.2 Illustration Style
 
-MathPath does NOT use mascots, cartoon characters, or decorative illustrations. Visual identity comes from:
+PADI.AI does NOT use mascots, cartoon characters, or decorative illustrations. Visual identity comes from:
 
 1. **Data visualization** — Skill maps, progress charts, and proficiency heatmaps are the primary visual elements
 2. **Math manipulatives** — Fraction bars, number lines, base-ten blocks, and area models are the "illustrations" — they are functional, not decorative
@@ -1611,7 +1611,7 @@ For place value and multi-digit operations:
 
 ### 7.5 Equation Rendering (KaTeX)
 
-MathPath uses KaTeX for all rendered mathematical expressions. KaTeX produces high-quality TeX-based typesetting that renders synchronously without page reflow.
+PADI.AI uses KaTeX for all rendered mathematical expressions. KaTeX produces high-quality TeX-based typesetting that renders synchronously without page reflow.
 
 #### KaTeX Configuration
 
@@ -1631,7 +1631,7 @@ katex.render(expression, element, {
 
 #### Styling Overrides for Student Context
 
-| Property | Default KaTeX | MathPath Override | Rationale |
+| Property | Default KaTeX | PADI.AI Override | Rationale |
 |----------|--------------|-------------------|-----------|
 | Font size | 1em (inherits) | 1.5em (`type-math-display` = 28px for block, 18px for inline) | Larger for young readers |
 | Color | black | `color-text-primary` | Respects dark mode |
@@ -1662,7 +1662,7 @@ Used for ordering, sorting, and matching exercises.
 
 ### 8.1 Design Philosophy
 
-MathPath's gamification system is designed around **intrinsic motivation** — the rewards signal real learning progress, not arbitrary achievements. Every gamified element maps to a genuine learning milestone. There are no loot boxes, no premium currency, no variable-ratio reward schedules. The gamification system does NOT use:
+PADI.AI's gamification system is designed around **intrinsic motivation** — the rewards signal real learning progress, not arbitrary achievements. Every gamified element maps to a genuine learning milestone. There are no loot boxes, no premium currency, no variable-ratio reward schedules. The gamification system does NOT use:
 - Punitive mechanics (losing points, losing streaks)
 - Social comparison (leaderboards, rankings)
 - FOMO mechanics (limited-time rewards)
@@ -1887,7 +1887,7 @@ PWA eliminates the need for a native app for most use cases. Pursue native React
 Organize the Figma project into the following pages:
 
 ```
-MathPath Oregon Design System
+PADI.AI Design System
 ├── 📄 Cover (project info, version, links)
 ├── 📄 Foundations
 │   ├── Color System (all primitives + semantic tokens)
@@ -2203,5 +2203,5 @@ This design system was informed by research and best practices from the followin
 
 ---
 
-*Document version: 1.0 | Created: April 2026 | Authored for MathPath Oregon project*
+*Document version: 1.0 | Created: April 2026 | Authored for PADI.AI project*
 *Design system scope: Web application (React 19 / Next.js 15) with responsive tablet-first student interface and mobile-first parent interface*

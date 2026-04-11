@@ -16,7 +16,7 @@
 
 ## Executive Summary
 
-Stage 4 represents the MVP milestone for MathPath Oregon. This stage adds three critical capabilities: (1) a full IRT-based summative end-of-grade (EOG) assessment engine using the 3-Parameter Logistic model with EAP theta estimation, (2) teacher and parent reporting dashboards with PDF report generation, and (3) comprehensive MVP hardening including performance optimization, security audits, COPPA/FERPA compliance verification, and production readiness.
+Stage 4 represents the MVP milestone for PADI.AI. This stage adds three critical capabilities: (1) a full IRT-based summative end-of-grade (EOG) assessment engine using the 3-Parameter Logistic model with EAP theta estimation, (2) teacher and parent reporting dashboards with PDF report generation, and (3) comprehensive MVP hardening including performance optimization, security audits, COPPA/FERPA compliance verification, and production readiness.
 
 **Key Deliverables:**
 - Computer Adaptive Testing (CAT) engine with 3PL IRT model
@@ -70,7 +70,7 @@ Stage 4 represents the MVP milestone for MathPath Oregon. This stage adds three 
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────┐
-│                    MathPath Oregon — Stage 4 (MVP)                             │
+│                    PADI.AI — Stage 4 (MVP)                             │
 │                       Container Diagram (C4 L2)                                │
 ├────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                │
@@ -129,7 +129,7 @@ Stage 4 represents the MVP milestone for MathPath Oregon. This stage adds three 
 
 #### 1.5.1 Three-Parameter Logistic (3PL) IRT Model
 
-The MathPath Oregon EOG assessment uses the 3PL IRT model to estimate student ability and adaptively select items:
+The PADI.AI EOG assessment uses the 3PL IRT model to estimate student ability and adaptively select items:
 
 **Model Definition:**
 
@@ -885,7 +885,7 @@ def eap_estimate(
     """
     Expected A Posteriori (EAP) theta estimation using Gaussian quadrature.
     
-    This is the core scoring algorithm for the MathPath Oregon EOG assessment.
+    This is the core scoring algorithm for the PADI.AI EOG assessment.
     It estimates the student's latent ability (theta) from their pattern of
     correct/incorrect responses, accounting for each item's psychometric
     properties (discrimination, difficulty, guessing).
@@ -1025,10 +1025,10 @@ class ProficiencyLevel(str, Enum):
 # Source: Oregon Department of Education, OSAS 2025 results.
 #
 # Validation plan:
-# 1. After 500+ assessments, compare MathPath proficiency distribution
+# 1. After 500+ assessments, compare PADI.AI proficiency distribution
 #    to Oregon statewide distribution for the same grade levels.
 # 2. Adjust cut scores if distribution deviates by >5 percentage points.
-# 3. Conduct criterion validity study: correlate MathPath theta with
+# 3. Conduct criterion validity study: correlate PADI.AI theta with
 #    OSAS scale scores for students who take both assessments.
 
 CUT_SCORES = {
@@ -1157,7 +1157,7 @@ class ReportGenerator:
     """
     
     TEMPLATE_DIR = "templates/reports"
-    S3_BUCKET = "mathpath-reports"
+    S3_BUCKET = "padi-ai-reports"
     URL_EXPIRY_DAYS = 7
     
     def __init__(self):
@@ -1394,7 +1394,7 @@ resource "aws_appautoscaling_target" "api" {
 
 # Scale out on CPU
 resource "aws_appautoscaling_policy" "api_cpu_scale_out" {
-  name               = "mathpath-api-cpu-scale-out"
+  name               = "padi-ai-api-cpu-scale-out"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.api.resource_id
   scalable_dimension = aws_appautoscaling_target.api.scalable_dimension
@@ -1412,7 +1412,7 @@ resource "aws_appautoscaling_policy" "api_cpu_scale_out" {
 
 # Scale out on memory
 resource "aws_appautoscaling_policy" "api_memory_scale_out" {
-  name               = "mathpath-api-memory-scale-out"
+  name               = "padi-ai-api-memory-scale-out"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.api.resource_id
   scalable_dimension = aws_appautoscaling_target.api.scalable_dimension
@@ -1430,7 +1430,7 @@ resource "aws_appautoscaling_policy" "api_memory_scale_out" {
 
 # Custom metric: Active WebSocket connections per task
 resource "aws_appautoscaling_policy" "api_ws_connections" {
-  name               = "mathpath-api-ws-connections"
+  name               = "padi-ai-api-ws-connections"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.api.resource_id
   scalable_dimension = aws_appautoscaling_target.api.scalable_dimension
@@ -1439,7 +1439,7 @@ resource "aws_appautoscaling_policy" "api_ws_connections" {
   target_tracking_scaling_policy_configuration {
     customized_metric_specification {
       metric_name = "ActiveWebSocketConnections"
-      namespace   = "MathPath/API"
+      namespace   = "PADI.AI/API"
       statistic   = "Average"
     }
     target_value       = 250.0   # Target 250 WS connections per task (50% of 500)
@@ -1458,7 +1458,7 @@ resource "aws_appautoscaling_target" "report_worker" {
 }
 
 resource "aws_appautoscaling_policy" "report_worker_queue_depth" {
-  name               = "mathpath-report-worker-queue"
+  name               = "padi-ai-report-worker-queue"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.report_worker.resource_id
   scalable_dimension = aws_appautoscaling_target.report_worker.scalable_dimension
@@ -1487,7 +1487,7 @@ resource "aws_appautoscaling_policy" "report_worker_queue_depth" {
 
 # PgBouncer runs as a sidecar container in the API task definition
 resource "aws_ecs_task_definition" "api_with_pgbouncer" {
-  family                   = "mathpath-api"
+  family                   = "padi-ai-api"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = 1536   # 1.5 vCPU (1024 API + 512 PgBouncer)
@@ -1509,7 +1509,7 @@ resource "aws_ecs_task_definition" "api_with_pgbouncer" {
       
       environment = [
         # Connect to PgBouncer sidecar on localhost:6432
-        { name = "DATABASE_URL", value = "postgresql://mathpath:${var.db_password}@localhost:6432/mathpath" },
+        { name = "DATABASE_URL", value = "postgresql://padi:${var.db_password}@localhost:6432/padi-ai" },
         { name = "REDIS_URL", value = var.redis_url },
       ]
       
@@ -1532,8 +1532,8 @@ resource "aws_ecs_task_definition" "api_with_pgbouncer" {
       environment = [
         { name = "POSTGRESQL_HOST", value = var.rds_endpoint },
         { name = "POSTGRESQL_PORT", value = "5432" },
-        { name = "POSTGRESQL_DATABASE", value = "mathpath" },
-        { name = "POSTGRESQL_USERNAME", value = "mathpath" },
+        { name = "POSTGRESQL_DATABASE", value = "padi-ai" },
+        { name = "POSTGRESQL_USERNAME", value = "padi-ai" },
         { name = "PGBOUNCER_POOL_MODE", value = "transaction" },
         { name = "PGBOUNCER_MAX_CLIENT_CONN", value = "500" },
         { name = "PGBOUNCER_DEFAULT_POOL_SIZE", value = "20" },
@@ -1551,7 +1551,7 @@ resource "aws_ecs_task_definition" "api_with_pgbouncer" {
       ]
       
       healthCheck = {
-        command     = ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U mathpath || exit 1"]
+        command     = ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U padi-ai || exit 1"]
         interval    = 15
         timeout     = 5
         retries     = 3
@@ -1568,8 +1568,8 @@ resource "aws_ecs_task_definition" "api_with_pgbouncer" {
 # terraform/modules/elasticache/main.tf
 
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id       = "mathpath-redis"
-  description                = "MathPath Redis cluster"
+  replication_group_id       = "padi-ai-redis"
+  description                = "PADI.AI Redis cluster"
   node_type                  = "cache.t4g.medium"   # 2 vCPU, 3.09 GB
   num_cache_clusters         = 2                      # Primary + 1 replica
   automatic_failover_enabled = true
@@ -1592,7 +1592,7 @@ resource "aws_elasticache_replication_group" "redis" {
 }
 
 resource "aws_elasticache_parameter_group" "redis" {
-  name   = "mathpath-redis-params"
+  name   = "padi-ai-redis-params"
   family = "redis7"
   
   parameter {
@@ -1613,11 +1613,11 @@ resource "aws_elasticache_parameter_group" "redis" {
 resource "aws_cloudfront_distribution" "frontend" {
   enabled         = true
   is_ipv6_enabled = true
-  comment         = "MathPath Oregon frontend CDN"
+  comment         = "PADI.AI frontend CDN"
   
   # Origin: Vercel deployment
   origin {
-    domain_name = "mathpath-app.vercel.app"
+    domain_name = "padi-ai-app.vercel.app"
     origin_id   = "vercel"
     
     custom_origin_config {
@@ -1722,7 +1722,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 # terraform/modules/ses/main.tf
 
 resource "aws_ses_domain_identity" "main" {
-  domain = "mathpath.org"
+  domain = "padi.ai"
 }
 
 resource "aws_ses_domain_dkim" "main" {
@@ -1731,21 +1731,21 @@ resource "aws_ses_domain_dkim" "main" {
 
 # Email templates
 resource "aws_ses_template" "assessment_complete" {
-  name    = "mathpath-assessment-complete"
+  name    = "padi-ai-assessment-complete"
   subject = "{{student_name}}'s Math Assessment Results Are Ready"
   html    = file("${path.module}/templates/assessment_complete.html")
   text    = file("${path.module}/templates/assessment_complete.txt")
 }
 
 resource "aws_ses_template" "weekly_summary" {
-  name    = "mathpath-weekly-summary"
+  name    = "padi-ai-weekly-summary"
   subject = "{{student_name}}'s Weekly Math Progress"
   html    = file("${path.module}/templates/weekly_summary.html")
   text    = file("${path.module}/templates/weekly_summary.txt")
 }
 
 resource "aws_ses_template" "milestone_achieved" {
-  name    = "mathpath-milestone"
+  name    = "padi-ai-milestone"
   subject = "Celebration! {{student_name}} reached a new milestone!"
   html    = file("${path.module}/templates/milestone.html")
   text    = file("${path.module}/templates/milestone.txt")
@@ -1753,11 +1753,11 @@ resource "aws_ses_template" "milestone_achieved" {
 
 # SES event destination for tracking opens/clicks
 resource "aws_ses_configuration_set" "main" {
-  name = "mathpath-notifications"
+  name = "padi-ai-notifications"
 }
 
 resource "aws_ses_event_destination" "sns" {
-  name                   = "mathpath-ses-events"
+  name                   = "padi-ai-ses-events"
   configuration_set_name = aws_ses_configuration_set.main.name
   enabled                = true
   matching_types         = ["bounce", "complaint", "delivery", "open", "click"]
@@ -1769,7 +1769,7 @@ resource "aws_ses_event_destination" "sns" {
 
 # IAM policy for ECS to send via SES
 resource "aws_iam_role_policy" "ecs_ses" {
-  name = "mathpath-ecs-ses"
+  name = "padi-ai-ecs-ses"
   role = aws_iam_role.ecs_task.id
   
   policy = jsonencode({
@@ -1785,7 +1785,7 @@ resource "aws_iam_role_policy" "ecs_ses" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "ses:FromAddress" = "notifications@mathpath.org"
+            "ses:FromAddress" = "notifications@padi.ai"
           }
         }
       }
@@ -2303,7 +2303,7 @@ This is the **go/no-go gate** for MVP launch. All items must pass.
 
 #### Security
 - [ ] HTTPS enforced everywhere (HSTS headers set)
-- [ ] CORS configured to allow only mathpath.org origins
+- [ ] CORS configured to allow only padi.ai origins
 - [ ] Rate limiting configured on all public endpoints
 - [ ] WAF rules active on ALB (SQL injection, XSS, rate limiting)
 - [ ] Penetration test completed with no critical findings
@@ -2388,7 +2388,7 @@ This is the **go/no-go gate** for MVP launch. All items must pass.
    - Forward findings to legal counsel within 4 hours of classification.
    - For data breaches: engage breach notification counsel.
    - For COPPA: verify consent status for the student.
-   - For FERPA: verify the school's authorization of MathPath as a school official.
+   - For FERPA: verify the school's authorization of PADI.AI as a school official.
 
 5. **Remediate if required:**
    - **Data deletion request**: Execute data deletion across all tables:
@@ -2431,7 +2431,7 @@ This is the **go/no-go gate** for MVP launch. All items must pass.
      ```
    - Delete S3 objects (PDF reports):
      ```bash
-     aws s3 rm "s3://mathpath-reports/reports/$STUDENT_ID/" --recursive
+     aws s3 rm "s3://padi-ai-reports/reports/$STUDENT_ID/" --recursive
      ```
    - Clear Redis cache:
      ```bash
@@ -2450,7 +2450,7 @@ This is the **go/no-go gate** for MVP launch. All items must pass.
 7. **Respond to complainant:**
    - Provide written response within the SLA.
    - Include: summary of investigation, findings, actions taken, preventive measures.
-   - For FERPA: document that MathPath operates under the school official exception.
+   - For FERPA: document that PADI.AI operates under the school official exception.
    - For COPPA: document that consent was obtained through the school.
 
 8. **Post-incident:**
@@ -2469,7 +2469,7 @@ This is the **go/no-go gate** for MVP launch. All items must pass.
 ```
 Page 1:
 ┌──────────────────────────────────────────────┐
-│  MATHPATH OREGON — Assessment Report         │
+│  PADI.AI — Assessment Report         │
 │  Student: [Name]       Grade: [N]            │
 │  Assessment Date: [Date]                     │
 │  ─────────────────────────────────────────── │
@@ -2523,7 +2523,7 @@ Page 2:
 │  2. Continue strong work in measurement      │
 │  3. Consider geometry enrichment activities   │
 │                                              │
-│  Generated: [timestamp] | MathPath Oregon    │
+│  Generated: [timestamp] | PADI.AI    │
 └──────────────────────────────────────────────┘
 ```
 

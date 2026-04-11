@@ -1,5 +1,5 @@
 # PRD Stage 3: Adaptive Practice Engine & Multi-Agent AI Tutoring
-## MathPath Oregon | Version 1.0 | Target Completion: Month 10
+## PADI.AI | Version 1.0 | Target Completion: Month 10
 
 **Document Status:** Draft  
 **Owner:** Product — AI Learning Systems  
@@ -24,9 +24,9 @@
 
 ## 3.1 Overview & Objectives
 
-### What "Adaptive Practice" Means in MathPath Oregon
+### What "Adaptive Practice" Means in PADI.AI
 
-Adaptive practice is not simply varying question difficulty. In MathPath Oregon, adaptive practice is a closed-loop cognitive feedback system that continuously models a student's knowledge state, selects the most informative next learning event, delivers that event with appropriately scaffolded support, evaluates the response with error-level granularity, and updates the knowledge model — all within a single real-time session and across sessions over weeks.
+Adaptive practice is not simply varying question difficulty. In PADI.AI, adaptive practice is a closed-loop cognitive feedback system that continuously models a student's knowledge state, selects the most informative next learning event, delivers that event with appropriately scaffolded support, evaluates the response with error-level granularity, and updates the knowledge model — all within a single real-time session and across sessions over weeks.
 
 The system adapts along six dimensions simultaneously:
 
@@ -395,7 +395,7 @@ Return JSON matching this schema exactly:
 
 #### Tutor Agent
 
-**Role:** The pedagogical heart of MathPath Oregon. Delivers Socratic, scaffolded guidance that helps students arrive at understanding rather than answers. Never discouraging, always warm, always mathematically precise.
+**Role:** The pedagogical heart of PADI.AI. Delivers Socratic, scaffolded guidance that helps students arrive at understanding rather than answers. Never discouraging, always warm, always mathematically precise.
 
 **LLM:** `claude-sonnet-4-6` — selected for explanation quality, instruction-following reliability, and appropriate emotional register for children.
 
@@ -1646,7 +1646,7 @@ GET    /api/v1/students/{student_id}/sessions   List all sessions for student
 ```json
 {
   "session_id": "ses_xyz789",
-  "websocket_url": "wss://api.mathpathorgon.com/ws/sessions/ses_xyz789",
+  "websocket_url": "wss://api.padi.ai/ws/sessions/ses_xyz789",
   "session_token": "st_...",     // JWT for WS auth
   "current_skill": {
     "id": "4.NF.B.3",

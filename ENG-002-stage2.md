@@ -32,7 +32,7 @@
          │ HTTPS         │ HTTPS         │ HTTPS            │ HTTPS
          ▼               ▼               ▼                  ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                   MATHPATH OREGON SYSTEM BOUNDARY                       │
+│                   PADI.AI SYSTEM BOUNDARY                       │
 │                                                                         │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
 │   │                    Next.js Web App (Vercel)                     │   │
@@ -490,7 +490,7 @@ All Stage 1 tables remain unchanged. The following tables are added in Stage 2.
 
 ```sql
 -- =============================================================================
--- MathPath Oregon — Stage 2 Database Schema (Additions)
+-- PADI.AI — Stage 2 Database Schema (Additions)
 -- =============================================================================
 
 -- =============================================================================
@@ -1206,7 +1206,7 @@ class CreateGenerationJobResponse(BaseModel):
 
 **Side Effects:**
 - INSERT into `generation_jobs` with `status='queued'`
-- PUBLISH job_id to Redis queue `mathpath:generation:queue`
+- PUBLISH job_id to Redis queue `padi:generation:queue`
 
 ---
 
@@ -2333,7 +2333,7 @@ ASYNC FUNCTION generate_and_validate_question(standard, difficulty, theme, confi
 # modules/ecs/worker.tf
 
 resource "aws_ecs_task_definition" "worker" {
-  family                   = "mathpath-worker-${var.environment}"
+  family                   = "padi-ai-worker-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = 1024    # Higher CPU for sandbox execution
@@ -2342,12 +2342,12 @@ resource "aws_ecs_task_definition" "worker" {
   task_role_arn            = aws_iam_role.ecs_worker_task.arn
   
   container_definitions = jsonencode([{
-    name  = "mathpath-worker"
+    name  = "padi-ai-worker"
     image = "${var.ecr_repository_url}:${var.image_tag}-worker"
     environment = [
       { name = "WORKER_MODE", value = "true" },
       { name = "ENVIRONMENT", value = var.environment },
-      { name = "REDIS_QUEUE", value = "mathpath:generation:queue" },
+      { name = "REDIS_QUEUE", value = "padi:generation:queue" },
       { name = "SANDBOX_TIMEOUT", value = "5" },
     ]
     secrets = [
@@ -2359,7 +2359,7 @@ resource "aws_ecs_task_definition" "worker" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = "/ecs/mathpath-worker-${var.environment}"
+        "awslogs-group"         = "/ecs/padi-ai-worker-${var.environment}"
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "worker"
       }
@@ -2368,7 +2368,7 @@ resource "aws_ecs_task_definition" "worker" {
 }
 
 resource "aws_ecs_service" "worker" {
-  name            = "mathpath-worker"
+  name            = "padi-ai-worker"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.worker.arn
   desired_count   = var.environment == "prod" ? 2 : 1
@@ -2397,7 +2397,7 @@ EMBEDDING_MODEL=text-embedding-3-small
 
 # ─── Worker Configuration ─────────────────────────────────────────
 WORKER_MODE=false
-REDIS_QUEUE=mathpath:generation:queue
+REDIS_QUEUE=padi:generation:queue
 WORKER_POLL_INTERVAL_SECONDS=5
 SANDBOX_TIMEOUT_SECONDS=5
 SANDBOX_MAX_MEMORY_MB=128
@@ -2429,8 +2429,8 @@ Add to CI/CD pipeline:
       postgres:
         image: pgvector/pgvector:pg17
         env:
-          POSTGRES_DB: mathpath_test
-          POSTGRES_USER: mathpath
+          POSTGRES_DB: padi_ai_test
+          POSTGRES_USER: padi-ai
           POSTGRES_PASSWORD: testpassword
         ports: ["5432:5432"]
         options: >-
@@ -2454,7 +2454,7 @@ Add to CI/CD pipeline:
             --cov=app/worker \
             -v --timeout=120
         env:
-          DATABASE_URL: postgresql+asyncpg://mathpath:testpassword@localhost:5432/mathpath_test
+          DATABASE_URL: postgresql+asyncpg://padi:testpassword@localhost:5432/padi_ai_test
           REDIS_URL: redis://localhost:6379/0
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY_TEST }}
@@ -2477,7 +2477,7 @@ Add to CI/CD pipeline:
       - name: Build and push Worker image
         run: |
           IMAGE_TAG="${{ github.sha }}-worker"
-          FULL_TAG="${{ steps.ecr-login.outputs.registry }}/mathpath-worker:${IMAGE_TAG}"
+          FULL_TAG="${{ steps.ecr-login.outputs.registry }}/padi-ai-worker:${IMAGE_TAG}"
           docker build -t ${FULL_TAG} -f backend/Dockerfile.worker backend/
           docker push ${FULL_TAG}
 ```
@@ -2804,13 +2804,13 @@ def test_pgvector_dedup_under_50ms(benchmark, seeded_questions_with_embeddings):
 
 | Step | Action | Command / Detail |
 |------|--------|-----------------|
-| 1 | **Check worker logs** | `aws logs get-log-events --log-group /ecs/mathpath-worker-prod --log-stream-prefix worker` |
-| 2 | **Check Redis queue** | `redis-cli LLEN mathpath:generation:queue` — check backlog size |
+| 1 | **Check worker logs** | `aws logs get-log-events --log-group /ecs/padi-ai-worker-prod --log-stream-prefix worker` |
+| 2 | **Check Redis queue** | `redis-cli LLEN padi:generation:queue` — check backlog size |
 | 3 | **Check LLM API status** | Verify OpenAI/Anthropic status pages. Test API call manually. |
-| 4 | **Force restart worker** | `aws ecs update-service --cluster mathpath-prod --service mathpath-worker --force-new-deployment` |
+| 4 | **Force restart worker** | `aws ecs update-service --cluster padi-ai-prod --service padi-ai-worker --force-new-deployment` |
 | 5 | **Reset stuck jobs** | `UPDATE generation_jobs SET status='queued', retry_count=retry_count+1 WHERE status='running' AND started_at < now() - interval '30 minutes'` |
 | 6 | **Verify recovery** | Poll job status. Check worker logs for resumed processing. |
-| 7 | **Scale if needed** | `aws ecs update-service --cluster mathpath-prod --service mathpath-worker --desired-count 4` |
+| 7 | **Scale if needed** | `aws ecs update-service --cluster padi-ai-prod --service padi-ai-worker --desired-count 4` |
 
 ### Runbook 7: AI-Generated Content Safety Incident
 
