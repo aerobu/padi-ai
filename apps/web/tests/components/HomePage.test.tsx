@@ -7,7 +7,7 @@ describe('HomePage', () => {
 
     const branding = screen.getByText('PADI.AI');
     expect(branding).toBeInTheDocument();
-    expect(branding).toHaveClass('text-2xl', 'font-bold', 'text-padiGreen-600');
+    expect(branding).toHaveClass('text-2xl', 'font-bold', 'text-padi-teal-600');
   });
 
   it('renders Sign In button in navigation', () => {
@@ -24,6 +24,16 @@ describe('HomePage', () => {
     const getStartedButton = screen.getByText('Get Started');
     expect(getStartedButton).toBeInTheDocument();
     expect(getStartedButton.closest('a')).toHaveAttribute('href', '/(auth)/login');
+  });
+
+  it('renders main headline with correct messaging', () => {
+    render(<HomePage />);
+
+    const headline = screen.getByText(/Adaptive Math Learning/);
+    expect(headline).toBeInTheDocument();
+
+    const subhead = screen.getByText(/for Oregon Students/);
+    expect(subhead).toBeInTheDocument();
   });
 
   it('renders main headline with correct messaging', () => {
