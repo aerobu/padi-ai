@@ -131,8 +131,25 @@ export const shadows = {
 };
 
 // Typography (Section 4.2)
+// DM Sans for headings (display), Inter for body text
 export const fontFamily = {
-  sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  display: [
+    'DM Sans',
+    'Inter',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    '"Segoe UI"',
+    'Roboto',
+    'sans-serif',
+  ],
+  sans: [
+    'Inter',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    '"Segoe UI"',
+    'Roboto',
+    'sans-serif',
+  ],
   mono: 'JetBrains Mono, "Fira Code", "Fira Mono", monospace',
 } as const;
 
