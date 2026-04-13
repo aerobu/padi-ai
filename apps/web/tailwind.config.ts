@@ -11,13 +11,11 @@ const config: Config = {
     extend: {
       colors: {
         // Brand colors from design system
-        padi: {
-          teal: colors.teal,
-          warm: colors.warm,
-          green: colors.green,
-          amber: colors.amber,
-          neutral: colors.neutral,
-        },
+        teal: colors.teal,
+        warm: colors.warm,
+        green: colors.green,
+        amber: colors.amber,
+        neutral: colors.neutral,
         // Semantic colors
         error: colors.error,
         warning: colors.warning,
@@ -37,7 +35,14 @@ const config: Config = {
         xl: shadows.xl,
       },
       borderRadius: {
-        ...colors.borderRadius,
+        none: '0',
+        sm: '0.25rem',
+        default: '0.375rem',
+        md: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+        '2xl': '1.5rem',
+        full: '9999px',
       },
     },
   },

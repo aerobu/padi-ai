@@ -7,7 +7,7 @@ describe('HomePage', () => {
 
     const branding = screen.getByText('PADI.AI');
     expect(branding).toBeInTheDocument();
-    expect(branding).toHaveClass('text-2xl', 'font-bold', 'text-padi-teal-600');
+    expect(branding).toHaveClass('text-2xl', 'font-bold', 'text-teal-600');
   });
 
   it('renders Sign In button in navigation', () => {
