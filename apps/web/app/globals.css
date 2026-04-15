@@ -27,3 +27,13 @@
     text-wrap: balance;
   }
 }
+
+/* Reduced motion support (Section 4.6 of 09-design-system.md) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

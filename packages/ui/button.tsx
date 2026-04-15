@@ -21,27 +21,29 @@ export function Button({
   type = 'button',
   className = '',
 }: ButtonProps) {
+  // Design spec Section 6.1: 48px (student), 40px (dashboard)
+  // Press feedback: scale(0.96) for duration-fast (200ms)
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    'inline-flex items-center justify-center font-medium rounded-md transition-all duration-200 active:scale-96 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variants = {
-    // Primary brand color is teal (009488) per design system
+    // Primary brand color is teal per design system
     primary:
-      'bg-padi-teal-600 text-white hover:bg-padi-teal-700 focus:ring-padi-teal-500',
-    // Secondary uses warm accent (f97316) for celebration/engagement
+      'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500',
+    // Secondary uses warm accent for celebration/engagement
     secondary:
-      'bg-padi-warm-500 text-white hover:bg-padi-warm-600 focus:ring-padi-warm-400',
+      'bg-warm-500 text-white hover:bg-warm-600 focus:ring-warm-400',
     outline:
-      'border-2 border-padi-teal-600 text-padi-teal-600 hover:bg-padi-teal-50 focus:ring-padi-teal-500',
+      'border-2 border-teal-600 text-teal-600 hover:bg-teal-50 focus:ring-teal-500',
     ghost:
-      'text-padi-neutral-700 hover:bg-padi-neutral-100 focus:ring-padi-neutral-500',
+      'text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500',
   };
 
-  // Sizes from design spec: sm=32px, md=44px, lg=56px height
+  // Sizes from design spec: lg=48px (student), md=40px (dashboard), sm=32px
   const sizes = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2.5 text-base',
-    lg: 'px-6 py-3.5 text-lg',
+    sm: 'px-3 py-2 text-label-sm', // 32px
+    md: 'px-4 py-2.5 text-label-sm', // 40px (dashboard)
+    lg: 'px-6 h-12 text-label-lg', // 48px (student)
   };
 
   const disabledStyles = disabled || loading

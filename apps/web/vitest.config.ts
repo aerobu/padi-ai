@@ -3,27 +3,27 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
-    include: ['tests/**/*.test.tsx', 'tests/**/*.test.ts'],
+    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    css: true,
     coverage: {
-      provider: 'istanbul',
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        '.next/',
-        'tests/',
+        'tests/**',
         '**/*.d.ts',
-        'src/**/*.{test,spec}.ts*',
+        'vitest.config.ts',
+        'next.config.js',
       ],
     },
-    resolve: {
-      alias: [
-        { find: '@padi/ui', replacement: path.resolve(__dirname, '../packages/ui') },
-        { find: '@padi/config', replacement: path.resolve(__dirname, '../packages/config') },
-        { find: '@padi/types', replacement: path.resolve(__dirname, '../packages/types') },
-      ],
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, '.'),
+      '@padi/ui': path.resolve(__dirname, '../../packages/ui'),
+      '@padi/assessment': path.resolve(__dirname, './components/assessment'),
+      '@/stores': path.resolve(__dirname, './stores'),
     },
   },
 });

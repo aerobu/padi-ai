@@ -24,16 +24,27 @@ const config: Config = {
         gray: colors.gray,
       },
       fontFamily: {
-        display: fontFamily.display,
-        sans: fontFamily.sans,
+        // Cast through unknown to bypass readonly array constraint
+        display: fontFamily.display as unknown as string[],
+        sans: fontFamily.sans as unknown as string[],
         mono: ['JetBrains Mono', 'monospace'],
       },
+      fontSize: {
+        // Design system typography scale (Section 4.2 of 09-design-system.md)
+        'display-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }],
+        'display-md': ['24px', { lineHeight: '32px', fontWeight: '700' }],
+        'display-sm': ['20px', { lineHeight: '28px', fontWeight: '500' }],
+        'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', fontWeight: '600' }],
+        'label-sm': ['12px', { lineHeight: '16px', fontWeight: '500' }],
+      },
       boxShadow: {
-        sm: shadows.sm,
-        DEFAULT: shadows.DEFAULT,
-        md: shadows.md,
-        lg: shadows.lg,
-        xl: shadows.xl,
+        // Design system elevation shadows (Section 4.4 of 09-design-system.md)
+        'sm': '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)', // elevation-1
+        'md': '0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06)', // elevation-2
+        'lg': '0 10px 15px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.05)', // elevation-3
+        'xl': shadows.xl,
       },
       borderRadius: {
         none: '0',
@@ -47,21 +58,11 @@ const config: Config = {
       },
       animation: {
         'fade-in': 'fadeIn 0.8s ease-out forwards',
-        'fade-in-delayed': 'fadeIn 0.8s ease-out 0.2s forwards',
-        'fade-in-delayed-2': 'fadeIn 0.8s ease-out 0.4s forwards',
-        'fade-in-delayed-3': 'fadeIn 0.8s ease-out 0.6s forwards',
-        float: 'float 8s ease-in-out infinite',
-        'float-delayed': 'float 10s ease-in-out infinite 2s',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
-          '33%': { transform: 'translate(20px, -20px) rotate(5deg)' },
-          '66%': { transform: 'translate(-10px, 10px) rotate(-3deg)' },
         },
       },
     },

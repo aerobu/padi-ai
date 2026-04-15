@@ -162,6 +162,157 @@ export interface AuditLog {
   created_at: Date;
 }
 
+// Consent types
+export interface ConsentInitiateRequest {
+  consent_type: string;
+  student_display_name: string;
+  acknowledgements: string[];
+}
+
+export interface ConsentInitiateResponse {
+  consent_id: string;
+  status: "pending";
+  verification_method: string;
+  email_sent_to: string;
+  expires_at: Date;
+}
+
+export interface ConsentConfirmRequest {
+  token: string;
+}
+
+export interface ConsentConfirmResponse {
+  consent_id: string;
+  status: "active";
+  confirmed_at: Date;
+  expires_at: Date;
+}
+
+export interface ConsentStatusResponse {
+  has_active_consent: boolean;
+  consent_records: ConsentRecordSummary[];
+}
+
+export interface ConsentRecordSummary {
+  consent_id: string;
+  consent_type: string;
+  status: "pending" | "active" | "revoked" | "expired";
+  initiated_at: Date;
+  confirmed_at: Date | null;
+  expires_at: Date | null;
+}
+
+// Assessment types
+export interface AssessmentStartRequest {
+  student_id: string;
+  assessment_type: "diagnostic";
+}
+
+export interface AssessmentStartResponse {
+  assessment_id: string;
+  session_id: string;
+  student_id: string;
+  assessment_type: "diagnostic";
+  target_question_count: number;
+  status: "in_progress";
+  started_at: Date;
+}
+
+export interface QuestionPresentation {
+  question_id: string;
+  question_number: number;
+  standard_domain: string;
+  stem: string;
+  stem_image_url: string | null;
+  options: OptionPresentation[];
+  question_type: "multiple_choice" | "numeric" | "multi_step";
+}
+
+export interface OptionPresentation {
+  key: string; // A, B, C, D
+  text: string;
+  image_url: string | null;
+}
+
+export interface AssessmentProgress {
+  questions_answered: number;
+  target_total: number;
+  domains_covered: Record<string, number>;
+  estimated_time_remaining_min: number;
+}
+
+export interface NextQuestionResponse {
+  question: QuestionPresentation | null;
+  progress: AssessmentProgress;
+  should_end: boolean;
+  end_reason: "all_standards_covered" | "max_questions_reached" | null;
+}
+
+export interface ResponseSubmission {
+  question_id: string;
+  selected_answer: string;
+  time_spent_ms: number;
+  client_timestamp: Date;
+}
+
+export interface ResponseSubmissionResponse {
+  is_correct: boolean;
+  correct_answer: string | null;
+  explanation: string | null;
+  progress: AssessmentProgress;
+}
+
+export interface CompleteAssessmentResponse {
+  assessment_id: string;
+  status: "completed";
+  total_questions: number;
+  total_correct: number;
+  overall_score: number;
+  duration_minutes: number;
+  completed_at: Date;
+  results_url: string;
+}
+
+export interface DomainResult {
+  domain_code: string;
+  domain_name: string;
+  questions_count: number;
+  correct_count: number;
+  score: number;
+  classification: "below_par" | "on_par" | "above_par";
+}
+
+export interface SkillStateResult {
+  standard_code: string;
+  standard_title: string;
+  p_mastery: number;
+  mastery_level: "low" | "medium" | "high";
+  questions_attempted: number;
+  questions_correct: number;
+}
+
+export interface GapAnalysis {
+  strengths: string[];
+  on_track: string[];
+  needs_work: string[];
+  recommended_focus_order: string[];
+}
+
+export interface AssessmentResultsResponse {
+  assessment_id: string;
+  student_name: string;
+  assessment_type: "diagnostic";
+  completed_at: Date;
+  duration_minutes: number;
+  overall_score: number;
+  total_questions: number;
+  total_correct: number;
+  overall_classification: "below_par" | "on_par" | "above_par";
+  domain_results: DomainResult[];
+  skill_states: SkillStateResult[];
+  gap_analysis: GapAnalysis;
+}
+
 // Common API response types
 export interface PaginatedResponse<T> {
   data: T[];
