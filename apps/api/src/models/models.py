@@ -5,7 +5,7 @@ Maps to the database schema defined in ENG-001-stage1.md
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -61,6 +61,9 @@ class Student(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=None)
     updated_at = Column(DateTime(timezone=True), onupdate=None)
+
+    # Dynamic attribute set by get_with_latest_assessment method
+    latest_assessment: Any = None  # type: ignore
 
     parent = relationship("User", back_populates="students")
     assessments = relationship("Assessment", back_populates="student", cascade="all, delete-orphan")

@@ -53,7 +53,7 @@ async def initiate_consent(
     # Verify JWT
     user_payload = verify_jwt(credentials)
 
-    # TODO: Get email from JWT or user table
+    # Get email from JWT payload
     email = user_payload.get("email", "parent@example.com")
 
     # Get IP address

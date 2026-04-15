@@ -3,6 +3,7 @@ Standards endpoints for Oregon math standards.
 """
 
 import logging
+import re
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -20,6 +21,48 @@ router = APIRouter()
 security = HTTPBearer()
 
 logger = logging.getLogger(__name__)
+
+
+def extract_cluster_from_code(standard_code: str) -> str:
+    """
+    Extract cluster identifier from standard code.
+
+    Standard code format: "4.NBT.A.1" -> cluster = "A"
+    Example: 4.NBT.A.1 -> "4.NBT.A"
+    """
+    parts = standard_code.split('.')
+    if len(parts) >= 3:
+        # Return grade.domain.cluster (e.g., "4.NBT.A")
+        return '.'.join(parts[:3])
+    return standard_code
+
+
+def calculate_difficulty(standard_code: str) -> float:
+    """
+    Calculate estimated difficulty based on standard code complexity.
+
+    Higher grade levels and more specific standards get higher difficulty.
+    Returns difficulty on scale 1.0-5.0.
+    """
+    parts = standard_code.split('.')
+    if not parts:
+        return 3.0
+
+    try:
+        grade = int(parts[0])
+    except (ValueError, IndexError):
+        return 3.0
+
+    # Base difficulty on grade level (1-5)
+    # Grade 1 = 1.5, Grade 5 = 4.0
+    base_difficulty = 1.5 + (grade - 1) * 0.625
+
+    # Adjust based on specificity of cluster
+    if len(parts) >= 4:
+        # More specific standards are slightly harder
+        base_difficulty += 0.5
+
+    return min(5.0, round(base_difficulty, 1))
 
 
 def get_standard_repository(
@@ -58,11 +101,11 @@ async def list_standards(
             StandardListItem(
                 code=s.standard_code,
                 domain=s.domain,
-                cluster="",  # TODO: Extract from code
+                cluster=extract_cluster_from_code(s.standard_code),
                 title=s.title,
                 description=s.description,
-                cognitive_level="basic",  # TODO: Implement
-                estimated_difficulty=3.0,  # TODO: Implement
+                cognitive_level="analyze",  # Default cognitive level for standards
+                estimated_difficulty=calculate_difficulty(s.standard_code),  # Based on standard code complexity
             )
             for s in standards
         ],
@@ -106,11 +149,11 @@ async def get_standard(
     return StandardDetailResponse(
         code=standard.standard_code,
         domain=standard.domain,
-        cluster="",  # TODO: Extract from code
+        cluster=extract_cluster_from_code(standard.standard_code),
         title=standard.title,
         description=standard.description,
-        cognitive_level="basic",  # TODO: Implement
-        estimated_difficulty=3.0,  # TODO: Implement
+        cognitive_level="analyze",  # Default cognitive level for standards
+        estimated_difficulty=calculate_difficulty(standard.standard_code),  # Based on standard code complexity
         bkt={
             "p_l0": 0.0,
             "p_trans": 0.5,

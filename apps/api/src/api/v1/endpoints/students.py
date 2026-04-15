@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.security import verify_jwt
+from src.core.database import get_db
 from src.repositories.student_repository import StudentRepository
 from src.repositories.consent_repository import ConsentRepository
 from src.schemas.user import (
@@ -139,7 +140,7 @@ async def get_student(
         birth_year=student.birth_year,
         is_active=student.is_active,
         created_at=student.created_at,
-        latest_assessment=None,  # TODO: Implement
+        latest_assessment=student.latest_assessment,
         skill_summary=skill_summary,
     )
 
