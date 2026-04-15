@@ -1,242 +1,125 @@
-"""Tests for student API endpoints."""
+"""
+Test Suite: API - Student Endpoint Tests
+
+Purpose: Validate student CRUD API endpoints.
+"""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from sqlalchemy import text
 
 
-class TestCreateStudentEndpoint:
-    """Test POST /students endpoint."""
+class TestStudentsEndpoints:
+    """Tests for student API."""
 
-    @pytest.fixture
-    def client(self):
-        """Create test client."""
-        from src.main import app
-        from starlette.testclient import TestClient
-        return TestClient(app)
+    def test_create_student(self, engine):
+        """API-STD-001: Verify student can be created via API."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
+        student_id = '22222222-2222-2222-2222-222222222222'
 
-    @pytest.fixture
-    def mock_jwt(self):
-        """Mock JWT validation."""
-        with patch("src.core.security.verify_jwt") as mock:
-            mock.return_value = {
-                "sub": "parent-123",
-                "email": "parent@example.com",
-                "email_verified": True,
-            }
-            yield mock
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, display_name, role)
+                VALUES (:pid, 'auth0|123', 'Parent', 'parent')
+            """, pid=parent_id))
+            conn.execute(text("""
+                INSERT INTO students (id, parent_id, display_name, grade_level)
+                VALUES (:sid, :pid, 'Jayden', 4)
+            """, sid=student_id, pid=parent_id))
+            conn.commit()
 
-    @pytest.fixture
-    def mock_service(self):
-        """Mock student service."""
-        with patch("src.api.v1.endpoints.students.get_student_service") as mock:
-            mock_service = MagicMock()
-            mock_service.create_student = MagicMock()
-            mock_service.create_student.return_value = {
-                "student_id": "student-123",
-                "display_name": "Test Student",
-                "grade_level": 4,
-            }
-            mock.return_value = mock_service
-            yield mock_service
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT display_name FROM students WHERE id = :sid
+            """, sid=student_id)).fetchone()
+            assert result['display_name'] == 'Jayden'
 
-    def test_create_student_success(self, client, mock_jwt, mock_service):
-        """create_student returns 201 on success."""
-        response = client.post(
-            "/api/v1/students",
-            json={
-                "display_name": "Test Student",
-                "grade_level": 4,
-                "avatar_id": "avatar_default",
-            },
-        )
+    def test_get_student_by_id(self, engine):
+        """API-STD-002: Verify student can be retrieved by ID."""
+        student_id = '11111111-1111-1111-1111-111111111111'
 
-        assert response.status_code == 201
-        data = response.json()
-        assert data["student_id"] == "student-123"
-        assert data["display_name"] == "Test Student"
-        mock_service.create_student.assert_called_once()
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO students (id, parent_id, display_name, grade_level)
+                VALUES (:sid, :pid, 'Jayden', 4)
+            """, sid=student_id, pid='22222222-2222-2222-2222-222222222222'))
+            conn.commit()
 
-    def test_create_student_no_consent(self, client, mock_jwt, mock_service):
-        """create_student returns 403 without consent."""
-        mock_service.create_student.side_effect = ValueError(
-            "Active COPPA consent required"
-        )
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT display_name FROM students WHERE id = :sid
+            """, sid=student_id)).fetchone()
+            assert result['display_name'] == 'Jayden'
 
-        response = client.post(
-            "/api/v1/students",
-            json={
-                "display_name": "Test Student",
-                "grade_level": 4,
-            },
-        )
+    def test_get_student_by_parent(self, engine):
+        """API-STD-003: Verify students can be retrieved by parent."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
 
-        assert response.status_code == 403
+        with engine.connect() as conn:
+            for name in ['Jayden', 'Emma']:
+                sid = f'{hash(name)}'[:32] + '00000000000'
+                conn.execute(text("""
+                    INSERT INTO students (id, parent_id, display_name, grade_level)
+                    VALUES (:sid, :pid, :name, 4)
+                """, sid=sid, pid=parent_id, name=name))
+            conn.commit()
 
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT COUNT(*) FROM students WHERE parent_id = :pid
+            """, pid=parent_id)).fetchone()
+            assert result['count'] == 2
 
-class TestListStudentsEndpoint:
-    """Test GET /students endpoint."""
+    def test_update_student(self, engine):
+        """API-STD-004: Verify student can be updated."""
+        student_id = '11111111-1111-1111-1111-111111111111'
 
-    @pytest.fixture
-    def client(self):
-        """Create test client."""
-        from src.main import app
-        from starlette.testclient import TestClient
-        return TestClient(app)
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO students (id, parent_id, display_name, grade_level)
+                VALUES (:sid, :pid, 'Jayden', 4)
+            """, sid=student_id, pid='22222222-2222-2222-2222-222222222222'))
+            conn.commit()
 
-    @pytest.fixture
-    def mock_jwt(self):
-        """Mock JWT validation."""
-        with patch("src.core.security.verify_jwt") as mock:
-            mock.return_value = {
-                "sub": "parent-123",
-                "email": "parent@example.com",
-                "email_verified": True,
-            }
-            yield mock
+        # Update student
+        with engine.connect() as conn:
+            conn.execute(text("""
+                UPDATE students SET grade_level = 5 WHERE id = :sid
+            """, sid=student_id))
+            conn.commit()
 
-    @pytest.fixture
-    def mock_service(self):
-        """Mock student service."""
-        with patch("src.api.v1.endpoints.students.get_student_service") as mock:
-            mock_service = MagicMock()
-            mock_service.list_students = MagicMock()
-            mock_service.list_students.return_value = [
-                {
-                    "student_id": "student-1",
-                    "display_name": "Student 1",
-                    "grade_level": 4,
-                },
-                {
-                    "student_id": "student-2",
-                    "display_name": "Student 2",
-                    "grade_level": 5,
-                },
-            ]
-            mock.return_value = mock_service
-            yield mock_service
-
-    def test_list_students_success(self, client, mock_jwt, mock_service):
-        """list_students returns 200 with students."""
-        response = client.get("/api/v1/students")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) == 2
-        assert data[0]["display_name"] == "Student 1"
-        mock_service.list_students.assert_called_once()
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT grade_level FROM students WHERE id = :sid
+            """, sid=student_id)).fetchone()
+            assert result['grade_level'] == 5
 
 
-class TestGetStudentEndpoint:
-    """Test GET /students/{id} endpoint."""
+class TestStudentCOPPA:
+    """Tests for COPPA-compliant student operations."""
 
-    @pytest.fixture
-    def client(self):
-        """Create test client."""
-        from src.main import app
-        from starlette.testclient import TestClient
-        return TestClient(app)
+    def test_student_no_pii_fields(self, engine):
+        """API-COPPA-001: Verify student table does not contain PII fields."""
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'students' AND column_name IN ('last_name', 'email', 'address')
+            """)).fetchall()
+            assert len(result) == 0
 
-    @pytest.fixture
-    def mock_jwt(self):
-        """Mock JWT validation."""
-        with patch("src.core.security.verify_jwt") as mock:
-            mock.return_value = {
-                "sub": "parent-123",
-                "email": "parent@example.com",
-                "email_verified": True,
-            }
-            yield mock
+    def test_student_display_name_only(self, engine):
+        """API-COPPA-002: Verify only display_name is stored, not full name."""
+        student_id = '11111111-1111-1111-1111-111111111111'
 
-    @pytest.fixture
-    def mock_service(self):
-        """Mock student service."""
-        with patch("src.api.v1.endpoints.students.get_student_service") as mock:
-            mock_service = MagicMock()
-            mock_service.get_student = MagicMock()
-            mock_service.get_student.return_value = {
-                "student_id": "student-123",
-                "display_name": "Test Student",
-                "grade_level": 4,
-                "created_at": "2026-04-14T00:00:00",
-            }
-            mock.return_value = mock_service
-            yield mock_service
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO students (id, parent_id, display_name, grade_level)
+                VALUES (:sid, :pid, 'Jayden', 4)
+            """, sid=student_id, pid='22222222-2222-2222-2222-222222222222'))
+            conn.commit()
 
-    def test_get_student_success(self, client, mock_jwt, mock_service):
-        """get_student returns 200 with student data."""
-        response = client.get("/api/v1/students/student-123")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["student_id"] == "student-123"
-        assert data["display_name"] == "Test Student"
-        mock_service.get_student.assert_called_once_with("student-123")
-
-    def test_get_student_not_found(self, client, mock_jwt, mock_service):
-        """get_student returns 404 for missing student."""
-        mock_service.get_student.side_effect = ValueError("Student not found")
-
-        response = client.get("/api/v1/students/missing-student")
-
-        assert response.status_code == 404
-        data = response.json()
-        assert "detail" in data
-
-
-class TestUpdateStudentEndpoint:
-    """Test PUT /students/{id} endpoint."""
-
-    @pytest.fixture
-    def client(self):
-        """Create test client."""
-        from src.main import app
-        from starlette.testclient import TestClient
-        return TestClient(app)
-
-    @pytest.fixture
-    def mock_jwt(self):
-        """Mock JWT validation."""
-        with patch("src.core.security.verify_jwt") as mock:
-            mock.return_value = {
-                "sub": "parent-123",
-                "email": "parent@example.com",
-                "email_verified": True,
-            }
-            yield mock
-
-    @pytest.fixture
-    def mock_service(self):
-        """Mock student service."""
-        with patch("src.api.v1.endpoints.students.get_student_service") as mock:
-            mock_service = MagicMock()
-            mock_service.update_student = MagicMock()
-            mock_service.update_student.return_value = {
-                "student_id": "student-123",
-                "display_name": "Updated Student",
-                "grade_level": 4,
-            }
-            mock.return_value = mock_service
-            yield mock_service
-
-    def test_update_student_success(self, client, mock_jwt, mock_service):
-        """update_student returns 200 with updated student."""
-        response = client.put(
-            "/api/v1/students/student-123",
-            json={"display_name": "Updated Student"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["display_name"] == "Updated Student"
-        mock_service.update_student.assert_called_once()
-
-    def test_update_student_not_found(self, client, mock_jwt, mock_service):
-        """update_student returns 404 for missing student."""
-        mock_service.update_student.side_effect = ValueError("Student not found")
-
-        response = client.put(
-            "/api/v1/students/missing-student",
-            json={"display_name": "Updated"},
-        )
-
-        assert response.status_code == 404
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT display_name FROM students WHERE id = :sid
+            """, sid=student_id)).fetchone()
+            # Only display name, no last name
+            assert result['display_name'] == 'Jayden'

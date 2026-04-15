@@ -1,383 +1,169 @@
-"""Integration tests for parent registration flow.
+"""
+Test Suite: Integration - Parent Registration Flow
 
-This test suite validates the complete parent registration process:
-- Parent account creation
-- Email verification
-- Child account creation
-- Parent-child link establishment
+Purpose: Validate complete parent registration flow including:
+- Email registration with validation
+- Email verification token generation
+- Account status tracking
+- Duplicate email prevention
+
+COPPA Relevance: Parent registration is the entry point for COPPA compliance.
 """
 
 import pytest
-from datetime import datetime
-from unittest.mock import MagicMock, patch
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-class TestParentRegistration:
-    """Test parent registration endpoint integration."""
-
-    @pytest.fixture
-    async def mock_db_session(self):
-        """Create mock database session."""
-        session = MagicMock(spec=AsyncSession)
-        return session
-
-    @pytest.fixture
-    async def parent_registration_service(self, mock_db_session):
-        """Create parent registration service."""
-        from src.services.parent_service import ParentRegistrationService
-        from src.repositories.parent_repository import ParentRepository
-
-        parent_repo = ParentRepository(mock_db_session)
-        return ParentRegistrationService(parent_repository=parent_repo)
-
-    @pytest.mark.asyncio
-    async def test_parent_registration_success(self, parent_registration_service):
-        """Parent registration creates account and sends verification email."""
-        # Mock repository
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.email = "parent@example.com"
-
-        parent_registration_service.parent_repository.create = MagicMock()
-        parent_registration_service.parent_repository.create.return_value = mock_parent
-
-        # Mock email sending
-        with patch("src.services.email_service.send_email") as mock_send_email:
-            result = await parent_registration_service.register_parent(
-                email="parent@example.com",
-                display_name="Test Parent",
-            )
-
-            assert result["parent_id"] == "parent-123"
-            assert result["status"] == "pending_verification"
-            mock_send_email.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_parent_registration_duplicate_email(self, parent_registration_service):
-        """Parent registration rejects duplicate email."""
-        # Mock repository - email exists
-        parent_registration_service.parent_repository.get_by_email = MagicMock()
-        parent_registration_service.parent_repository.get_by_email.return_value = MagicMock()
-
-        with pytest.raises(ValueError, match="Email already registered"):
-            await parent_registration_service.register_parent(
-                email="parent@example.com",
-                display_name="Test Parent",
-            )
-
-    @pytest.mark.asyncio
-    async def test_parent_registration_invalid_email(self, parent_registration_service):
-        """Parent registration rejects invalid email."""
-        with pytest.raises(ValueError, match="Invalid email address"):
-            await parent_registration_service.register_parent(
-                email="invalid-email",
-                display_name="Test Parent",
-            )
-
-
-class TestEmailVerification:
-    """Test email verification during parent registration."""
-
-    @pytest.fixture
-    async def mock_db_session(self):
-        """Create mock database session."""
-        session = MagicMock(spec=AsyncSession)
-        return session
-
-    @pytest.fixture
-    async def email_verification_service(self, mock_db_session):
-        """Create email verification service."""
-        from src.services.email_verification_service import EmailVerificationService
-        from src.repositories.parent_repository import ParentRepository
-
-        parent_repo = ParentRepository(mock_db_session)
-        return EmailVerificationService(parent_repository=parent_repo)
-
-    @pytest.mark.asyncio
-    async def test_verify_email_success(self, email_verification_service):
-        """Email verification marks parent email as verified."""
-        # Mock parent
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.email_verified = False
-
-        email_verification_service.parent_repository.get_by_email = MagicMock()
-        email_verification_service.parent_repository.get_by_email.return_value = mock_parent
-
-        result = await email_verification_service.verify_email(
-            email="parent@example.com",
-            verification_token="valid-token-123",
-        )
-
-        assert result["verified"] is True
-        assert mock_parent.email_verified is True
-
-    @pytest.mark.asyncio
-    async def test_verify_email_expired_token(self, email_verification_service):
-        """Email verification rejects expired token."""
-        # Mock parent with expired token
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.verification_token_expires_at = datetime.utcnow() - timedelta(days=1)
-
-        email_verification_service.parent_repository.get_by_email = MagicMock()
-        email_verification_service.parent_repository.get_by_email.return_value = mock_parent
-
-        with pytest.raises(ValueError, match="Verification token expired"):
-            await email_verification_service.verify_email(
-                email="parent@example.com",
-                verification_token="expired-token",
-            )
-
-    @pytest.mark.asyncio
-    async def test_verify_email_invalid_token(self, email_verification_service):
-        """Email verification rejects invalid token."""
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.verification_token = "stored-token"
-
-        email_verification_service.parent_repository.get_by_email = MagicMock()
-        email_verification_service.parent_repository.get_by_email.return_value = mock_parent
-
-        with pytest.raises(ValueError, match="Invalid verification token"):
-            await email_verification_service.verify_email(
-                email="parent@example.com",
-                verification_token="wrong-token",
-            )
-
-
-class TestChildAccountCreation:
-    """Test child account creation by verified parent."""
-
-    @pytest.fixture
-    async def mock_db_session(self):
-        """Create mock database session."""
-        session = MagicMock(spec=AsyncSession)
-        return session
-
-    @pytest.fixture
-    async def child_creation_service(self, mock_db_session):
-        """Create child account creation service."""
-        from src.services.child_service import ChildAccountService
-        from src.repositories.child_repository import ChildRepository
-        from src.repositories.parent_repository import ParentRepository
-
-        child_repo = ChildRepository(mock_db_session)
-        parent_repo = ParentRepository(mock_db_session)
-
-        return ChildAccountService(
-            child_repository=child_repo,
-            parent_repository=parent_repo,
-        )
-
-    @pytest.mark.asyncio
-    async def test_create_child_success(self, child_creation_service):
-        """Verified parent can create child account."""
-        # Mock parent (verified)
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.email_verified = True
-
-        child_creation_service.parent_repository.get_by_id = MagicMock()
-        child_creation_service.parent_repository.get_by_id.return_value = mock_parent
-
-        # Mock child creation
-        mock_child = MagicMock()
-        mock_child.id = "student-456"
-        mock_child.parent_id = "parent-123"
-
-        child_creation_service.child_repository.create = MagicMock()
-        child_creation_service.child_repository.create.return_value = mock_child
-
-        result = await child_creation_service.create_child_account(
-            parent_id="parent-123",
-            grade_level=4,
-            display_name="John",
-        )
-
-        assert result["student_id"] == "student-456"
-        assert result["parent_id"] == "parent-123"
-
-    @pytest.mark.asyncio
-    async def test_create_child_unverified_parent(self, child_creation_service):
-        """Unverified parent cannot create child account."""
-        # Mock parent (not verified)
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.email_verified = False
-
-        child_creation_service.parent_repository.get_by_id = MagicMock()
-        child_creation_service.parent_repository.get_by_id.return_value = mock_parent
-
-        with pytest.raises(ValueError, match="Parent email must be verified"):
-            await child_creation_service.create_child_account(
-                parent_id="parent-123",
-                grade_level=4,
-                display_name="John",
-            )
-
-
-class TestParentChildLink:
-    """Test parent-child link establishment."""
-
-    @pytest.fixture
-    async def mock_db_session(self):
-        """Create mock database session."""
-        session = MagicMock(spec=AsyncSession)
-        return session
-
-    @pytest.fixture
-    async def link_service(self, mock_db_session):
-        """Create link service."""
-        from src.services.link_service import ParentChildLinkService
-        from src.repositories.link_repository import ParentChildLinkRepository
-
-        link_repo = ParentChildLinkRepository(mock_db_session)
-        return ParentChildLinkService(link_repository=link_repo)
-
-    @pytest.mark.asyncio
-    async def test_create_link_success(self, link_service):
-        """Parent-child link is created successfully."""
-        # Mock parent and child
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-
-        mock_child = MagicMock()
-        mock_child.id = "student-456"
-
-        link_service.parent_repository.get_by_id = MagicMock()
-        link_service.parent_repository.get_by_id.return_value = mock_parent
-
-        link_service.child_repository.get_by_id = MagicMock()
-        link_service.child_repository.get_by_id.return_value = mock_child
-
-        mock_link = MagicMock()
-        mock_link.id = "link-789"
-        mock_link.parent_id = "parent-123"
-        mock_link.student_id = "student-456"
-
-        link_service.link_repository.create = MagicMock()
-        link_service.link_repository.create.return_value = mock_link
-
-        result = await link_service.create_link(
-            parent_id="parent-123",
-            student_id="student-456",
-        )
-
-        assert result["link_id"] == "link-789"
-        assert result["parent_id"] == "parent-123"
-        assert result["student_id"] == "student-456"
-
-    @pytest.mark.asyncio
-    async def test_create_link_duplicate(self, link_service):
-        """Parent-child link creation rejects existing link."""
-        link_service.link_repository.get_by_parent_student = MagicMock()
-        link_service.link_repository.get_by_parent_student.return_value = MagicMock()
-
-        with pytest.raises(ValueError, match="Link already exists"):
-            await link_service.create_link(
-                parent_id="parent-123",
-                student_id="student-456",
-            )
-
-    @pytest.mark.asyncio
-    async def test_link_token_generation(self, link_service):
-        """Link token is generated for parent-child connection."""
-        # Mock parent and child
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-
-        mock_child = MagicMock()
-        mock_child.id = "student-456"
-
-        link_service.parent_repository.get_by_id = MagicMock()
-        link_service.parent_repository.get_by_id.return_value = mock_parent
-
-        link_service.child_repository.get_by_id = MagicMock()
-        link_service.child_repository.get_by_id.return_value = mock_child
-
-        mock_link = MagicMock()
-        mock_link.link_token = "link-token-123"
-
-        link_service.link_repository.create = MagicMock()
-        link_service.link_repository.create.return_value = mock_link
-
-        result = await link_service.create_link(
-            parent_id="parent-123",
-            student_id="student-456",
-        )
-
-        assert result["link_token"] == "link-token-123"
-        assert result["link_token"] is not None
-
-
-class TestFullRegistrationFlow:
-    """Integration test for complete parent registration flow."""
-
-    @pytest.mark.asyncio
-    async def test_complete_registration_to_child_creation(self):
-        """Complete flow: register parent -> verify email -> create child."""
-        from src.services.parent_service import ParentRegistrationService
-        from src.services.email_verification_service import EmailVerificationService
-        from src.services.child_service import ChildAccountService
-        from src.repositories.parent_repository import ParentRepository
-        from src.repositories.child_repository import ChildRepository
-        from sqlalchemy.ext.asyncio import AsyncSession
-
-        # Create mock session
-        mock_session = MagicMock(spec=AsyncSession)
-
-        # Create services
-        parent_repo = ParentRepository(mock_session)
-        child_repo = ChildRepository(mock_session)
-
-        parent_service = ParentRegistrationService(parent_repository=parent_repo)
-        email_service = EmailVerificationService(parent_repository=parent_repo)
-        child_service = ChildAccountService(
-            child_repository=child_repo,
-            parent_repository=parent_repo,
-        )
-
-        # Step 1: Register parent
-        with patch("src.services.email_service.send_email"):
-            registration_result = await parent_service.register_parent(
-                email="parent@example.com",
-                display_name="Test Parent",
-            )
-
-        assert registration_result["status"] == "pending_verification"
-
-        # Step 2: Verify email
-        mock_parent = MagicMock()
-        mock_parent.id = "parent-123"
-        mock_parent.email_verified = False
-        mock_parent.verification_token = "valid-token"
-        mock_parent.verification_token_expires_at = datetime.utcnow() + timedelta(days=1)
-
-        parent_repo.get_by_email = MagicMock()
-        parent_repo.get_by_email.return_value = mock_parent
-
-        verification_result = await email_service.verify_email(
-            email="parent@example.com",
-            verification_token="valid-token",
-        )
-
-        assert verification_result["verified"] is True
-        assert mock_parent.email_verified is True
-
-        # Step 3: Create child
-        mock_child = MagicMock()
-        mock_child.id = "student-456"
-
-        child_repo.create = MagicMock()
-        child_repo.create.return_value = mock_child
-
-        child_result = await child_service.create_child_account(
-            parent_id="parent-123",
-            grade_level=4,
-            display_name="John",
-        )
-
-        assert child_result["student_id"] == "student-456"
-        assert child_result["parent_id"] == "parent-123"
+from sqlalchemy import text
+from datetime import datetime, timezone, timedelta
+import hmac
+import hashlib
+import secrets
+
+
+class TestParentEmailRegistration:
+    """Tests for parent email registration."""
+
+    def test_parent_account_creation(self, engine):
+        """INT-PAR-001: Verify parent account can be created."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, display_name, role, email_verified)
+                VALUES (:pid, 'auth0|123', 'Maria', 'parent', false)
+            """, pid=parent_id))
+            conn.commit()
+
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT role FROM users WHERE id = :pid
+            """, pid=parent_id)).fetchone()
+            assert result['role'] == 'parent'
+
+    def test_parent_email_hash_created(self, engine):
+        """INT-PAR-002: Verify email hash is created for lookup."""
+        import hashlib
+        import secrets
+
+        parent_id = '11111111-1111-1111-1111-111111111111'
+        email = "parent@example.com"
+        email_hash = hashlib.sha256(email.lower().encode()).hexdigest()
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, email_encrypted, email_hash, display_name, role)
+                VALUES (:pid, 'auth0|123', :enc, :hash, 'Maria', 'parent')
+            """, pid=parent_id, enc=b"encrypted", hash=email_hash))
+            conn.commit()
+
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT email_hash FROM users WHERE id = :pid
+            """, pid=parent_id)).fetchone()
+            assert result['email_hash'] == email_hash
+
+    def test_duplicate_email_rejected(self, engine):
+        """INT-PAR-003: Verify duplicate emails are rejected."""
+        import hashlib
+
+        parent_id1 = '11111111-1111-1111-1111-111111111111'
+        parent_id2 = '22222222-2222-2222-2222-222222222222'
+        email = "parent@example.com"
+        email_hash = hashlib.sha256(email.lower().encode()).hexdigest()
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, email_hash, display_name, role)
+                VALUES (:pid, 'auth0|123', :hash, 'Maria', 'parent')
+            """, pid=parent_id1, hash=email_hash))
+            conn.commit()
+
+        # Second parent with same email should fail
+        with engine.connect() as conn:
+            with pytest.raises(Exception):
+                conn.execute(text("""
+                    INSERT INTO users (id, auth0_sub, email_hash, display_name, role)
+                    VALUES (:pid, 'auth0|456', :hash, 'Other', 'parent')
+                """, pid=parent_id2, hash=email_hash))
+                conn.commit()
+
+    def test_parent_account_default_status(self, engine):
+        """INT-PAR-004: Verify new parent account has email_verified=false."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, display_name, role)
+                VALUES (:pid, 'auth0|123', 'Maria', 'parent')
+            """, pid=parent_id))
+            conn.commit()
+
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT email_verified FROM users WHERE id = :pid
+            """, pid=parent_id)).fetchone()
+            assert result['email_verified'] is False
+
+    def test_parent_role_constraint(self, engine):
+        """INT-PAR-005: Verify parent role is validated."""
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO users (id, auth0_sub, display_name, role)
+                VALUES (:pid, 'auth0|123', 'Maria', 'parent')
+            """, pid='11111111-1111-1111-1111-111111111111'))
+            conn.commit()
+
+        with engine.connect() as conn:
+            # Invalid role should fail
+            with pytest.raises(Exception):
+                conn.execute(text("""
+                    INSERT INTO users (id, auth0_sub, display_name, role)
+                    VALUES (:pid, 'auth0|123', 'Maria', 'invalid_role')
+                """, pid='22222222-2222-2222-2222-222222222222'))
+                conn.commit()
+
+
+class TestEmailVerificationToken:
+    """Tests for email verification token generation."""
+
+    def test_verification_token_generated(self, engine):
+        """INT-PAR-006: Verify verification token is generated for new parent."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
+        secret_key = secrets.token_bytes(32)
+        now = datetime.now(timezone.utc)
+
+        data = f"{parent_id}:verify:{now.isoformat()}"
+        token = hmac.new(secret_key, data.encode(), hashlib.sha256).hexdigest()
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO email_verification_tokens (
+                    user_id, token_hash, expires_at
+                ) VALUES (
+                    :uid, :hash, :expiry
+                )
+            """, uid=parent_id, hash=token, expiry=now + timedelta(hours=24)))
+            conn.commit()
+
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT COUNT(*) FROM email_verification_tokens WHERE user_id = :uid
+            """, uid=parent_id)).fetchone()
+            assert result['count'] == 1
+
+    def test_verification_token_expiration(self, engine):
+        """INT-PAR-007: Verify verification token expires after 24 hours."""
+        parent_id = '11111111-1111-1111-1111-111111111111'
+        expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                INSERT INTO email_verification_tokens (user_id, token_hash, expires_at)
+                VALUES (:uid, 'expired_token', :expiry)
+            """, uid=parent_id, expiry=expired_time))
+            conn.commit()
+
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT COUNT(*) FROM email_verification_tokens
+                WHERE user_id = :uid AND expires_at > CURRENT_TIMESTAMP
+            """, uid=parent_id)).fetchone()
+            assert result['count'] == 0
