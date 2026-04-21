@@ -46,6 +46,11 @@ MANIFEST
 .env
 .env.local
 .env.*.local
+
+# Monorepo per-app env files
+apps/*/.env
+apps/*/.env.local
+
 .pytest_cache/
 .coverage
 htmlcov/
