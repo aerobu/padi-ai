@@ -108,8 +108,9 @@ def get_assessment_service(
 )
 async def start_assessment(
     request: AssessmentStartRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
+    student_repository: StudentRepository = Depends(get_student_repository),
 ):
     """
     Start assessment.
@@ -117,8 +118,15 @@ async def start_assessment(
     - **student_id**: Student identifier
     - **assessment_type**: Assessment type (default: diagnostic)
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    # IDOR guard: verify the authenticated parent owns the requested student.
+    # These checks are intentionally outside the try/except block so that
+    # HTTPException(403/404) is never swallowed by the ValueError handler below.
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    student = await student_repository.get_by_id(request.student_id)
+    if student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if student.parent_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this student")
 
     try:
         result = await service.start_assessment(
