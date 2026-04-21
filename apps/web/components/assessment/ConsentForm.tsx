@@ -1,26 +1,28 @@
-import React from "react";
+"use client";
 
 /**
  * ConsentForm component
  *
- * COPPA compliance requires explicit parental consent with two checkboxes.
+ * COPPA compliance requires explicit parental consent with two checkboxes:
+ * 1. Parent/guardian attestation
+ * 2. Data collection consent
  */
 
-"use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 
 interface ConsentFormProps {
-  parentId: string;
-  onConsentGranted: () => void;
-  onConsentDenied: () => void;
+  onSubmit?: () => void;
+  parentId?: string;
+  onConsentGranted?: () => void;
+  onConsentDenied?: () => void;
   onError?: (error: string) => void;
   consentStatus?: "granted" | "denied" | "pending";
   isLoading?: boolean;
 }
 
 export function ConsentForm({
+  onSubmit,
   parentId,
   onConsentGranted,
   onConsentDenied,
@@ -28,8 +30,8 @@ export function ConsentForm({
   consentStatus,
   isLoading,
 }: ConsentFormProps) {
-  const [ageCheckbox, setAgeCheckbox] = useState(false);
-  const [consentCheckbox, setConsentCheckbox] = useState(false);
+  const [isParentGuardian, setIsParentGuardian] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
@@ -37,7 +39,7 @@ export function ConsentForm({
     setErrorMessage(null);
 
     // Validate both checkboxes are checked
-    if (!ageCheckbox || !consentCheckbox) {
+    if (!isParentGuardian || !dataConsent) {
       const error = "Please check both boxes to continue";
       setErrorMessage(error);
       onError?.(error);
@@ -51,7 +53,8 @@ export function ConsentForm({
         acknowledgements: ["data_collection", "data_use"],
       });
 
-      onConsentGranted();
+      onSubmit?.();
+      onConsentGranted?.();
     } catch (error) {
       const errorMsg = "Failed to submit consent. Please try again";
       setErrorMessage(errorMsg);
@@ -102,40 +105,50 @@ export function ConsentForm({
         <div role="alert">{errorMessage}</div>
       )}
 
-      <div className="mb-4">
-        <label>
-          <input
-            type="checkbox"
-            checked={ageCheckbox}
-            onChange={(e) => {
-              setAgeCheckbox(e.target.checked);
-              setErrorMessage(null);
-            }}
-          />
-          I am over 13 or have parental permission
-        </label>
-      </div>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={isParentGuardian}
+          onChange={(e) => setIsParentGuardian(e.target.checked)}
+          aria-required="true"
+          id="parent-guardian-checkbox"
+        />
+        <span>
+          I am the parent or legal guardian of the child I am enrolling, and I am
+          at least 18 years old.
+        </span>
+      </label>
 
-      <div className="mb-4">
-        <label>
-          <input
-            type="checkbox"
-            checked={consentCheckbox}
-            onChange={(e) => {
-              setConsentCheckbox(e.target.checked);
-              setErrorMessage(null);
-            }}
-          />
-          I agree to the terms
-        </label>
-      </div>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={dataConsent}
+          onChange={(e) => setDataConsent(e.target.checked)}
+          aria-required="true"
+          id="data-consent-checkbox"
+        />
+        <span>
+          I consent to the collection and processing of my child&apos;s first name,
+          grade level, and assessment responses for the purpose of providing
+          personalized math instruction, as described in the{" "}
+          <a href="/privacy" className="underline">
+            Privacy Policy
+          </a>
+          .
+        </span>
+      </label>
 
       <div className="mb-4">
         <a href="/terms">Terms of Service</a>
         <a href="/privacy">Privacy Policy</a>
       </div>
 
-      <button onClick={handleSubmit}>Submit</button>
+      <button
+        onClick={handleSubmit}
+        disabled={!(isParentGuardian && dataConsent)}
+      >
+        I Consent
+      </button>
     </div>
   );
 }
