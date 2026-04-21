@@ -66,6 +66,12 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_S3_BUCKET: Optional[str] = None
 
+    # ============== Encryption ==============
+    # Passphrase for deriving encryption key (must be 32+ chars for security)
+    ENCRYPTION_KEY_PASSPHRASE: str = Field(
+        default="your-secure-passphrase-32-chars-min-required"
+    )
+
     # ============== AWS SES ==============
     AWS_SES_REGION: str = "us-east-1"
     AWS_SES_FROM_EMAIL: Optional[str] = None

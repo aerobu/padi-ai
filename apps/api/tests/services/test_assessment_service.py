@@ -20,14 +20,12 @@ class TestAssessmentLifecycle:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO assessments (id, student_id, assessment_type, status, target_question_count)
-                VALUES (:aid, :sid, 'diagnostic', 'created', 40)
-            """, aid=assessment_id, sid=student_id))
+                VALUES (:id, :student_id, 'diagnostic', 'created', 40)
+            """), {"id": assessment_id, "student_id": student_id})
             conn.commit()
 
         with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT status FROM assessments WHERE id = :aid
-            """, aid=assessment_id)).fetchone()
+            result = conn.execute(text("SELECT status FROM assessments WHERE id = :id"), {"id": assessment_id}).fetchone()
             assert result['status'] == 'created'
 
     def test_assessment_started(self, engine):
@@ -38,14 +36,12 @@ class TestAssessmentLifecycle:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO assessments (id, student_id, assessment_type, status, started_at)
-                VALUES (:aid, :sid, 'diagnostic', 'in_progress', :started_at)
-            """, aid=assessment_id, sid=student_id, started_at=datetime.now(timezone.utc)))
+                VALUES (:id, :student_id, 'diagnostic', 'in_progress', :started_at)
+            """), {"id": assessment_id, "student_id": student_id, "started_at": datetime.now(timezone.utc)})
             conn.commit()
 
         with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT status FROM assessments WHERE id = :aid
-            """, aid=assessment_id)).fetchone()
+            result = conn.execute(text("SELECT status FROM assessments WHERE id = :id"), {"id": assessment_id}).fetchone()
             assert result['status'] == 'in_progress'
 
     def test_assessment_completed(self, engine):
@@ -56,8 +52,8 @@ class TestAssessmentLifecycle:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO assessments (id, student_id, assessment_type, status, total_questions, total_correct, completed_at)
-                VALUES (:aid, :sid, 'diagnostic', 'completed', 40, 35, :completed_at)
-            """, aid=assessment_id, sid=student_id, completed_at=datetime.now(timezone.utc)))
+                VALUES (:id, :student_id, 'diagnostic', 'completed', 40, 35, :completed_at)
+            """), {"id": assessment_id, "student_id": student_id, "completed_at": datetime.now(timezone.utc)})
             conn.commit()
 
         with engine.connect() as conn:
@@ -75,21 +71,17 @@ class TestAssessmentLifecycle:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO assessments (id, student_id, assessment_type, status)
-                VALUES (:aid, :sid, 'diagnostic', 'in_progress')
-            """, aid=assessment_id, sid=student_id))
+                VALUES (:id, :student_id, 'diagnostic', 'in_progress')
+            """), {"id": assessment_id, "student_id": student_id})
             conn.commit()
 
         # Pause assessment
         with engine.connect() as conn:
-            conn.execute(text("""
-                UPDATE assessments SET status = 'paused' WHERE id = :aid
-            """, aid=assessment_id))
+            conn.execute(text("UPDATE assessments SET status = 'paused' WHERE id = :id"), {"id": assessment_id})
             conn.commit()
 
         with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT status FROM assessments WHERE id = :aid
-            """, aid=assessment_id)).fetchone()
+            result = conn.execute(text("SELECT status FROM assessments WHERE id = :id"), {"id": assessment_id}).fetchone()
             assert result['status'] == 'paused'
 
 
@@ -104,13 +96,11 @@ class TestAssessmentProgress:
             for i in range(10):
                 conn.execute(text("""
                     INSERT INTO assessment_responses (assessment_id, session_id, question_id, is_correct, question_number)
-                    VALUES (:aid, :sid, :qid, true, :qn)
-                """, aid=assessment_id, sid='33333333-3333-3333-3333-333333333333',
-                    qid=f'44444444-4444-4444-4444-4444{str(i).zfill(4)}', qn=i+1))
+                    VALUES (:assessment_id, :session_id, :question_id, true, :question_number)
+                """), {"assessment_id": assessment_id, "session_id": "33333333-3333-3333-3333-333333333333",
+                    "question_id": f'44444444-4444-4444-4444-4444{str(i).zfill(4)}', "question_number": i+1})
             conn.commit()
 
         with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT COUNT(*) as answered FROM assessment_responses WHERE assessment_id = :aid
-            """, aid=assessment_id)).fetchone()
+            result = conn.execute(text("SELECT COUNT(*) as answered FROM assessment_responses WHERE assessment_id = :id"), {"id": assessment_id}).fetchone()
             assert result['answered'] == 10

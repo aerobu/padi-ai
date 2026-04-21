@@ -2,14 +2,15 @@
 COPPA consent service for managing parental consent workflows.
 """
 
+import json
 import logging
 import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Any
-from pydantic import EmailStr
 
 from src.repositories.consent_repository import ConsentRepository
 from src.core.redis_client import get_redis_client
+from src.clients.ses_client import SESClient, get_ses_client
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +21,21 @@ class ConsentService:
     # Consent token expiration (48 hours)
     TOKEN_EXPIRY_HOURS = 48
 
-    def __init__(self, consent_repository: ConsentRepository):
+    def __init__(
+        self,
+        consent_repository: ConsentRepository,
+        ses_client: Optional[SESClient] = None,
+    ):
         """
         Initialize consent service.
 
         Args:
             consent_repository: Repository for consent records
+            ses_client: Optional SES client for sending emails
         """
         self.consent_repository = consent_repository
         self.redis_client = get_redis_client()
+        self.ses_client = ses_client
 
     async def initiate_consent(
         self,
@@ -95,6 +102,23 @@ class ConsentService:
             expires_at=expires_at,
         )
 
+        # Send verification email
+        if self.ses_client and self.ses_client.is_configured():
+            email_sent = await self.ses_client.send_consent_verification_email(
+                to_email=email,
+                verification_token=token,
+                parent_name=student_display_name,
+            )
+            if not email_sent:
+                logger.warning(
+                    f"Failed to send consent email to {email}, "
+                    f"but consent process can continue"
+                )
+        else:
+            logger.info(
+                f"[SES] Local dev mode: Consent email would be sent to {email}"
+            )
+
         logger.info(
             f"Consent initiated for user {user_id}, "
             f"token: {token[:8]}..., expires: {expires_at}"
@@ -106,7 +130,6 @@ class ConsentService:
             "verification_method": "email_plus",
             "email_sent_to": masked_email,
             "expires_at": expires_at,
-            "verification_token": token,  # In production, send via email only
         }
 
     async def confirm_consent(
@@ -269,16 +292,20 @@ def get_consent_service() -> ConsentService:
     return _consent_service
 
 
-def initialize_consent_service(consent_repository: ConsentRepository) -> ConsentService:
+def initialize_consent_service(
+    consent_repository: ConsentRepository,
+    ses_client: Optional[SESClient] = None,
+) -> ConsentService:
     """
     Initialize and return consent service.
 
     Args:
         consent_repository: Consent repository instance
+        ses_client: Optional SES client for sending emails
 
     Returns:
         Initialized ConsentService
     """
     global _consent_service
-    _consent_service = ConsentService(consent_repository)
+    _consent_service = ConsentService(consent_repository, ses_client)
     return _consent_service

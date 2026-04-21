@@ -5,10 +5,11 @@ Standards endpoints for Oregon math standards.
 import logging
 import re
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.security import verify_jwt
+from src.core.database import get_db
 from src.repositories.standard_repository import StandardRepository
 from src.schemas.standard import (
     StandardQueryParams,
@@ -154,7 +155,7 @@ async def get_standard(
         description=standard.description,
         cognitive_level="analyze",  # Default cognitive level for standards
         estimated_difficulty=calculate_difficulty(standard.standard_code),  # Based on standard code complexity
-        bkt={
+        bkt_defaults={
             "p_l0": 0.0,
             "p_trans": 0.5,
             "p_slip": 0.2,

@@ -5,9 +5,11 @@ Assessment endpoints for diagnostic assessment flow.
 import logging
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.security import verify_jwt
+from src.core.database import get_db
 from src.repositories.assessment_repository import (
     AssessmentRepository,
     AssessmentSessionRepository,
@@ -220,6 +222,7 @@ async def submit_response(
 async def complete_assessment(
     assessment_id: str,
     credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
     service: AssessmentService = Depends(get_assessment_service),
 ):
     """
@@ -231,7 +234,10 @@ async def complete_assessment(
     user_payload = verify_jwt(credentials)
 
     try:
-        result = await service.complete_assessment(assessment_id=assessment_id)
+        result = await service.complete_assessment(
+            assessment_id=assessment_id,
+            db_session=db,
+        )
         return result
     except HTTPException:
         raise

@@ -4,13 +4,15 @@ Consent endpoints for COPPA compliance.
 
 import logging
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.security import verify_jwt
+from src.core.database import get_db
 from src.repositories.consent_repository import ConsentRepository
-from src.services.consent_service import initialize_consent_service
+from src.services.consent_service import initialize_consent_service, ConsentService
+from src.clients.ses_client import SESClient, get_ses_client
 from src.schemas.user import (
     ConsentInitiateRequest,
     ConsentInitiateResponse,
@@ -31,6 +33,14 @@ def get_consent_repository(
     return ConsentRepository(db)
 
 
+def get_consent_service(
+    consent_repository: ConsentRepository = Depends(get_consent_repository),
+    ses_client: SESClient = Depends(get_ses_client),
+) -> ConsentService:
+    """Get initialized consent service."""
+    return initialize_consent_service(consent_repository, ses_client)
+
+
 @router.post(
     "/consent/initiate",
     response_model=ConsentInitiateResponse,
@@ -42,7 +52,7 @@ async def initiate_consent(
     request_data: ConsentInitiateRequest,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     req: Request = Depends(),
-    consent_repository: ConsentRepository = Depends(get_consent_repository),
+    consent_service: ConsentService = Depends(get_consent_service),
 ):
     """
     Initiate COPPA consent.
@@ -61,11 +71,8 @@ async def initiate_consent(
         req.client.host if req.client else "0.0.0.0"
     )
 
-    # Initialize service
-    service = initialize_consent_service(consent_repository)
-
     try:
-        result = await service.initiate_consent(
+        result = await consent_service.initiate_consent(
             user_id=user_payload["sub"],
             student_display_name=request_data.student_display_name,
             acknowledgements=request_data.acknowledgements,
@@ -86,17 +93,15 @@ async def initiate_consent(
 )
 async def confirm_consent(
     request: ConsentConfirmRequest,
-    consent_repository: ConsentRepository = Depends(get_consent_repository),
+    consent_service: ConsentService = Depends(get_consent_service),
 ):
     """
     Confirm consent using email token.
 
     This endpoint is called from an email link.
     """
-    service = initialize_consent_service(consent_repository)
-
     try:
-        result = await service.confirm_consent(request.token)
+        result = await consent_service.confirm_consent(request.token)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

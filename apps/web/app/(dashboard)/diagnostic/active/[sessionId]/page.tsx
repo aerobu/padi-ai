@@ -10,7 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAssessmentStore } from "@/stores/assessment-store";
 import { QuestionCard } from "@/components/assessment/question-card";
 import { ProgressTracker } from "@/components/assessment/progress-tracker";
-import { Button } from "@/packages/ui/button";
+import { Button } from "@padi/ui";
 import { apiClient } from "@/lib/api-client";
 
 export default function AssessmentPage() {

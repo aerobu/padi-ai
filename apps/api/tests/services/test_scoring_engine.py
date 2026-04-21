@@ -20,8 +20,8 @@ class TestAssessmentScoring:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO assessments (id, student_id, assessment_type, status, total_questions)
-                VALUES (:aid, :sid, 'diagnostic', 'completed', 40)
-            """, aid=assessment_id, sid=student_id))
+                VALUES (:id, :student_id, 'diagnostic', 'completed', 40)
+            """), {"id": assessment_id, "student_id": student_id})
             conn.commit()
 
         # Insert 32 correct out of 40
@@ -32,18 +32,18 @@ class TestAssessmentScoring:
                         assessment_id, session_id, question_id, selected_answer, is_correct,
                         time_spent_ms, question_number, standard_code
                     ) VALUES (
-                        :aid, :sid, :qid, 'A', true, 30000, :qn, '4.OA.A.1'
+                        :assessment_id, :session_id, :question_id, 'A', true, 30000, :question_number, '4.OA.A.1'
                     )
-                """, aid=assessment_id, sid='33333333-3333-3333-3333-333333333333',
-                    qid=f'44444444-4444-4444-4444-4444{str(i).zfill(4)}', qn=i+1))
+                """), {"assessment_id": assessment_id, "session_id": '33333333-3333-3333-3333-333333333333',
+                    "question_id": f'44444444-4444-4444-4444-4444{str(i).zfill(4)}', "question_number": i+1})
             conn.commit()
 
         # Verify score calculation
         with engine.connect() as conn:
             result = conn.execute(text("""
                 SELECT COUNT(*) FILTER (WHERE is_correct) as correct, COUNT(*) as total
-                FROM assessment_responses WHERE assessment_id = :aid
-            """, aid=assessment_id)).fetchone()
+                FROM assessment_responses WHERE assessment_id = :id
+            """), {"id": assessment_id}).fetchone()
             assert result['correct'] == 32
             assert result['total'] == 32
 
@@ -55,23 +55,22 @@ class TestAssessmentScoring:
             # Insert responses with different standards
             conn.execute(text("""
                 INSERT INTO assessment_responses (assessment_id, session_id, question_id, is_correct, question_number, standard_code)
-                VALUES
-                    (:aid, :sid, :qid1, true, 1, '4.OA.A.1'),
-                    (:aid, :sid, :qid2, true, 2, '4.OA.A.1'),
-                    (:aid, :sid, :qid3, false, 3, '4.NBT.A.1'),
-                    (:aid, :sid, :qid4, true, 4, '4.NBT.A.1')
-            """, aid=assessment_id, sid='33333333-3333-3333-3333-333333333333',
-               qid1='44444444-4444-4444-4444-44440001', qid2='44444444-4444-4444-4444-44440002',
-               qid3='44444444-4444-4444-4444-44440003', qid4='44444444-4444-4444-4444-44440004'))
+                VALUES (:assessment_id, :session_id, :question_id_1, true, 1, '4.OA.A.1'),
+                       (:assessment_id, :session_id, :question_id_2, true, 2, '4.OA.A.1'),
+                       (:assessment_id, :session_id, :question_id_3, false, 3, '4.NBT.A.1'),
+                       (:assessment_id, :session_id, :question_id_4, true, 4, '4.NBT.A.1')
+            """), {"assessment_id": assessment_id, "session_id": '33333333-3333-3333-3333-333333333333',
+                   "question_id_1": '44444444-4444-4444-4444-44440001', "question_id_2": '44444444-4444-4444-4444-44440002',
+                   "question_id_3": '44444444-4444-4444-4444-44440003', "question_id_4": '44444444-4444-4444-4444-44440004'})
             conn.commit()
 
         # Verify domain scores
         with engine.connect() as conn:
             result = conn.execute(text("""
                 SELECT standard_code, COUNT(*) FILTER (WHERE is_correct) as correct, COUNT(*) as total
-                FROM assessment_responses WHERE assessment_id = :aid
+                FROM assessment_responses WHERE assessment_id = :id
                 GROUP BY standard_code
-            """, aid=assessment_id)).fetchall()
+            """), {"id": assessment_id}).fetchall()
 
             assert len(result) == 2  # Two domains
 
@@ -83,8 +82,8 @@ class TestAssessmentScoring:
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO student_skill_states (student_id, standard_code, p_mastery, mastery_level)
-                VALUES (:sid, '4.OA.A.1', 0.2500, 'below_par')
-            """, sid=student_id))
+                VALUES (:student_id, '4.OA.A.1', 0.2500, 'below_par')
+            """), {"student_id": student_id})
             conn.commit()
 
         with engine.connect() as conn:

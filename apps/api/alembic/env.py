@@ -23,9 +23,12 @@ from src.models import models
 # access to the values within the .ini file in use.
 config = context.config
 
-# Get database URL from settings
+# Get database URL from settings and convert to sync driver for Alembic
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+db_url = settings.DATABASE_URL
+# Convert asyncpg driver to psycopg2 for sync Alembic operations
+db_url = db_url.replace("asyncpg://", "postgresql://").replace("postgresql+asyncpg://", "postgresql://")
+config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python mapping.
 target_metadata = models.Base.metadata
@@ -57,11 +60,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-    """
+    """Run migrations in 'online' mode."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

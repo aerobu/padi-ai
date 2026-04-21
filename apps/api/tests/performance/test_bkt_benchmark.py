@@ -57,7 +57,8 @@ class TestBKTComputationPerformance:
             })
         return states
 
-    def test_single_skill_update_under_50ms(self, bkt_service, sample_skill_state):
+    @pytest.mark.asyncio
+    async def test_single_skill_update_under_50ms(self, bkt_service, sample_skill_state):
         """PERF-001: Single skill state update must complete in < 50ms."""
         # Warm up
         for _ in range(3):
@@ -89,7 +90,8 @@ class TestBKTComputationPerformance:
         assert avg_time < 50, f"Average BKT update time {avg_time:.2f}ms exceeds 50ms SLA"
         assert max_time < 100, f"Max BKT update time {max_time:.2f}ms exceeds 100ms threshold"
 
-    def test_full_assessment_under_2000ms(self, bkt_service, large_skill_state):
+    @pytest.mark.asyncio
+    async def test_full_assessment_under_2000ms(self, bkt_service, large_skill_state):
         """PERF-002: Full diagnostic assessment BKT computation must complete in < 2000ms."""
         # Simulate 35 question assessment with BKT updates
         assessment_responses = [True, True, False, True, True, False, True, True, True, False] * 3 + [True, True, True]
@@ -128,7 +130,8 @@ class TestBKTComputationPerformance:
         assert avg_time < 2000, f"Average assessment BKT time {avg_time:.2f}ms exceeds 2000ms SLA"
         assert max_time < 3000, f"Max assessment BKT time {max_time:.2f}ms exceeds 3000ms threshold"
 
-    def test_50_standards_under_500ms(self, bkt_service):
+    @pytest.mark.asyncio
+    async def test_50_standards_under_500ms(self, bkt_service):
         """PERF-003: BKT state calculation for 50 standards must complete in < 500ms."""
         standard_codes = [f'4.TEST.STD{i:03d}' for i in range(50)]
 
@@ -166,7 +169,8 @@ class TestBKTComputationPerformance:
         assert avg_time < 500, f"Average 50 standards BKT time {avg_time:.2f}ms exceeds 500ms SLA"
         assert max_time < 1000, f"Max 50 standards BKT time {max_time:.2f}ms exceeds 1000ms threshold"
 
-    def test_concurrent_bkt_computations(self, bkt_service):
+    @pytest.mark.asyncio
+    async def test_concurrent_bkt_computations(self, bkt_service):
         """PERF-004: Concurrent BKT computations for multiple students must maintain SLA."""
         student_ids = [f'student-{i}' for i in range(10)]
         standard_codes = ['4.OA.A.1', '4.OA.A.2', '4.OA.B.1']
@@ -207,7 +211,8 @@ class TestBKTComputationPerformance:
 
         assert per_student_time < 100, f"Per-student concurrent BKT time {per_student_time:.2f}ms exceeds 100ms SLA"
 
-    def test_bkt_with_database_io(self, bkt_service, db_session):
+    @pytest.mark.asyncio
+    async def test_bkt_with_database_io(self, bkt_service, db_session):
         """PERF-005: BKT computation including database I/O must complete in < 100ms."""
         student_id = 'perf-test-db-io'
         standard_code = '4.OA.TEST.IO'
@@ -248,7 +253,8 @@ class TestBKTComputationPerformance:
 class TestBKTStatePersistence:
     """Performance tests for BKT state persistence."""
 
-    def test_batch_skill_state_update(self, engine):
+    @pytest.mark.asyncio
+    async def test_batch_skill_state_update(self, engine):
         """PERF-006: Batch update of 100 skill states must complete in < 500ms."""
         with engine.connect() as conn:
             # Warm up
@@ -291,7 +297,8 @@ class TestBKTStatePersistence:
 
             assert avg_time < 500, f"Average batch update time {avg_time:.2f}ms exceeds 500ms SLA"
 
-    def test_skill_state_query_performance(self, engine):
+    @pytest.mark.asyncio
+    async def test_skill_state_query_performance(self, engine):
         """PERF-007: Query for student's 100 skill states must complete in < 100ms."""
         with engine.connect() as conn:
             # Ensure data exists
@@ -332,7 +339,8 @@ class TestBKTStatePersistence:
 class TestBKTCaching:
     """Performance tests for BKT state caching."""
 
-    def test_bkt_state_cache_hit(self, bkt_service, db_session, redis_client):
+    @pytest.mark.asyncio
+    async def test_bkt_state_cache_hit(self, bkt_service, db_session, redis_client):
         """PERF-008: Cached BKT state retrieval must complete in < 5ms."""
         student_id = 'perf-cache-test'
         standard_code = '4.OA.CACHE'

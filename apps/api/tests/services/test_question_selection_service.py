@@ -32,8 +32,8 @@ class TestQuestionSelection:
             for diff in [1, 2, 3, 4, 5]:
                 conn.execute(text("""
                     INSERT INTO questions (standard_code, difficulty, stem, options, correct_answer, status)
-                    VALUES ('4.DIFF.TEST', :diff, 'Test', '[{"key": "A", "text": "1"}]', 'A', 'active')
-                """, diff=diff))
+                    VALUES ('4.DIFF.TEST', :difficulty, 'Test', '[{"key": "A", "text": "1"}]', 'A', 'active')
+                """), {"difficulty": diff})
             conn.commit()
 
         with engine.connect() as conn:

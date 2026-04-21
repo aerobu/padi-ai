@@ -15,10 +15,11 @@ class TestUserModel:
         assert hasattr(User, '__tablename__')
         assert User.__tablename__ == 'users'
 
-        # Check required columns exist
+        # Check required columns exist (email is encrypted for COPPA compliance)
         columns = [c.name for c in User.__table__.columns]
         assert 'id' in columns
-        assert 'email' in columns
+        assert 'email_encrypted' in columns
+        assert 'email_hash' in columns
         assert 'first_name' in columns
         assert 'last_name' in columns
         assert 'role' in columns
@@ -38,7 +39,6 @@ class TestUserModel:
 
         user_parent = User(
             id="parent-1",
-            email="parent@example.com",
             first_name="Parent",
             last_name="User",
             role="parent"
@@ -47,7 +47,6 @@ class TestUserModel:
 
         user_teacher = User(
             id="teacher-1",
-            email="teacher@example.com",
             first_name="Teacher",
             last_name="User",
             role="teacher"
@@ -66,8 +65,7 @@ class TestStudentModel:
         assert 'id' in columns
         assert 'parent_id' in columns
         assert 'grade_level' in columns
-        assert 'first_name' in columns
-        assert 'last_name' in columns
+        assert 'display_name' in columns
 
     def test_student_model_has_relationships(self):
         """Student model has relationships."""
@@ -88,8 +86,7 @@ class TestStudentModel:
                 id=f"student-{grade}",
                 parent_id="parent-1",
                 grade_level=grade,
-                first_name=f"Student{grade}",
-                last_name="Test"
+                display_name=f"Student{grade}"
             )
             assert student.grade_level == grade
 

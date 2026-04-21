@@ -7,22 +7,9 @@ import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 
-try:
-    from pybkt.bkt import BKT as PyBKT
-    PYBKT_AVAILABLE = True
-except ImportError:
-    PYBKT_AVAILABLE = False
-    logging.warning(
-        "pyBKT not installed. Installing from GitHub..."
-    )
-    # Fallback: Try to install
-    import subprocess
-    subprocess.run(
-        ["pip", "install", "git+https://github.com/UC Berkeley-IRL/pyBKT"],
-        capture_output=True,
-    )
-    from pybkt.bkt import BKT as PyBKT
-    PYBKT_AVAILABLE = True
+# Use pure Python BKT implementation to avoid pyBKT library compatibility issues
+from src.services.bkt_impl import PyBKT
+PYBKT_AVAILABLE = True
 
 logger = logging.getLogger(__name__)
 

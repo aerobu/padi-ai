@@ -5,7 +5,7 @@ Base repository with common CRUD operations.
 from typing import Generic, TypeVar, Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Selectinload
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import ColumnElement
 
 from src.models.base import Base

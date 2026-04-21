@@ -9,6 +9,7 @@ import React from "react";
 "use client";
 
 import { useState } from "react";
+import { apiClient } from "@/lib/api-client";
 
 interface ConsentFormProps {
   parentId: string;
@@ -44,10 +45,10 @@ export function ConsentForm({
     }
 
     try {
-      // API call to submit consent
-      await apiClient.post("/api/v1/coppa/consent", {
-        parent_id: parentId,
-        consent_status: "granted",
+      // Use real initiateConsent method
+      await apiClient.initiateConsent({
+        student_display_name: "Student",
+        acknowledgements: ["data_collection", "data_use"],
       });
 
       onConsentGranted();
@@ -138,10 +139,3 @@ export function ConsentForm({
     </div>
   );
 }
-
-// Simple API client for the component
-const apiClient = {
-  post: async (endpoint: string, data: any) => {
-    return { success: true, data };
-  },
-};

@@ -440,8 +440,13 @@ class AssessmentService:
         # Get student
         student = await self.student_repository.get_by_id(student_id)
 
+        # Get assessment state for session_id
+        assessment_state = await self.redis_client.get_assessment_state(assessment_id)
+        if not assessment_state:
+            raise ValueError("Assessment state not found")
+
         # Get all responses
-        session = await self.assessment_repository.get_session(state.get("session_id"))
+        session = await self.assessment_repository.get_session(assessment_state.get("session_id"))
         responses = await self.assessment_repository.get_responses_for_session(session.id)
 
         # Calculate domain results
@@ -611,11 +616,16 @@ class AssessmentService:
         # Get BKT states from Redis
         skill_states = []
 
+        # Get assessment state for session_id
+        assessment_state = await self.redis_client.get_assessment_state(assessment_id)
+        if not assessment_state:
+            raise ValueError("Assessment state not found")
+
         # Get all BKT keys for this assessment
         # In production, would use Redis scan
         # For now, query from responses
         responses = await self.assessment_repository.get_responses_for_session(
-            state.get("session_id")
+            assessment_state.get("session_id")
         )
 
         # Group responses by standard

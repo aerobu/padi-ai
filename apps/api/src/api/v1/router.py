@@ -11,6 +11,10 @@ from .endpoints import (
     students_router,
     standards_router,
     assessments_router,
+    auth_router,
+    learning_plans_router,
+    generation_jobs_router,
+    parent,
 )
 
 router = APIRouter()
@@ -40,4 +44,29 @@ router.include_router(
 router.include_router(
     assessments_router,
     tags=["Assessments"],
+)
+
+# Include auth endpoints
+router.include_router(
+    auth_router,
+    tags=["Auth"],
+)
+
+# Include learning plans endpoints
+router.include_router(
+    learning_plans_router,
+    tags=["Learning Plans"],
+)
+
+# Include generation jobs endpoints
+router.include_router(
+    generation_jobs_router,
+    prefix="/admin",
+    tags=["Admin - Generation Jobs"],
+)
+
+# Include parent dashboard endpoints
+router.include_router(
+    parent.router,
+    tags=["Parent Dashboard"],
 )

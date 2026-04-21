@@ -4,7 +4,8 @@ Pydantic schemas for User and Student models.
 
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, Field, EmailStr, FieldValidationInfo
+import re
+from pydantic import BaseModel, Field, EmailStr, field_validator
 
 
 class StudentCreate(BaseModel):
@@ -15,10 +16,11 @@ class StudentCreate(BaseModel):
     avatar_id: str = Field(default="avatar_default", pattern=r"^avatar_[a-z_]+$")
     birth_year: Optional[int] = Field(default=None, ge=2012, le=2024)
 
-    @FieldValidationInfo
-    def validate_display_name(cls, value: str, info) -> str:
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, value: str) -> str:
         """Sanitize display name - allow only alphanumeric, space, hyphen."""
-        return value
+        return re.sub(r"[^a-zA-Z0-9 \-]", "", value)
 
 
 class StudentUpdate(BaseModel):
@@ -126,7 +128,39 @@ class ConsentRecordSummary(BaseModel):
     expires_at: Optional[datetime] = None
 
 
+class UserCreate(BaseModel):
+    """Schema for creating a new user."""
+
+    auth0_sub: str = Field(..., min_length=1)
+    email: EmailStr
+    display_name: str = Field(..., min_length=1, max_length=100)
+    role: str = Field(default="parent", pattern=r"^(parent|teacher|admin)$")
+    phone: Optional[str] = Field(default=None, max_length=20)
+    school_district: Optional[str] = Field(default=None, max_length=100)
+
+
+class UserResponse(BaseModel):
+    """Schema for user response."""
+
+    user_id: str
+    auth0_sub: str
+    email: str
+    display_name: str
+    role: str
+    is_active: bool = True
+    created_at: datetime
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating a user."""
+
+    email: Optional[EmailStr] = None
+    display_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    school_district: Optional[str] = Field(default=None, max_length=100)
+
+
 # Forward reference for type hints
-AssessmentSummary.update_forward_refs()
-SkillSummary.update_forward_refs()
-ConsentStatusResponse.update_forward_refs()
+AssessmentSummary.model_rebuild()
+SkillSummary.model_rebuild()
+ConsentStatusResponse.model_rebuild()

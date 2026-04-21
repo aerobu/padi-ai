@@ -2,17 +2,19 @@
 Generic API response wrapper.
 """
 
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Optional
+
+from pydantic import BaseModel
 
 T = TypeVar("T")
 
 
-class ApiResponse(Generic[T]):
+class ApiResponse(BaseModel, Generic[T]):
     """Generic API response structure."""
 
     success: bool
-    data: T | None = None
-    error: dict | None = None
+    data: Optional[T] = None
+    error: Optional[dict] = None
 
     @classmethod
     def success_response(cls, data: T) -> "ApiResponse[T]":

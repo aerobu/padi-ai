@@ -8,6 +8,9 @@ from .assessment_repository import AssessmentRepository, AssessmentSessionReposi
 from .consent_repository import ConsentRepository
 from .standard_repository import StandardRepository
 from .question_repository import QuestionRepository
+from .user_repository import UserRepository
+from .generation_job_repository import GenerationJobRepository
+from .learning_plan_repository import LearningPlanRepository
 
 __all__ = [
     "AsyncRepository",
@@ -17,4 +20,7 @@ __all__ = [
     "ConsentRepository",
     "StandardRepository",
     "QuestionRepository",
+    "UserRepository",
+    "GenerationJobRepository",
+    "LearningPlanRepository",
 ]

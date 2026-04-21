@@ -5,8 +5,10 @@ Auth0 JWT validation and user authentication.
 
 import jwt
 from datetime import datetime, timedelta
-from typing import Optional
-from fastapi import HTTPException, status
+from typing import Annotated, Optional
+from jwt import PyJWKClient
+from jwt.exceptions import InvalidTokenError
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from .config import get_settings
@@ -14,12 +16,24 @@ from .config import get_settings
 security = HTTPBearer(auto_error=False)
 settings = get_settings()
 
+# Initialize JWKS client (cached globally)
+_jwks_client = None
+
+
+def get_jwks_client():
+    """Get or create the JWKS client for Auth0."""
+    global _jwks_client
+    if _jwks_client is None:
+        jwks_url = f"{settings.AUTH0_ISSUER_BASE_URL}/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(jwks_url)
+    return _jwks_client
+
 
 async def verify_jwt(
-    credentials: HTTPAuthorizationCredentials,
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
 ) -> dict:
     """
-    Verify Auth0 JWT token and return user payload.
+    Verify Auth0 JWT token using RS256 with JWKS public key.
 
     Args:
         credentials: HTTP Authorization credentials containing Bearer token
@@ -39,11 +53,13 @@ async def verify_jwt(
     token = credentials.credentials
 
     try:
-        # Decode and verify JWT
-        # Note: In production, use PyJWKClient for key rotation support
+        # Get the public key from Auth0 JWKS endpoint
+        signing_key = get_jwks_client().get_signing_key_from_jwt(token)
+
+        # Decode the token using the public key
         payload = jwt.decode(
             token,
-            settings.AUTH0_SECRET,
+            signing_key.key,
             algorithms=["RS256"],
             audience=settings.AUTH0_AUDIENCE or settings.AUTH0_CLIENT_ID,
             issuer=settings.AUTH0_ISSUER_BASE_URL,
@@ -66,10 +82,15 @@ async def verify_jwt(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid audience",
         )
-    except jwt.InvalidTokenError as e:
+    except InvalidTokenError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid token: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token verification failed: {str(e)}",
         )
 
 
