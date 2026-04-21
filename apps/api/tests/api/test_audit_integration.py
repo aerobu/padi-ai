@@ -13,7 +13,7 @@ from src.models.models import AuditLog, User, ConsentRecord, ConsentStatus
 async def test_student_creation_writes_audit_row(client, async_db_session):
     """Creating a student records student.created in the audit log.
 
-    The client fixture mocks JWT via Depends(verify_jwt) with sub='test-user-id'.
+    The client fixture mocks JWT via Depends(verify_jwt) with sub='test-parent-id'.
     We create a parent user + active consent record matching that sub so the
     students endpoint succeeds.
     """
@@ -21,8 +21,8 @@ async def test_student_creation_writes_audit_row(client, async_db_session):
 
     # Create the parent user that matches the mocked JWT sub
     parent = User(
-        id="test-user-id",
-        auth0_id="auth0|test-user-id",
+        id="test-parent-id",
+        auth0_id="auth0|test-parent-id",
         first_name="Test",
         last_name="Parent",
         role="parent",
@@ -35,7 +35,7 @@ async def test_student_creation_writes_audit_row(client, async_db_session):
     # Grant active consent so POST /students succeeds
     consent = ConsentRecord(
         id=str(uuid4()),
-        user_id="test-user-id",
+        user_id="test-parent-id",
         student_id=None,
         consent_type="coppa_verifiable",
         status=ConsentStatus.GRANTED,
@@ -61,4 +61,4 @@ async def test_student_creation_writes_audit_row(client, async_db_session):
     latest = rows[-1]
     assert latest.resource_type == "student"
     assert latest.resource_id is not None
-    assert latest.user_id == "test-user-id"
+    assert latest.user_id == "test-parent-id"

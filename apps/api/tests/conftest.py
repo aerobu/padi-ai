@@ -67,47 +67,6 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
-def engine(test_settings):
-    """Create database engine for tests using PostgreSQL."""
-    database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
-
-    if database_url.startswith("sqlite"):
-        # For SQLite, remove ./ prefix for file path
-        db_path = database_url.replace("sqlite:///./", "")
-        engine = create_engine(
-            f"sqlite:///{db_path}",
-            connect_args={"check_same_thread": False}
-        )
-    else:
-        # Use asyncpg driver for async operations
-        engine = create_engine(database_url.replace("asyncpg", "psycopg2"))
-
-    return engine
-
-
-@pytest.fixture(scope="session")
-def test_engine(engine):
-    """Create test engine with fresh database."""
-    # Drop all tables and recreate
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
-
-    return engine
-
-
-@pytest.fixture
-def session(test_engine):
-    """Create database session for each test."""
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-    session = SessionLocal()
-
-    try:
-        yield session
-        session.rollback()
-    finally:
-        session.close()
-
 
 @pytest_asyncio.fixture
 async def async_client():
@@ -120,20 +79,47 @@ async def async_client():
 
 @pytest.fixture
 def auth_headers():
-    """Create auth headers for API tests."""
-    return {"Authorization": "Bearer test-token"}
+    """Create auth headers for API tests and install verify_jwt override."""
+    from src.main import app
+    from src.core.security import verify_jwt
+    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+        "sub": "test-parent-id",
+        "email": "p@example.com",
+        "email_verified": True,
+        "role": "parent",
+    })
+    yield {"Authorization": "Bearer test-token"}
+    app.dependency_overrides.pop(verify_jwt, None)
 
 
 @pytest.fixture
 def admin_auth_headers():
-    """Create auth headers with admin role for admin endpoint tests."""
-    return {"Authorization": "Bearer admin-token"}
+    """Create auth headers with admin role and install verify_jwt override."""
+    from src.main import app
+    from src.core.security import verify_jwt
+    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+        "sub": "admin-user-id",
+        "email": "admin@example.com",
+        "email_verified": True,
+        "role": "admin",
+    })
+    yield {"Authorization": "Bearer admin-token"}
+    app.dependency_overrides.pop(verify_jwt, None)
 
 
 @pytest.fixture
 def different_user_headers():
-    """Create auth headers for a different user (for permission tests)."""
-    return {"Authorization": "Bearer different-user-token"}
+    """Create auth headers for a different user and install verify_jwt override."""
+    from src.main import app
+    from src.core.security import verify_jwt
+    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+        "sub": "other-user-id",
+        "email": "other@example.com",
+        "email_verified": True,
+        "role": "parent",
+    })
+    yield {"Authorization": "Bearer other-token"}
+    app.dependency_overrides.pop(verify_jwt, None)
 
 
 def _override_verify_jwt(payload: dict):
@@ -347,42 +333,6 @@ def test_api_client_with_base_url():
         app.dependency_overrides.pop(get_db, None)
 
 
-@pytest.fixture
-def test_parent(async_db_session):
-    """Create a test parent user."""
-    from src.models.models import User
-    from uuid import uuid4
-
-    parent = User(
-        id=str(uuid4()),
-        auth0_id="auth0|test_parent",
-        first_name="Test",
-        last_name="Parent",
-        role="parent",
-        is_active=True,
-    )
-    async_db_session.add(parent)
-    async_db_session.commit()
-    return parent
-
-
-@pytest.fixture
-def test_student(async_db_session, test_parent):
-    """Create a test student."""
-    from src.models.models import Student
-    from uuid import uuid4
-
-    student = Student(
-        id=str(uuid4()),
-        parent_id=test_parent.id,
-        grade_level=4,
-        display_name="Test Student",
-        is_active=True,
-    )
-    async_db_session.add(student)
-    async_db_session.commit()
-    return student
-
 
 @pytest.fixture
 def mock_jwt_as_parent():
@@ -517,7 +467,7 @@ async def client(async_db_session):
     app.dependency_overrides[get_db] = _override_get_db
     # Apply default JWT mocking for parent role
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "test-user-id",
+        "sub": "test-parent-id",
         "email": "test@example.com",
         "email_verified": True,
         "role": "parent",

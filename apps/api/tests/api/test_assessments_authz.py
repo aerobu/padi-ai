@@ -18,7 +18,7 @@ async def test_start_assessment_forbidden_for_non_owning_parent(
 ):
     """A parent cannot start an assessment for another parent's student."""
     # Parent A owns Student X.
-    # The `client` fixture JWT sub is "test-user-id" — different from "parent-a".
+    # The `client` fixture JWT sub is "test-parent-id" — different from "parent-a".
     parent_a = User(
         id="parent-a",
         auth0_id="auth0|a",
@@ -38,7 +38,7 @@ async def test_start_assessment_forbidden_for_non_owning_parent(
     async_db_session.add_all([parent_a, student_x])
     await async_db_session.flush()
 
-    # The `client` fixture authenticates as "test-user-id" (NOT "parent-a"),
+    # The `client` fixture authenticates as "test-parent-id" (NOT "parent-a"),
     # so the ownership check must reject this request with 403.
     response = await client.post(
         "/api/v1/assessments",

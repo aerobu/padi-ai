@@ -13,9 +13,9 @@ from src.models.models import (
 @pytest_asyncio.fixture
 async def session_flow_seed(async_db_session):
     """Seed a complete session-answer scenario owned by the default client fixture parent."""
-    # The default `client` fixture authenticates as sub "test-user-id".
+    # The default `client` fixture authenticates as sub "test-parent-id".
     parent = User(
-        id="test-user-id",
+        id="test-parent-id",
         auth0_id="auth0|test-flow",
         role="parent",
         is_active=True,
@@ -25,7 +25,7 @@ async def session_flow_seed(async_db_session):
     parent.set_email("t-flow@u.com")
     student = Student(
         id=str(uuid4()),
-        parent_id="test-user-id",
+        parent_id="test-parent-id",
         grade_level=4,
         display_name="S",
         is_active=True,
