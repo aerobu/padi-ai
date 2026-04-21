@@ -14,7 +14,7 @@ from sqlalchemy import select
 from src.core.database import get_db
 from src.core.security import verify_jwt
 from src.repositories.student_repository import StudentRepository
-from src.models.models import PracticeSession, PracticeSessionStatus, PracticeSessionQuestion, StudentSkillState
+from src.models.models import PracticeSession, PracticeSessionStatus, PracticeSessionQuestion, StudentSkillState, PlanLesson, PlanModule, Student
 
 
 def get_user_from_credentials(
@@ -581,10 +581,8 @@ async def submit_session_answer(
             )
 
         # Get lesson to verify ownership
-        from src.models.models import Lesson
-
         lesson_result = await db.execute(
-            select(Lesson).where(Lesson.id == session.lesson_id)
+            select(PlanLesson).where(PlanLesson.id == session.lesson_id)
         )
         lesson = lesson_result.scalar_one_or_none()
 
@@ -594,10 +592,8 @@ async def submit_session_answer(
                 detail="Lesson not found",
             )
 
-        from src.models.models import Module
-
         module_result = await db.execute(
-            select(Module).where(Module.id == lesson.module_id)
+            select(PlanModule).where(PlanModule.id == lesson.module_id)
         )
         module = module_result.scalar_one_or_none()
 
