@@ -152,16 +152,24 @@ async def start_assessment(
 )
 async def get_next_question(
     assessment_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
+    assessment_repository: AssessmentRepository = Depends(get_assessment_repository),
+    student_repository: StudentRepository = Depends(get_student_repository),
 ):
     """
     Get next question.
 
     - **assessment_id**: Assessment identifier
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    # IDOR guard: verify the authenticated parent owns the assessment's student.
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    assessment = await assessment_repository.get_by_id(assessment_id)
+    if assessment is None:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    student = await student_repository.get_by_id(assessment.student_id)
+    if student is None or student.parent_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this assessment")
 
     try:
         result = await service.get_next_question(
