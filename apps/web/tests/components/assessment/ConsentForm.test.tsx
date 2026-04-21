@@ -75,13 +75,16 @@ describe("ConsentForm", () => {
       expect(submitButton).not.toBeDisabled();
     });
 
-    it("should show error when checkboxes are unchecked and form submitted via click while enabled", () => {
-      render(<ConsentForm {...defaultProps} />);
+    it("should show error when handleSubmit is called with unchecked boxes", () => {
+      const { container } = render(<ConsentForm {...defaultProps} />);
 
-      // The button is disabled when boxes are unchecked; the error message path
-      // is exercised when handleSubmit is called directly — test via state
-      const submitButton = screen.getByRole("button", { name: /consent/i });
-      expect(submitButton).toBeDisabled();
+      // Bypass the disabled button by submitting the form directly
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      expect(
+        screen.getByText(/please check both boxes to continue/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -209,6 +212,32 @@ describe("ConsentForm", () => {
 
       expect(parentCheckbox).not.toBeChecked();
       expect(dataConsentCheckbox).not.toBeChecked();
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should show error message when API call fails", async () => {
+      vi.mocked(apiClient.initiateConsent).mockRejectedValueOnce(
+        new Error("Network error")
+      );
+      render(<ConsentForm parentId="p1" />);
+      fireEvent.click(screen.getByLabelText(/parent or legal guardian/i));
+      fireEvent.click(screen.getByLabelText(/consent to the collection/i));
+      fireEvent.click(screen.getByRole("button", { name: /consent/i }));
+      expect(await screen.findByText(/failed to submit consent/i)).toBeInTheDocument();
+    });
+
+    it("should call onError callback when error occurs", async () => {
+      const onError = vi.fn();
+      vi.mocked(apiClient.initiateConsent).mockRejectedValueOnce(
+        new Error("Network error")
+      );
+      render(<ConsentForm parentId="p1" onError={onError} />);
+      fireEvent.click(screen.getByLabelText(/parent or legal guardian/i));
+      fireEvent.click(screen.getByLabelText(/consent to the collection/i));
+      fireEvent.click(screen.getByRole("button", { name: /consent/i }));
+      await screen.findByText(/failed to submit consent/i);
+      expect(onError).toHaveBeenCalledWith(expect.any(String));
     });
   });
 });

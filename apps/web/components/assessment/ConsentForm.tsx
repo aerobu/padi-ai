@@ -8,11 +8,11 @@
  * 2. Data collection consent
  */
 
-import React, { useState } from "react";
+import React, { useState, type FormEvent } from "react";
 import { apiClient } from "@/lib/api-client";
 
 interface ConsentFormProps {
-  onSubmit?: () => void;
+  /** @deprecated Currently unused by the component; retained for caller compat. */
   parentId?: string;
   onConsentGranted?: () => void;
   onConsentDenied?: () => void;
@@ -22,8 +22,7 @@ interface ConsentFormProps {
 }
 
 export function ConsentForm({
-  onSubmit,
-  parentId,
+  parentId: _parentId,
   onConsentGranted,
   onConsentDenied,
   onError,
@@ -34,7 +33,8 @@ export function ConsentForm({
   const [dataConsent, setDataConsent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: FormEvent) => {
+    e?.preventDefault();
     // Reset any previous errors
     setErrorMessage(null);
 
@@ -53,7 +53,6 @@ export function ConsentForm({
         acknowledgements: ["data_collection", "data_use"],
       });
 
-      onSubmit?.();
       onConsentGranted?.();
     } catch (error) {
       const errorMsg = "Failed to submit consent. Please try again";
@@ -98,7 +97,7 @@ export function ConsentForm({
   }
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h2>Parental Consent</h2>
 
       {errorMessage && (
@@ -111,7 +110,6 @@ export function ConsentForm({
           checked={isParentGuardian}
           onChange={(e) => setIsParentGuardian(e.target.checked)}
           aria-required="true"
-          id="parent-guardian-checkbox"
         />
         <span>
           I am the parent or legal guardian of the child I am enrolling, and I am
@@ -125,7 +123,6 @@ export function ConsentForm({
           checked={dataConsent}
           onChange={(e) => setDataConsent(e.target.checked)}
           aria-required="true"
-          id="data-consent-checkbox"
         />
         <span>
           I consent to the collection and processing of my child&apos;s first name,
@@ -144,11 +141,11 @@ export function ConsentForm({
       </div>
 
       <button
-        onClick={handleSubmit}
+        type="submit"
         disabled={!(isParentGuardian && dataConsent)}
       >
         I Consent
       </button>
-    </div>
+    </form>
   );
 }
