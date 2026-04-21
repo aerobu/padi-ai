@@ -22,8 +22,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`);
   }
 
-  // Validate state (in production, verify against stored state)
-  const returnTo = state || `${origin}/dashboard`;
+  // Resolve returnTo as an absolute URL and guard against open-redirect.
+  // If state is a full URL on our own origin, use it directly.
+  // If state is a relative path, resolve it against our origin.
+  // Any off-origin or malformed state falls back to /dashboard.
+  let returnTo: string;
+  if (state) {
+    try {
+      const stateUrl = new URL(state, origin);
+      // Only allow redirects to our own origin (same-origin redirect guard).
+      returnTo = stateUrl.origin === origin ? stateUrl.toString() : `${origin}/dashboard`;
+    } catch {
+      returnTo = `${origin}/dashboard`;
+    }
+  } else {
+    returnTo = `${origin}/dashboard`;
+  }
 
   // Exchange code for token
   try {

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -23,16 +24,19 @@ describe("Auth0 callback route", () => {
     vi.resetModules();
   });
 
-  it("derives origin from request headers when present (success path)", async () => {
+  it("uses Origin header for origin when present (success path)", async () => {
     const { GET } = await import("@/app/api/auth/callback/route");
     const req = new NextRequest(
       "http://test.local/api/auth/callback?code=x&state=/dashboard",
       { headers: { origin: "https://app.example.com" } }
     );
     const res = await GET(req);
-    // Should redirect (302/307) or return token response — NOT throw ReferenceError
-    expect(res.status).toBeLessThan(500);
-    expect(res.status).toBeGreaterThanOrEqual(200);
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    const location = res.headers.get("location")!;
+    expect(location).toContain("/dashboard");
+    expect(location).toMatch(/^https:\/\/app\.example\.com/);
+    expect(res.headers.get("set-cookie")).toContain("auth_token=tok");
   });
 
   it("falls back to request URL origin when Origin header is missing", async () => {
@@ -41,7 +45,25 @@ describe("Auth0 callback route", () => {
       "http://test.local/api/auth/callback?code=x&state=/dashboard"
     );
     const res = await GET(req);
-    expect(res.status).toBeLessThan(500);
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    const location = res.headers.get("location")!;
+    expect(location).toContain("/dashboard");
+    expect(location).toMatch(/^http:\/\/test\.local/);
+    expect(res.headers.get("set-cookie")).toContain("auth_token=tok");
+  });
+
+  it("rejects cross-origin state and falls back to /dashboard on our origin", async () => {
+    const { GET } = await import("@/app/api/auth/callback/route");
+    const req = new NextRequest(
+      "http://test.local/api/auth/callback?code=x&state=" +
+        encodeURIComponent("https://evil.example.com/pwn"),
+      { headers: { origin: "https://app.example.com" } }
+    );
+    const res = await GET(req);
+    const location = res.headers.get("location")!;
+    expect(location).not.toContain("evil.example.com");
+    expect(location).toContain("app.example.com/dashboard");
   });
 
   it("redirects to /login on Auth0 error without crashing", async () => {
