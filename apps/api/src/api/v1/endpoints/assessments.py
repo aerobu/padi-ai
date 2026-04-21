@@ -4,12 +4,13 @@ Assessment endpoints for diagnostic assessment flow.
 
 import logging
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.security import verify_jwt
 from src.core.database import get_db
+from src.services.audit_service import AuditService
 from src.repositories.assessment_repository import (
     AssessmentRepository,
     AssessmentSessionRepository,
@@ -108,9 +109,11 @@ def get_assessment_service(
 )
 async def start_assessment(
     request: AssessmentStartRequest,
+    http_request: Request,
     user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
     student_repository: StudentRepository = Depends(get_student_repository),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Start assessment.
@@ -122,6 +125,9 @@ async def start_assessment(
     # These checks are intentionally outside the try/except block so that
     # HTTPException(403/404) is never swallowed by the ValueError handler below.
     user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    ip = http_request.client.host if http_request.client else None
+    ua = http_request.headers.get("user-agent")
+
     student = await student_repository.get_by_id(request.student_id)
     if student is None:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -133,6 +139,19 @@ async def start_assessment(
             student_id=request.student_id,
             assessment_type=request.assessment_type,
         )
+        # Audit: record assessment.started
+        assessment_id = result.assessment_id if hasattr(result, "assessment_id") else (
+            result.get("assessment_id") if isinstance(result, dict) else None
+        )
+        await AuditService(db).record(
+            user_id=user_id,
+            action="assessment.started",
+            resource_type="assessment",
+            resource_id=str(assessment_id) if assessment_id else None,
+            ip_address=ip,
+            user_agent=ua,
+        )
+        await db.commit()
         return result
     except ValueError as e:
         error_detail = str(e)
@@ -196,7 +215,7 @@ async def get_next_question(
 async def submit_response(
     assessment_id: str,
     request: ResponseSubmission,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
 ):
     """
@@ -207,13 +226,12 @@ async def submit_response(
     - **selected_answer**: Selected option (A-D) or numeric answer
     - **time_spent_ms**: Time spent on question in milliseconds
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
 
     try:
         result = await service.submit_response(
             assessment_id=assessment_id,
-            student_id=user_payload["sub"],
+            student_id=user_id,
             question_id=request.question_id,
             selected_answer=request.selected_answer,
             time_spent_ms=request.time_spent_ms,
@@ -237,7 +255,8 @@ async def submit_response(
 )
 async def complete_assessment(
     assessment_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    http_request: Request,
+    user_payload: dict = Depends(verify_jwt),
     db: AsyncSession = Depends(get_db),
     service: AssessmentService = Depends(get_assessment_service),
 ):
@@ -246,14 +265,25 @@ async def complete_assessment(
 
     - **assessment_id**: Assessment identifier
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    ip = http_request.client.host if http_request.client else None
+    ua = http_request.headers.get("user-agent")
 
     try:
         result = await service.complete_assessment(
             assessment_id=assessment_id,
             db_session=db,
         )
+        # Audit: record assessment.completed
+        await AuditService(db).record(
+            user_id=user_id,
+            action="assessment.completed",
+            resource_type="assessment",
+            resource_id=assessment_id,
+            ip_address=ip,
+            user_agent=ua,
+        )
+        await db.commit()
         return result
     except HTTPException:
         raise
@@ -275,7 +305,7 @@ async def complete_assessment(
 )
 async def get_results(
     assessment_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
 ):
     """
@@ -283,13 +313,12 @@ async def get_results(
 
     - **assessment_id**: Assessment identifier
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
 
     try:
         result = await service.get_results(
             assessment_id=assessment_id,
-            student_id=user_payload["sub"],
+            student_id=user_id,
         )
         return result
     except HTTPException:

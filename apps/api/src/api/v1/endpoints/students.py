@@ -4,13 +4,15 @@ Student endpoints for parent-managed student profiles.
 
 import logging
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from uuid import uuid4
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.security import verify_jwt
 from src.core.database import get_db
 from src.repositories.student_repository import StudentRepository
 from src.repositories.consent_repository import ConsentRepository
+from src.services.audit_service import AuditService
 from src.schemas.user import (
     StudentCreate,
     StudentUpdate,
@@ -19,7 +21,6 @@ from src.schemas.user import (
 )
 
 router = APIRouter()
-security = HTTPBearer()
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +48,11 @@ def get_consent_repository(
 )
 async def create_student(
     student_data: StudentCreate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    http_request: Request,
+    user_payload: dict = Depends(verify_jwt),
     student_repository: StudentRepository = Depends(get_student_repository),
     consent_repository: ConsentRepository = Depends(get_consent_repository),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Create a student.
@@ -60,11 +63,12 @@ async def create_student(
     - **avatar_id**: Avatar identifier
     - **birth_year**: Optional birth year (2012-2024)
     """
-    # Verify JWT and get user info
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    ip = http_request.client.host if http_request.client else None
+    ua = http_request.headers.get("user-agent")
 
     # Check active consent
-    has_consent = await consent_repository.has_active_consent(user_payload["sub"])
+    has_consent = await consent_repository.has_active_consent(user_id)
     if not has_consent:
         raise HTTPException(
             status_code=403,
@@ -74,12 +78,23 @@ async def create_student(
     # Create student
     try:
         student = await student_repository.create({
-            "parent_id": user_payload["sub"],
+            "id": str(uuid4()),
+            "parent_id": user_id,
             "display_name": student_data.display_name,
             "grade_level": student_data.grade_level,
             "avatar_id": student_data.avatar_id,
             "birth_year": student_data.birth_year,
         })
+        # Audit: record student.created
+        await AuditService(db).record(
+            user_id=user_id,
+            action="student.created",
+            resource_type="student",
+            resource_id=student.id,
+            ip_address=ip,
+            user_agent=ua,
+        )
+        await db.commit()
         return StudentResponse(
             student_id=student.id,
             display_name=student.display_name,
@@ -103,7 +118,7 @@ async def create_student(
 )
 async def get_student(
     student_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     student_repository: StudentRepository = Depends(get_student_repository),
 ):
     """
@@ -111,8 +126,7 @@ async def get_student(
 
     - **student_id**: Student identifier
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
 
     # Get student with latest assessment
     student = await student_repository.get_with_latest_assessment(student_id)
@@ -123,7 +137,7 @@ async def get_student(
         )
 
     # Verify ownership
-    if student.parent_id != user_payload["sub"]:
+    if student.parent_id != user_id:
         raise HTTPException(
             status_code=403,
             detail="Access denied",
@@ -155,8 +169,10 @@ async def get_student(
 async def update_student(
     student_id: str,
     update_data: StudentUpdate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    http_request: Request,
+    user_payload: dict = Depends(verify_jwt),
     student_repository: StudentRepository = Depends(get_student_repository),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Update student.
@@ -166,8 +182,9 @@ async def update_student(
     - **avatar_id**: New avatar (optional)
     - **grade_level**: New grade level (optional, 1-5)
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    ip = http_request.client.host if http_request.client else None
+    ua = http_request.headers.get("user-agent")
 
     # Get existing student
     student = await student_repository.get_by_id(student_id)
@@ -178,7 +195,7 @@ async def update_student(
         )
 
     # Verify ownership
-    if student.parent_id != user_payload["sub"]:
+    if student.parent_id != user_id:
         raise HTTPException(
             status_code=403,
             detail="Access denied",
@@ -195,6 +212,17 @@ async def update_student(
 
     # Update student
     updated_student = await student_repository.update(student_id, updates)
+
+    # Audit: record student.updated
+    await AuditService(db).record(
+        user_id=user_id,
+        action="student.updated",
+        resource_type="student",
+        resource_id=student_id,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    await db.commit()
 
     return StudentResponse(
         student_id=updated_student.id,
@@ -215,17 +243,16 @@ async def update_student(
     description="Get all students for the authenticated parent.",
 )
 async def list_students(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_payload: dict = Depends(verify_jwt),
     student_repository: StudentRepository = Depends(get_student_repository),
 ):
     """
     List all students for the authenticated parent.
     """
-    # Verify JWT
-    user_payload = verify_jwt(credentials)
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
 
     # Get all students
-    students = await student_repository.get_by_parent_id(user_payload["sub"])
+    students = await student_repository.get_by_parent_id(user_id)
 
     return [
         StudentResponse(
