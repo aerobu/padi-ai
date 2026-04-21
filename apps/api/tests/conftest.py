@@ -2,6 +2,16 @@
 
 import os
 import sys
+
+# ---------------------------------------------------------------------------
+# Inject required secrets before any src.core.config import is reached.
+# Use setdefault so CI/CD can override by exporting real values.
+# ---------------------------------------------------------------------------
+os.environ.setdefault(
+    "ENCRYPTION_KEY_PASSPHRASE",
+    "test-passphrase-32-characters-long-ok",  # 38 chars — satisfies min_length=32
+)
+
 import pytest
 import pytest_asyncio
 from typing import Generator, AsyncGenerator

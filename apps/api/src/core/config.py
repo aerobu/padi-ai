@@ -69,7 +69,9 @@ class Settings(BaseSettings):
     # ============== Encryption ==============
     # Passphrase for deriving encryption key (must be 32+ chars for security)
     ENCRYPTION_KEY_PASSPHRASE: str = Field(
-        default="your-secure-passphrase-32-chars-min-required"
+        ...,  # required — no default permitted
+        min_length=32,
+        description="Key-derivation passphrase for PII encryption. MUST come from a secrets manager; no default permitted.",
     )
 
     # ============== AWS SES ==============
