@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * Handles the OAuth callback from Auth0
  */
 export async function GET(request: NextRequest) {
+  const origin =
+    request.headers.get("origin") ?? new URL(request.url).origin;
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   const code = searchParams.get('code');
