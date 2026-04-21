@@ -637,34 +637,45 @@ async def submit_session_answer(
                 detail="You do not have permission to access this session",
             )
 
-        # Find the question for this index
         from src.models.models import GeneratedQuestion
+        from sqlalchemy import func
+
+        # Find the next unanswered PracticeSessionQuestion by sequence
+        next_psq_result = await db.execute(
+            select(PracticeSessionQuestion)
+            .where(
+                PracticeSessionQuestion.session_id == session_id,
+                PracticeSessionQuestion.student_answer.is_(None),
+            )
+            .order_by(PracticeSessionQuestion.sequence.asc())
+            .limit(1)
+        )
+        next_psq = next_psq_result.scalar_one_or_none()
+
+        if next_psq is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Session has no unanswered questions remaining",
+            )
 
         question_result = await db.execute(
-            select(GeneratedQuestion)
-            .where(GeneratedQuestion.id == session.question_ids[session.current_question_index])
+            select(GeneratedQuestion).where(GeneratedQuestion.id == next_psq.question_id)
         )
         question = question_result.scalar_one_or_none()
 
-        if not question:
+        if question is None:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                detail=f"Question index {session.current_question_index} not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Question not found",
             )
 
-        # Check answer (simple string comparison for now)
         is_correct = request.answer.strip().lower() == question.correct_answer.strip().lower()
 
-        # Record the response
-        response = PracticeSessionQuestion(
-            id=str(uuid4()),
-            practice_session_id=session_id,
-            question_id=question.id,
-            selected_answer=request.answer,
-            is_correct=is_correct,
-            time_spent_ms=request.time_spent_ms,
-        )
-        db.add(response)
+        # Update the PSQ row in place (no new row)
+        next_psq.student_answer = request.answer
+        next_psq.is_correct = is_correct
+        next_psq.time_spent_ms = request.time_spent_ms
+        next_psq.answered_at = datetime.utcnow()
 
         # Update BKT for this skill
         skill_state_result = await db.execute(
@@ -685,13 +696,24 @@ async def submit_session_answer(
 
         await db.commit()
 
+        # Compute progress: count answered PSQs for this session
+        answered_count_result = await db.execute(
+            select(func.count())
+            .select_from(PracticeSessionQuestion)
+            .where(
+                PracticeSessionQuestion.session_id == session_id,
+                PracticeSessionQuestion.student_answer.is_not(None),
+            )
+        )
+        answered_count = answered_count_result.scalar_one()
+
         return SessionAnswerResponse(
             correct=is_correct,
             correct_answer=question.correct_answer,
-            explanation=question.explanation,
+            explanation=getattr(question, "explanation", None),
             progress={
-                "current_question": session.current_question_index + 1,
-                "total_questions": len(session.question_ids),
+                "current_question": answered_count,
+                "total_questions": session.question_count,
             },
         )
 

@@ -767,7 +767,7 @@ class PracticeSessionQuestion(Base):
 
     id = Column(String, primary_key=True)
     session_id = Column(String, ForeignKey("practice_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
-    question_id = Column(String, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
+    question_id = Column(String, ForeignKey("generated_questions.id", ondelete="CASCADE"), nullable=False)
 
     sequence = Column(Integer, nullable=False)
     difficulty = Column(Integer, nullable=False)
