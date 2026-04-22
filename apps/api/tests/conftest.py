@@ -274,6 +274,22 @@ async def async_db_engine():
         await engine.dispose()
 
 
+@pytest.fixture(scope="function")
+def engine():
+    """Sync engine for tests that need raw SQL or sync execution."""
+    database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
+    
+    if database_url.startswith("sqlite"):
+        db_path = database_url.replace("sqlite:///./", "")
+        sync_url = f"sqlite:///{db_path}"
+        engine = create_engine(sync_url, connect_args={"check_same_thread": False})
+    else:
+        sync_url = database_url.replace("asyncpg", "psycopg2")
+        engine = create_engine(sync_url)
+        
+    return engine
+
+
 @pytest_asyncio.fixture(scope="function")
 async def async_db_session(async_db_engine):
     """

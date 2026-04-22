@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Annotated, Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -117,7 +117,7 @@ async def generate_learning_plan(
         logger.error(f"Error generating learning plan: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error generating plan",
+            detail="Internal server error",
         )
 
 
@@ -155,6 +155,8 @@ async def get_skill_sequence(
             "length": len(sequence),
         }
 
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -164,7 +166,7 @@ async def get_skill_sequence(
         logger.error(f"Error getting skill sequence: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error getting skill sequence",
+            detail="Internal server error",
         )
 
 
@@ -267,7 +269,7 @@ async def get_learning_plan(
         logger.error(f"Error getting learning plan: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error getting learning plan",
+            detail="Internal server error",
         )
 
 
@@ -345,7 +347,7 @@ async def complete_module(
         logger.error(f"Error completing module: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error completing module",
+            detail="Internal server error",
         )
 
 
@@ -454,7 +456,7 @@ async def get_next_lesson(
         logger.error(f"Error getting next lesson: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error getting next lesson",
+            detail="Internal server error",
         )
 
 
@@ -503,7 +505,7 @@ async def get_student_badges(
         logger.error(f"Error getting student badges: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error getting badges",
+            detail="Internal server error",
         )
 
 
@@ -558,7 +560,7 @@ async def get_student_streak(
         logger.error(f"Error getting student streak: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error getting streak info",
+            detail="Internal server error",
         )
 
 
@@ -737,7 +739,7 @@ async def submit_session_answer(
         logger.error(f"Error submitting answer: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error submitting answer",
+            detail="Internal server error",
         )
 
 
@@ -872,5 +874,5 @@ async def complete_session(
         logger.error(f"Error completing session: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error completing session",
+            detail="Internal server error",
         )
