@@ -197,9 +197,9 @@ test.describe('Session Integrity', () => {
     await page.reload();
 
     // Should show loading state
-    const loadingIndicator = page.getByRole('progressbar'),
-      page.getByText(/loading|saving/i),
-      page.locator('.spinner, .loader, [class*="loading"]');
+    const loadingIndicator = page.getByRole('progressbar');
+    const loadingText = page.getByText(/loading|saving/i);
+    const loadingSpinner = page.locator('.spinner, .loader, [class*="loading"]');
 
     const anyLoading = await page.locator('.loading, .loading, [class*="loading"]').count();
     if (anyLoading > 0) {

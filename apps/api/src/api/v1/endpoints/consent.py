@@ -175,3 +175,52 @@ async def get_consent_status(
     except Exception as e:
         logger.error(f"Error getting consent status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post(
+    "/consent/{consent_id}/revoke",
+    status_code=status.HTTP_200_OK,
+    summary="Revoke COPPA consent",
+    description="Revoke a previously granted COPPA consent.",
+)
+async def revoke_consent(
+    consent_id: str,
+    request: Request,
+    user_payload: dict = Depends(verify_jwt),
+    consent_service: ConsentService = Depends(get_consent_service),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Revoke COPPA consent.
+    """
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent")
+
+    # Get record to verify ownership
+    record = await consent_service.consent_repository.get_by_id(consent_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Consent record not found")
+    
+    if record.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to revoke this consent")
+
+    try:
+        await consent_service.revoke_consent(consent_id)
+        
+        # Audit: record consent.revoked
+        await AuditService(db).record(
+            user_id=user_id,
+            action="consent.revoked",
+            resource_type="consent",
+            resource_id=consent_id,
+            ip_address=ip,
+            user_agent=ua,
+        )
+        await db.commit()
+        return {"status": "revoked", "consent_id": consent_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error revoking consent: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

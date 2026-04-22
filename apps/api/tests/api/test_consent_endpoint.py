@@ -118,3 +118,45 @@ class TestConsentEndpoints:
         assert data["has_active_consent"] is True
         assert len(data["consent_records"]) == 1
         assert data["consent_records"][0]["status"] == "active"
+
+    async def test_revoke_consent_cascade(self, client, async_db_session):
+        """API-CNS-005: Revoking consent deactivates all associated students."""
+        await self._seed_parent(async_db_session)
+        
+        from src.repositories.consent_repository import ConsentRepository
+        from src.repositories.student_repository import StudentRepository
+        consent_repo = ConsentRepository(async_db_session)
+        student_repo = StudentRepository(async_db_session)
+        
+        # 1. Create active consent
+        token = "test-token" * 10
+        record = await consent_repo.create_pending_consent(
+            user_id="test-parent-id",
+            student_id=None,
+            consent_type="coppa_verifiable",
+            token=token,
+            expires_at=datetime.utcnow()
+        )
+        await consent_repo.confirm_consent(record.id, datetime.utcnow())
+        
+        # 2. Create a student for this parent
+        student = await student_repo.create({
+            "id": str(uuid4()),
+            "parent_id": "test-parent-id",
+            "display_name": "Junior",
+            "grade_level": 4,
+            "is_active": True
+        })
+        await async_db_session.commit()
+        
+        # 3. Revoke consent via endpoint
+        response = await client.post(f"/api/v1/consent/{record.id}/revoke")
+        assert response.status_code == 200
+        
+        # 4. Verify student is deactivated
+        updated_student = await student_repo.get_by_id(student.id)
+        assert updated_student.is_active is False
+        
+        # 5. Verify consent record status
+        updated_record = await consent_repo.get_by_id(record.id)
+        assert updated_record.status == ConsentStatus.REVOKED

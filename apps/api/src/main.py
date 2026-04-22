@@ -38,9 +38,6 @@ if settings.SENTRY_DSN:
         profiles_sample_rate=1.0,
     )
 
-# Initialize Rate Limiter
-limiter = Limiter(key_func=get_remote_address)
-
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers to every response."""
