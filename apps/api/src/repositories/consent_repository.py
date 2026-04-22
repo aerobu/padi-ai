@@ -52,7 +52,9 @@ class ConsentRepository(AsyncRepository[ConsentRecord]):
         expires_at: datetime,
     ) -> ConsentRecord:
         """Create a pending consent record."""
+        from uuid import uuid4
         record = ConsentRecord(
+            id=str(uuid4()),
             user_id=user_id,
             student_id=student_id,
             consent_type=consent_type,

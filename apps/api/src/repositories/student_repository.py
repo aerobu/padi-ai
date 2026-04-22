@@ -5,6 +5,7 @@ Student repository with consent validation.
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import AsyncRepository
@@ -90,3 +91,13 @@ class StudentRepository(AsyncRepository[Student]):
         )
         await self.session.commit()
         return result.rowcount > 0
+
+    async def deactivate_all_for_parent(self, parent_id: str) -> None:
+        """Deactivate all students for a parent."""
+        from sqlalchemy import update
+        await self.session.execute(
+            update(Student)
+            .where(Student.parent_id == parent_id)
+            .values(is_active=False)
+        )
+        await self.session.commit()

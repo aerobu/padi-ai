@@ -222,7 +222,7 @@ class ConsentService:
             summary = {
                 "consent_id": record.id,
                 "consent_type": record.consent_type,
-                "status": record.status,
+                "status": "active" if record.status == "granted" else record.status,
                 "initiated_at": record.created_at,
                 "confirmed_at": record.consented_at,
                 "expires_at": None,
@@ -262,7 +262,12 @@ class ConsentService:
             # Revoke in Redis
             await self.redis_client.revoke_active_consent(record.user_id)
 
-            logger.info(f"Consent revoked for user {record.user_id}")
+            # Cascade: deactivate all students for this parent
+            from src.repositories.student_repository import StudentRepository
+            student_repo = StudentRepository(self.consent_repository.session)
+            await student_repo.deactivate_all_for_parent(record.user_id)
+
+            logger.info(f"Consent revoked for user {record.user_id}, all students deactivated")
 
         return record
 
