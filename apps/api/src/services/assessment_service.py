@@ -469,7 +469,7 @@ class AssessmentService:
 
         return {
             "assessment_id": assessment_id,
-            "student_name": f"{student.first_name} {student.last_name}",
+            "student_name": student.display_name,
             "assessment_type": assessment.assessment_type,
             "completed_at": assessment.completed_at or datetime.utcnow(),
             "duration_minutes": len(responses) * 1.5,

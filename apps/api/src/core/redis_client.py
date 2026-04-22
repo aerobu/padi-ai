@@ -195,10 +195,39 @@ class RedisClient:
         value = await redis.get(key)
         return value is not None
 
-    async def revoke_active_consent(self, user_id: str) -> None:
-        """Revoke active consent."""
+    # --- Generic Operations ---
+
+    async def get(self, key: str) -> Optional[Any]:
+        """Get value from Redis."""
         redis = await self.get_redis()
-        key = CONSENT_ACTIVE_KEY.format(user_id=user_id)
+        value = await redis.get(key)
+        if value:
+            try:
+                # Try to decode if it's bytes
+                if isinstance(value, bytes):
+                    decoded = value.decode("utf-8")
+                    # Try to parse as JSON
+                    try:
+                        return json.loads(decoded)
+                    except json.JSONDecodeError:
+                        return decoded
+                return value
+            except Exception:
+                return value
+        return None
+
+    async def set(
+        self, key: str, value: Any, ex: Optional[int] = None
+    ) -> None:
+        """Set value in Redis with optional expiry."""
+        redis = await self.get_redis()
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value)
+        await redis.set(key, value, ex=ex)
+
+    async def delete(self, key: str) -> None:
+        """Delete key from Redis."""
+        redis = await self.get_redis()
         await redis.delete(key)
 
 

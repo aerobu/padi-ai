@@ -2,10 +2,11 @@
 Learning Plan Service for generating and managing personalized learning plans.
 """
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.models.models import (
     LearningPlan,
@@ -137,7 +138,7 @@ class LearningPlanService:
             module = PlanModule(
                 id=str(__import__("uuid").uuid4()),
                 plan_id=plan.id,
-                standard_code=module_def["standard_code"],
+                standard_id=module_def["standard_code"],
                 sequence_order=i + 1,
                 status=module_status,
                 lesson_count=module_def["estimated_sessions"],
@@ -154,9 +155,9 @@ class LearningPlanService:
                 await self._create_lessons_for_module(module)
 
         await self.session.commit()
-        await self.session.refresh(plan)
-
-        return plan
+        
+        # Load with relationships for return
+        return await self.get_learning_plan(student_id, include_modules=True, include_lessons=True)
 
     async def _determine_track(
         self,
@@ -205,18 +206,21 @@ class LearningPlanService:
         - p_mastered_initial
         - estimated_sessions
         """
-        # Get p_mastered values
-        p_mastered_map = {
-            ss.standard_id: ss.mastery_prob for ss in skill_states
-        }
+        # Get skill states with proficiency levels, joined with standard codes
+        from sqlalchemy.orm import selectinload
+        result = await self.session.execute(
+            select(StudentSkillState)
+            .where(StudentSkillState.student_id == student_id)
+            .options(selectinload(StudentSkillState.standard))
+        )
+        skill_states_joined = result.scalars().all()
 
-        # Get skill states with proficiency levels
         skill_state_dict = {
-            ss.standard_id: {
+            ss.standard.standard_code: {
                 "p_mastered": ss.mastery_prob,
                 "proficiency_level": ss.proficiency_level,
             }
-            for ss in skill_states
+            for ss in skill_states_joined
         }
 
         # Identify deficient skills (p_mastered < 0.85)
@@ -282,15 +286,15 @@ class LearningPlanService:
 
         for i, lesson_type in enumerate(lesson_types):
             if lesson_type == "instruction":
-                title = f"Introduction: {module.standard_code}"
+                title = f"Introduction: {module.standard_id}"
                 question_count = 5
                 difficulty_range = (1, 2)
             elif lesson_type == "practice":
-                title = f"Practice: {module.standard_code}"
+                title = f"Practice: {module.standard_id}"
                 question_count = 10
                 difficulty_range = (2, 4)
             else:  # review
-                title = f"Challenge: {module.standard_code}"
+                title = f"Challenge: {module.standard_id}"
                 question_count = 10
                 difficulty_range = (3, 5)
 
@@ -317,48 +321,37 @@ class LearningPlanService:
     async def get_learning_plan(
         self,
         student_id: str,
-        include_modules: bool = True,
-        include_lessons: bool = True,
+        include_modules: bool = False,
+        include_lessons: bool = False,
     ) -> Optional[LearningPlan]:
         """
-        Get a student's current active learning plan.
+        Get student's active learning plan.
 
         Args:
             student_id: Student ID
-            include_modules: Include module details
-            include_lessons: Include lesson details for modules
+            include_modules: Whether to include modules
+            include_lessons: Whether to include lessons within modules
 
         Returns:
             LearningPlan or None if no active plan exists
         """
-        result = await self.session.execute(
-            select(LearningPlan)
-            .where(LearningPlan.student_id == student_id)
-            .where(LearningPlan.status == LearningPlanStatus.ACTIVE.value)
-        )
-        plan = result.scalar_one_or_none()
+        from sqlalchemy.orm import selectinload
 
-        if not plan:
-            return None
+        stmt = select(LearningPlan).where(
+            LearningPlan.student_id == student_id,
+            LearningPlan.status == LearningPlanStatus.ACTIVE.value
+        )
 
         if include_modules:
-            result = await self.session.execute(
-                select(PlanModule)
-                .where(PlanModule.plan_id == plan.id)
-                .order_by(PlanModule.sequence_order)
-            )
-            plan.modules = result.scalars().all()
-
             if include_lessons:
-                for module in plan.modules:
-                    result = await self.session.execute(
-                        select(PlanLesson)
-                        .where(PlanLesson.module_id == module.id)
-                        .order_by(PlanLesson.sequence_order)
-                    )
-                    module.lessons = result.scalars().all()
+                stmt = stmt.options(
+                    selectinload(LearningPlan.modules).selectinload(PlanModule.lessons)
+                )
+            else:
+                stmt = stmt.options(selectinload(LearningPlan.modules))
 
-        return plan
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def unlock_next_module(
         self,
@@ -375,22 +368,16 @@ class LearningPlanService:
         Returns:
             Newly unlocked module or None if no more modules available
         """
-        # Get the plan
-        result = await self.session.execute(
-            select(LearningPlan).where(LearningPlan.id == plan_id)
-        )
+        # Get the plan with modules loaded
+        stmt = select(LearningPlan).where(LearningPlan.id == plan_id).options(selectinload(LearningPlan.modules))
+        result = await self.session.execute(stmt)
         plan = result.scalar_one_or_none()
 
-        if not plan:
+        if not plan or not plan.modules:
             return None
 
-        # Get all modules
-        result = await self.session.execute(
-            select(PlanModule)
-            .where(PlanModule.plan_id == plan_id)
-            .order_by(PlanModule.sequence_order)
-        )
-        modules = result.scalars().all()
+        # Modules are sorted by sequence_order
+        modules = sorted(plan.modules, key=lambda m: m.sequence_order)
 
         # Find the completed module's position
         completed_idx = next(

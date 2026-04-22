@@ -22,6 +22,16 @@ class AssessmentRepository(AsyncRepository[Assessment]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, Assessment)
 
+    async def get_by_id(self, id: str) -> Optional[Assessment]:
+        """Get assessment by ID with student relationship."""
+        from sqlalchemy.orm import selectinload
+        result = await self.session.execute(
+            select(Assessment)
+            .where(Assessment.id == id)
+            .options(selectinload(Assessment.student))
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_student_id(self, student_id: str) -> List[Assessment]:
         """Get all assessments for a student."""
         result = await self.session.execute(

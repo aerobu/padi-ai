@@ -6,6 +6,7 @@ from typing import Optional
 from uuid import uuid4
 
 import networkx as nx
+from networkx import NetworkXError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -164,14 +165,22 @@ class SkillGraphService:
             Priority score (higher = more urgent)
         """
         # Out-degree centrality
-        out_degree = G.out_degree(standard_code)
+        try:
+            out_degree = G.out_degree[standard_code]
+        except (KeyError, NetworkXError):
+            out_degree = 0
+            
         centrality_score = out_degree * 10
 
         # Deficiency severity
         deficiency_score = (1.0 - p_mastered) * 20
 
         # Grade-level bonus
-        grade = G.nodes[standard_code].get('grade', 4)
+        try:
+            grade = G.nodes[standard_code].get('grade', 4)
+        except KeyError:
+            grade = 4
+            
         grade_bonus = 5 if grade == 3 else 0
 
         return centrality_score + deficiency_score + grade_bonus
@@ -371,6 +380,12 @@ def set_cached_graph(graph: nx.DiGraph) -> None:
     """Set the cached skill graph."""
     global _cached_graph
     _cached_graph = graph
+
+
+def clear_cached_graph() -> None:
+    """Clear the global cached skill graph."""
+    global _cached_graph
+    _cached_graph = None
 
 
 async def initialize_skill_graph(db_session: AsyncSession) -> nx.DiGraph:
