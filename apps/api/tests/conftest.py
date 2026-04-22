@@ -77,9 +77,15 @@ async def async_client():
         yield client
 
 
-@pytest.fixture
-def auth_headers():
-    """Create auth headers for API tests and install verify_jwt override."""
+@pytest_asyncio.fixture
+async def auth_headers(client):
+    """Install verify_jwt override for default parent and return headers.
+
+    Depends on `client` so this override runs AFTER the client fixture's
+    default override — required because the client fixture also sets
+    verify_jwt (async fixtures set up after sync ones, so without this
+    dependency a sync override here would be clobbered).
+    """
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -92,9 +98,9 @@ def auth_headers():
     app.dependency_overrides.pop(verify_jwt, None)
 
 
-@pytest.fixture
-def admin_auth_headers():
-    """Create auth headers with admin role and install verify_jwt override."""
+@pytest_asyncio.fixture
+async def admin_auth_headers(client):
+    """Install admin verify_jwt override; see auth_headers for ordering."""
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -107,9 +113,9 @@ def admin_auth_headers():
     app.dependency_overrides.pop(verify_jwt, None)
 
 
-@pytest.fixture
-def different_user_headers():
-    """Create auth headers for a different user and install verify_jwt override."""
+@pytest_asyncio.fixture
+async def different_user_headers(client):
+    """Install non-owner verify_jwt override; see auth_headers for ordering."""
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -429,6 +435,68 @@ async def test_student(async_db_session, test_parent_for_student):
     async_db_session.add(student)
     await async_db_session.flush()
     return student
+
+
+@pytest_asyncio.fixture
+async def test_student_without_assessment(async_db_session, test_parent_for_student):
+    """Create a test student with NO completed assessment.
+
+    Distinct from `test_student` so tests that exercise the
+    no-assessment branch can share a student with the default parent
+    without pulling in the `test_assessment` fixture.
+    """
+    from src.models.models import Student
+    from uuid import uuid4
+
+    student = Student(
+        id=str(uuid4()),
+        parent_id="test-parent-id",
+        grade_level=4,
+        display_name="Test Student Without Assessment",
+        is_active=True,
+    )
+    async_db_session.add(student)
+    await async_db_session.flush()
+    return student
+
+
+@pytest_asyncio.fixture
+async def seed_grade_4_standards(async_db_session):
+    """Seed three Grade 4 Standard rows for tests that exercise the plan generator."""
+    from src.models.models import Standard
+
+    standards = [
+        Standard(
+            id="4.NBT.A.1",
+            standard_code="4.NBT.A.1",
+            grade_level=4,
+            domain="Number and Operations in Base Ten",
+            title="Place Value Understanding",
+            description="Recognize that in a multi-digit whole number, a digit in one place represents ten times what it represents in the place to its right.",
+            is_active=True,
+        ),
+        Standard(
+            id="4.NBT.B.5",
+            standard_code="4.NBT.B.5",
+            grade_level=4,
+            domain="Number and Operations in Base Ten",
+            title="Multi-Digit Multiplication",
+            description="Multiply a whole number of up to four digits by a one-digit whole number.",
+            is_active=True,
+        ),
+        Standard(
+            id="4.OA.A.1",
+            standard_code="4.OA.A.1",
+            grade_level=4,
+            domain="Operations and Algebraic Thinking",
+            title="Multiplicative Comparison",
+            description="Interpret a multiplication equation as a comparison.",
+            is_active=True,
+        ),
+    ]
+    async_db_session.add_all(standards)
+    await async_db_session.flush()
+    return standards
 
 
 @pytest_asyncio.fixture
