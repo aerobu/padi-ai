@@ -31,9 +31,14 @@ class RegisterResponse(BaseModel):
     needs_consent: bool
 
 
+from src.core.limiter import limiter
+from fastapi import Request
+
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def register(
-    request: RegisterRequest,
+    request_data: RegisterRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """

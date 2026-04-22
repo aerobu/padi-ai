@@ -22,6 +22,7 @@ from src.schemas.user import (
     ConsentConfirmResponse,
     ConsentStatusResponse,
 )
+from src.core.limiter import limiter
 
 router = APIRouter()
 security = HTTPBearer()
@@ -50,9 +51,10 @@ def get_consent_service(
     summary="Initiate COPPA consent",
     description="Start the COPPA consent process for a parent.",
 )
+@limiter.limit("5/minute")
 async def initiate_consent(
     request_data: ConsentInitiateRequest,
-    http_request: Request,
+    request: Request,
     user_payload: dict = Depends(verify_jwt),
     consent_service: ConsentService = Depends(get_consent_service),
     db: AsyncSession = Depends(get_db),
@@ -67,8 +69,8 @@ async def initiate_consent(
     email = user_payload.get("email", "parent@example.com")
 
     # Get IP address and user-agent for audit trail
-    ip_address = http_request.client.host if http_request.client else "0.0.0.0"
-    user_agent = http_request.headers.get("user-agent")
+    ip_address = request.client.host if request.client else "0.0.0.0"
+    user_agent = request.headers.get("user-agent")
 
     try:
         result = await consent_service.initiate_consent(
@@ -156,5 +158,8 @@ async def get_consent_status(
     try:
         result = await service.get_consent_status(user_id)
         return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error getting consent status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

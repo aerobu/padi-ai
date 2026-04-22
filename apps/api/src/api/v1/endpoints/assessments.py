@@ -32,6 +32,7 @@ from src.schemas.assessment import (
     CompleteAssessmentResponse,
     AssessmentResultsResponse,
 )
+from src.core.limiter import limiter
 
 router = APIRouter()
 security = HTTPBearer()
@@ -107,9 +108,10 @@ def get_assessment_service(
     summary="Start assessment",
     description="Start a new diagnostic assessment for a student.",
 )
+@limiter.limit("10/minute")
 async def start_assessment(
-    request: AssessmentStartRequest,
-    http_request: Request,
+    request_data: AssessmentStartRequest,
+    request: Request,
     user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
     student_repository: StudentRepository = Depends(get_student_repository),
@@ -122,13 +124,11 @@ async def start_assessment(
     - **assessment_type**: Assessment type (default: diagnostic)
     """
     # IDOR guard: verify the authenticated parent owns the requested student.
-    # These checks are intentionally outside the try/except block so that
-    # HTTPException(403/404) is never swallowed by the ValueError handler below.
     user_id = user_payload.get("sub") or user_payload.get("auth0_id")
-    ip = http_request.client.host if http_request.client else None
-    ua = http_request.headers.get("user-agent")
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent")
 
-    student = await student_repository.get_by_id(request.student_id)
+    student = await student_repository.get_by_id(request_data.student_id)
     if student is None:
         raise HTTPException(status_code=404, detail="Student not found")
     if student.parent_id != user_id:
@@ -136,13 +136,11 @@ async def start_assessment(
 
     try:
         result = await service.start_assessment(
-            student_id=request.student_id,
-            assessment_type=request.assessment_type,
+            student_id=request_data.student_id,
+            assessment_type=request_data.assessment_type,
         )
         # Audit: record assessment.started
-        assessment_id = result.assessment_id if hasattr(result, "assessment_id") else (
-            result.get("assessment_id") if isinstance(result, dict) else None
-        )
+        assessment_id = result.get("assessment_id") if isinstance(result, dict) else getattr(result, "assessment_id", None)
         await AuditService(db).record(
             user_id=user_id,
             action="assessment.started",
@@ -193,7 +191,7 @@ async def get_next_question(
     try:
         result = await service.get_next_question(
             assessment_id=assessment_id,
-            student_id=user_payload["sub"],
+            student_id=assessment.student_id,
         )
         return result
     except HTTPException:
@@ -201,8 +199,8 @@ async def get_next_question(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting next question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error getting next question: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post(
@@ -214,7 +212,7 @@ async def get_next_question(
 )
 async def submit_response(
     assessment_id: str,
-    request: ResponseSubmission,
+    request_data: ResponseSubmission,
     user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
 ):
@@ -232,9 +230,9 @@ async def submit_response(
         result = await service.submit_response(
             assessment_id=assessment_id,
             student_id=user_id,
-            question_id=request.question_id,
-            selected_answer=request.selected_answer,
-            time_spent_ms=request.time_spent_ms,
+            question_id=request_data.question_id,
+            selected_answer=request_data.selected_answer,
+            time_spent_ms=request_data.time_spent_ms,
         )
         return result
     except HTTPException:
@@ -242,8 +240,8 @@ async def submit_response(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error submitting response: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error submitting response: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put(
@@ -255,7 +253,7 @@ async def submit_response(
 )
 async def complete_assessment(
     assessment_id: str,
-    http_request: Request,
+    request: Request,
     user_payload: dict = Depends(verify_jwt),
     db: AsyncSession = Depends(get_db),
     service: AssessmentService = Depends(get_assessment_service),
@@ -266,8 +264,8 @@ async def complete_assessment(
     - **assessment_id**: Assessment identifier
     """
     user_id = user_payload.get("sub") or user_payload.get("auth0_id")
-    ip = http_request.client.host if http_request.client else None
-    ua = http_request.headers.get("user-agent")
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent")
 
     try:
         result = await service.complete_assessment(
@@ -292,8 +290,8 @@ async def complete_assessment(
             raise HTTPException(status_code=400, detail=str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error completing assessment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error completing assessment: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -307,26 +305,34 @@ async def get_results(
     assessment_id: str,
     user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
+    assessment_repository: AssessmentRepository = Depends(get_assessment_repository),
+    student_repository: StudentRepository = Depends(get_student_repository),
 ):
     """
     Get assessment results.
 
     - **assessment_id**: Assessment identifier
     """
+    # IDOR guard: verify the authenticated parent owns the assessment's student.
     user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    assessment = await assessment_repository.get_by_id(assessment_id)
+    if assessment is None:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    
+    student = await student_repository.get_by_id(assessment.student_id)
+    if student is None or student.parent_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this assessment")
 
     try:
         result = await service.get_results(
             assessment_id=assessment_id,
-            student_id=user_id,
+            student_id=assessment.student_id,
         )
         return result
     except HTTPException:
         raise
     except ValueError as e:
-        if "not found" in str(e).lower():
-            raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting results: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error getting results: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
