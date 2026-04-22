@@ -2,18 +2,20 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install poetry
-RUN pip install poetry==1.8.0
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml and poetry.lock
-COPY pyproject.toml poetry.lock* ./
-
-# Install dependencies
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# Install the package in editable mode
+RUN pip install -e .
 
 # Expose port
 EXPOSE 8000
