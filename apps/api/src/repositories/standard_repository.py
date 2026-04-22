@@ -74,22 +74,22 @@ class StandardRepository(AsyncRepository[Standard]):
 
     async def get_prerequisites(self, standard_id: str) -> List[str]:
         """Get prerequisite standard codes for a standard."""
-        from src.models.models import PrerequisiteRelationship
+        from src.models.models import PrerequisiteRelationship, Standard
 
         result = await self.session.execute(
-            select(PrerequisiteRelationship)
+            select(Standard.standard_code)
+            .join(PrerequisiteRelationship, Standard.id == PrerequisiteRelationship.prerequisite_id)
             .where(PrerequisiteRelationship.standard_id == standard_id)
         )
-        relationships = result.scalars().all()
-        return [r.prerequisite_id for r in relationships]
+        return list(result.scalars().all())
 
     async def get_dependents(self, standard_id: str) -> List[str]:
         """Get dependent standard codes (standards that have this as prereq)."""
-        from src.models.models import PrerequisiteRelationship
+        from src.models.models import PrerequisiteRelationship, Standard
 
         result = await self.session.execute(
-            select(PrerequisiteRelationship)
+            select(Standard.standard_code)
+            .join(PrerequisiteRelationship, Standard.id == PrerequisiteRelationship.standard_id)
             .where(PrerequisiteRelationship.prerequisite_id == standard_id)
         )
-        relationships = result.scalars().all()
-        return [r.standard_id for r in relationships]
+        return list(result.scalars().all())

@@ -2,113 +2,51 @@
 
 This project is an AI-powered adaptive math learning platform for Oregon elementary students (Grades 1-5, starting with Grade 4).
 
-## Critical COPPA Compliance
+## 🚀 Optimized Context Management
+To minimize token usage and avoid rate limits:
+- **Active Task:** Refer to `ACTIVE_CONTEXT.md` for current goals and focus.
+- **Documentation:** Most strategy and historical files are moved to `docs/`.
+- **Path-Scoped Rules:** Critical instructions are now in `.claude/rules/*.md`. These load automatically when you edit relevant files.
+- **Session Reset:** Start a new chat session after completing a major sub-task to clear token history.
 
-**STUDENT FACING FEATURES:**
-- ALWAYS use local Ollama models (Qwen2.5:72b, Qwen2.5:32b)
-- NEVER send student data to cloud LLMs (Claude, OpenAI)
-- Student responses must be processed locally before any cloud API calls
+## 🏛️ Architectural Guardrails (Mandatory)
+1. **Repository Pattern:** All database operations in `apps/api` MUST go through a repository. Direct DB access in services or routers is forbidden.
+2. **Strict Isolation:** No direct imports between `apps/api` and `apps/web`. Share types via `packages/types`.
+3. **Pydantic V2:** Use strictly for all request/response validation in the backend.
+4. **Validation First:** Qwen implements; Opus performs architectural review ONLY after tests and lint pass.
 
-**ADMIN FEATURES:**
-- Cloud LLMs (Claude Sonnet 4.6, o3-mini) can be used for:
-  - Question generation (by teachers/admins)
-  - Analytics aggregation (no PII)
-  - Dashboard reporting (summarized only)
+## 🛡️ Critical COPPA Compliance
+- **STUDENT DATA:** ALWAYS use local Ollama models. NEVER send student PII to cloud LLMs.
+- **ADMIN FEATURES:** Cloud LLMs (Claude, o3-mini) are permitted for teacher/admin tasks only.
 
-## Tech Stack
+## 🛠️ Tech Stack
+- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS.
+- **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0 (Async), Pydantic v2.
+- **AI:** LiteLLM (Local routing for students), Ollama (Qwen2.5).
 
-- **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend:** Python 3.12, FastAPI, SQLAlchemy, Pydantic v2
-- **AI/Agents:** LiteLLM, LangGraph (future), pyBKT (future)
-- **Database:** PostgreSQL 17 + pgvector
-- **Cache:** Redis 7
-- **Auth:** Auth0 (COPPA-compliant)
-- **Infra:** Docker, AWS (future), Vercel (frontend)
-
-## Project Structure
-
+## 📁 Project Structure
 ```
 padi-ai/
 ├── apps/
 │   ├── web/          # Next.js frontend
-│   │   ├── app/      # App Router pages
-│   │   ├── components/
-│   │   └── providers/
 │   └── api/          # FastAPI backend
-│       ├── src/
-│       │   ├── core/        # config, security
-│       │   ├── api/v1/      # API endpoints
-│       │   └── clients/     # LLM client
+├── docs/             # Strategy, Specs, Lifecycle, History (Moved from root)
 ├── packages/
 │   ├── types/        # TypeScript shared types
 │   ├── config/       # Shared configuration
 │   └── ui/           # Shared UI components
-└── infrastructure/
-    └── docker/       # Docker Compose config
+└── ACTIVE_CONTEXT.md # CURRENT TASK AND TARGETS
 ```
 
-## Environment Variables
-
-All 57+ environment variables are defined in `.env.example`. Key ones:
-
-- `AUTH0_*`: Auth0 configuration for COPPA-compliant auth
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_URL`: Redis connection string
-- `LLM_ROUTING__TUTOR`: Always `ollama/qwen2.5:72b` (never override)
-- `LLM_ROUTING__QUESTION_GEN`: `anthropic/claude-3-5-sonnet-20241022`
-
-## Common Tasks
-
+## 📋 Common Tasks
 ```bash
-# Start dev server (all apps)
-pnpm dev
-
-# Start infrastructure (Postgres, Redis, Ollama)
-pnpm docker:up
-
-# Run backend API
-cd apps/api && uvicorn src.main:app --reload
-
-# Run frontend
-cd apps/web && pnpm dev
-
-# Run tests
-pnpm test
-
-# Run type checking
-pnpm type-check
-
-# Run lint
-pnpm lint
+pnpm dev             # Start dev server
+pnpm docker:up       # Start infrastructure
+pnpm test            # Run all tests
+pnpm lint            # Run all linters
 ```
 
-## Implementation Guidelines
-
-1. **For new API endpoints:**
-   - Create in `apps/api/src/api/v1/`
-   - Follow existing patterns in `health.py`
-   - Use Pydantic v2 for request/response validation
-
-2. **For new frontend components:**
-   - Create in `packages/ui/` for shared components
-   - Use `@padi/ui` import in Next.js
-   - Follow Tailwind design system
-
-3. **For new database models:**
-   - Define in `packages/types/index.ts` (TypeScript)
-   - Create SQLAlchemy model in `apps/api/src/models/`
-   - Add to `eng-001-stage1.md` spec for Stage 1
-
-## Important Files
-
-- `ENG-000-foundations.md` - Architecture, ADRs, coding standards
-- `ENG-001-stage1.md` - Stage 1 database schema and requirements
-- `03-prd-stage1.md` - Stage 1 product requirements
-- `.env.example` - All environment variable definitions
-
-## References
-
-- Next.js 15: https://nextjs.org/docs
-- FastAPI: https://fastapi.tiangolo.com/
-- Litellm: https://docs.litellm.ai/
-- Auth0: https://auth0.com/
+## 📖 Important Documents
+- `docs/engineering/ENG-000-foundations.md` - Architecture & ADRs
+- `docs/specs/04-prd-stage2.md` - Active Phase Requirements
+- `ACTIVE_CONTEXT.md` - Current Task Status
