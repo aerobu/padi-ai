@@ -50,7 +50,7 @@ def get_user_from_credentials(
 
 
 @router.post(
-    "/admin/generation-jobs",
+    "/generation-jobs",
     status_code=status.HTTP_201_CREATED,
     summary="Create generation job",
     description="Create a new AI question generation job.",
@@ -71,7 +71,7 @@ async def create_generation_job(
 
         job = await job_repo.create({
             "id": str(__import__("uuid").uuid4()),
-            "standard_code": request.standard_code,
+            "standard_id": request.standard_code,
             "requested_count": request.requested_count,
             "difficulty_levels": request.difficulty_levels or [1, 2, 3, 4, 5],
             "context_themes": request.context_themes,
@@ -83,22 +83,24 @@ async def create_generation_job(
 
         return {
             "job_id": job.id,
-            "standard_code": job.standard_code,
+            "standard_code": job.standard_id,
             "requested_count": job.requested_count,
             "status": job.status,
             "created_at": job.created_at.isoformat() if job.created_at else None,
         }
 
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating generation job: {e}")
+        logger.error(f"Error creating generation job: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating generation job: {str(e)}",
+            detail="Internal server error during job creation",
         )
 
 
 @router.get(
-    "/admin/generation-jobs",
+    "/generation-jobs",
     summary="List generation jobs",
     description="List all generation jobs with optional filters.",
 )
@@ -115,14 +117,14 @@ async def list_generation_jobs(
 
     Returns paginated list of jobs with optional status filter.
     """
-    try:
-        # Verify admin access
-        if user_payload.get("role") != "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Admin access required",
-            )
+    # Verify admin access
+    if user_payload.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
 
+    try:
         jobs = await job_repo.get_all(
             status=status_filter,
             limit=limit,
@@ -133,7 +135,7 @@ async def list_generation_jobs(
             "jobs": [
                 {
                     "id": job.id,
-                    "standard_code": job.standard_code,
+                    "standard_code": getattr(job, "standard_id", ""),
                     "requested_count": job.requested_count,
                     "difficulty_levels": job.difficulty_levels,
                     "status": job.status,
@@ -152,15 +154,15 @@ async def list_generation_jobs(
         }
 
     except Exception as e:
-        logger.error(f"Error listing generation jobs: {e}")
+        logger.error(f"Error listing generation jobs: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing generation jobs: {str(e)}",
+            detail="Internal server error listing jobs",
         )
 
 
 @router.get(
-    "/admin/generation-jobs/{job_id}",
+    "/generation-jobs/{job_id}",
     summary="Get generation job",
     description="Get details of a specific generation job.",
 )
@@ -174,14 +176,14 @@ async def get_generation_job(
     """
     Get details of a generation job including generated questions.
     """
-    try:
-        # Verify admin access
-        if user_payload.get("role") != "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Admin access required",
-            )
+    # Verify admin access
+    if user_payload.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
 
+    try:
         from src.models.models import GeneratedQuestion
 
         job = await job_repo.get_by_id(job_id)
@@ -202,7 +204,7 @@ async def get_generation_job(
         return {
             "job": {
                 "id": job.id,
-                "standard_code": job.standard_code,
+                "standard_code": job.standard_id,
                 "requested_count": job.requested_count,
                 "difficulty_levels": job.difficulty_levels,
                 "context_themes": job.context_themes,
@@ -234,15 +236,15 @@ async def get_generation_job(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting generation job: {e}")
+        logger.error(f"Error getting generation job: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting generation job: {str(e)}",
+            detail="Internal server error getting job details",
         )
 
 
 @router.post(
-    "/admin/generation-jobs/{job_id}/execute",
+    "/generation-jobs/{job_id}/execute",
     summary="Execute generation job",
     description="Execute a queued generation job.",
 )
@@ -257,14 +259,14 @@ async def execute_generation_job(
 
     This triggers the LLM to generate questions for the job.
     """
-    try:
-        # Verify admin access
-        if user_payload.get("role") != "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Admin access required",
-            )
+    # Verify admin access
+    if user_payload.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
 
+    try:
         job = await llm_generator.job_repo.get_by_id(job_id)
         if not job:
             raise HTTPException(
@@ -294,16 +296,18 @@ async def execute_generation_job(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error executing generation job: {e}")
+        logger.error(f"Error executing generation job: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing generation job: {str(e)}",
+            detail="Internal server error executing job",
         )
 
 
 @router.get(
-    "/admin/review-queue",
+    "/review-queue",
     summary="Get review queue",
     description="Get questions pending human review.",
 )
@@ -315,14 +319,14 @@ async def get_review_queue(
     """
     Get questions pending human review.
     """
-    try:
-        # Verify admin access
-        if user_payload.get("role") != "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Admin access required",
-            )
+    # Verify admin access
+    if user_payload.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
 
+    try:
         from src.models.models import ContentReviewQueue
 
         result = await db.execute(
@@ -349,8 +353,8 @@ async def get_review_queue(
         }
 
     except Exception as e:
-        logger.error(f"Error getting review queue: {e}")
+        logger.error(f"Error getting review queue: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting review queue: {str(e)}",
+            detail="Internal server error getting review queue",
         )

@@ -9,19 +9,21 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from sqlalchemy import select
+
 from src.core.database import get_db
 from src.core.security import verify_jwt
 from src.repositories.student_repository import StudentRepository
-from src.models.models import PracticeSession, PracticeSessionStatus, PracticeSessionQuestion, StudentSkillState, PlanLesson, PlanModule, Student
-
-
-def get_user_from_credentials(
-    credentials: HTTPAuthorizationCredentials = Depends(verify_jwt),
-) -> dict:
-    """Get current authenticated user from JWT credentials."""
-    return credentials
+from src.models.models import (
+    PracticeSession,
+    PracticeSessionStatus,
+    PracticeSessionQuestion,
+    StudentSkillState,
+    PlanLesson,
+    PlanModule,
+    Student,
+    ModuleStatus,
+)
 from src.services.learning_plan_service import LearningPlanService
 from src.services.skill_graph_service import get_cached_graph, SkillGraphService
 from src.services.badge_service import BadgeService, BadgeType
@@ -55,7 +57,7 @@ async def get_learning_plan_service(
 async def generate_learning_plan(
     request: LearningPlanGenerateRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Generate a learning plan for a student.
@@ -104,16 +106,65 @@ async def generate_learning_plan(
             "created_at": plan.created_at.isoformat() if plan.created_at else None,
         }
 
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error generating learning plan: {e}")
+        logger.error(f"Error generating learning plan: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating learning plan: {str(e)}",
+            detail="Internal server error generating plan",
+        )
+
+
+@router.get(
+    "/learning-plans/sequence",
+    summary="Get skill sequence",
+    description="Get the topological sort sequence for a set of skills.",
+    tags=["internal"],
+)
+async def get_skill_sequence(
+    standard_codes: str,  # Comma-separated list
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """
+    Get the topological sort sequence for a list of standard codes.
+
+    This endpoint is for internal use and admin purposes.
+    """
+    try:
+        codes = [c.strip() for c in standard_codes.split(",") if c.strip()]
+
+        G = get_cached_graph()
+        if G is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Skill graph not initialized",
+            )
+
+        service = SkillGraphService(db)
+        sequence = service.get_topological_sequence(codes, G)
+
+        return {
+            "standard_codes": codes,
+            "sequence": sequence,
+            "length": len(sequence),
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(f"Error getting skill sequence: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error getting skill sequence",
         )
 
 
@@ -126,7 +177,7 @@ async def generate_learning_plan(
 async def get_learning_plan(
     student_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Get a student's current learning plan.
@@ -185,7 +236,7 @@ async def get_learning_plan(
                 "modules": [
                     {
                         "id": m.id,
-                        "standard_code": m.standard_code,
+                        "standard_code": m.standard_id,
                         "sequence_order": m.sequence_order,
                         "status": m.status,
                         "lesson_count": m.lesson_count,
@@ -213,57 +264,10 @@ async def get_learning_plan(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting learning plan: {e}")
+        logger.error(f"Error getting learning plan: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting learning plan: {str(e)}",
-        )
-
-
-@router.get(
-    "/learning-plans/sequence",
-    summary="Get skill sequence",
-    description="Get the topological sort sequence for a set of skills.",
-    tags=["internal"],
-)
-async def get_skill_sequence(
-    standard_codes: str,  # Comma-separated list
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> dict:
-    """
-    Get the topological sort sequence for a list of standard codes.
-
-    This endpoint is for internal use and admin purposes.
-    """
-    try:
-        codes = [c.strip() for c in standard_codes.split(",") if c.strip()]
-
-        G = get_cached_graph()
-        if G is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Skill graph not initialized",
-            )
-
-        service = SkillGraphService(db)
-        sequence = service.get_topological_sequence(codes, G)
-
-        return {
-            "standard_codes": codes,
-            "sequence": sequence,
-            "length": len(sequence),
-        }
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
-    except Exception as e:
-        logger.error(f"Error getting skill sequence: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting skill sequence: {str(e)}",
+            detail="Internal server error getting learning plan",
         )
 
 
@@ -277,7 +281,7 @@ async def complete_module(
     module_id: str,
     request: ModuleCompleteRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Mark a module as complete after practice sessions.
@@ -299,7 +303,13 @@ async def complete_module(
 
         # Verify the authenticated user owns this student's plan
         user_id = user_payload.get("sub") or user_payload.get("auth0_id")
-        if str(plan.student_id) != user_id:
+        
+        # Get student to check parent_id
+        from src.models.models import Student as StudentModel
+        student_result = await db.execute(select(StudentModel).where(StudentModel.id == plan.student_id))
+        student = student_result.scalar_one_or_none()
+        
+        if not student or student.parent_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to complete this plan",
@@ -329,11 +339,13 @@ async def complete_module(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error completing module: {e}")
+        logger.error(f"Error completing module: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error completing module: {str(e)}",
+            detail="Internal server error completing module",
         )
 
 
@@ -345,7 +357,7 @@ async def complete_module(
 async def get_next_lesson(
     student_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> NextLessonResponse:
     """
     Get the next available lesson for a student.
@@ -419,10 +431,10 @@ async def get_next_lesson(
         return {
             "module": {
                 "id": target_module.id,
-                "standard_code": target_module.standard_code,
-                "module_name": SkillGraphService(None).get_module_name(target_module.standard_code)
+                "standard_code": target_module.standard_id,
+                "module_name": SkillGraphService(None).get_module_name(target_module.standard_id)
                 if hasattr(SkillGraphService, 'get_module_name')
-                else target_module.standard_code,
+                else target_module.standard_id,
             },
             "lesson": {
                 "id": target_lesson.id,
@@ -439,10 +451,10 @@ async def get_next_lesson(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting next lesson: {e}")
+        logger.error(f"Error getting next lesson: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting next lesson: {str(e)}",
+            detail="Internal server error getting next lesson",
         )
 
 
@@ -454,7 +466,7 @@ async def get_next_lesson(
 async def get_student_badges(
     student_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Get all badges for a student.
@@ -488,10 +500,10 @@ async def get_student_badges(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting student badges: {e}")
+        logger.error(f"Error getting student badges: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting badges: {str(e)}",
+            detail="Internal server error getting badges",
         )
 
 
@@ -503,7 +515,7 @@ async def get_student_badges(
 async def get_student_streak(
     student_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Get streak info for a student.
@@ -543,10 +555,10 @@ async def get_student_streak(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting student streak: {e}")
+        logger.error(f"Error getting student streak: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting streak: {str(e)}",
+            detail="Internal server error getting streak info",
         )
 
 
@@ -559,7 +571,7 @@ async def submit_session_answer(
     session_id: str,
     request: ResponseSubmission,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> SessionAnswerResponse:
     """
     Submit an answer during a practice session.
@@ -588,7 +600,7 @@ async def submit_session_answer(
 
         if not lesson:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Lesson not found",
             )
 
@@ -599,7 +611,7 @@ async def submit_session_answer(
 
         if not module:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Module not found",
             )
 
@@ -612,7 +624,7 @@ async def submit_session_answer(
 
         if not plan:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Learning plan not found",
             )
 
@@ -625,7 +637,7 @@ async def submit_session_answer(
 
         if not student:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Student {student_id} not found",
             )
 
@@ -633,7 +645,7 @@ async def submit_session_answer(
 
         if user_id != student.parent_id:
             raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this session",
             )
 
@@ -719,11 +731,13 @@ async def submit_session_answer(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error submitting answer: {e}")
+        logger.error(f"Error submitting answer: {e}", exc_info=True)
         raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error submitting answer: {str(e)}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error submitting answer",
         )
 
 
@@ -735,7 +749,7 @@ async def submit_session_answer(
 async def complete_session(
     session_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
-    user_payload: Annotated[dict, Depends(get_user_from_credentials)],
+    user_payload: Annotated[dict, Depends(verify_jwt)],
 ) -> dict:
     """
     Mark practice session as complete.
@@ -751,7 +765,7 @@ async def complete_session(
 
         if not session:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Practice session {session_id} not found",
             )
 
@@ -764,7 +778,7 @@ async def complete_session(
         lesson = lesson_result.scalar_one_or_none()
 
         if not lesson:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Lesson not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
 
         module_result = await db.execute(
             select(PlanModule).where(PlanModule.id == lesson.module_id)
@@ -772,7 +786,7 @@ async def complete_session(
         module = module_result.scalar_one_or_none()
 
         if not module:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Module not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module not found")
 
         plan_result = await db.execute(
             select(PlanModel).where(PlanModel.id == module.plan_id)
@@ -780,7 +794,7 @@ async def complete_session(
         plan = plan_result.scalar_one_or_none()
 
         if not plan:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Learning plan not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning plan not found")
 
         student_result = await db.execute(
             select(Student).where(Student.id == plan.student_id)
@@ -788,13 +802,13 @@ async def complete_session(
         student = student_result.scalar_one_or_none()
 
         if not student:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Student not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
 
         user_id = user_payload.get("sub") or user_payload.get("auth0_id")
 
-        if user_id != student.parent_id:
+        if student.parent_id != user_id:
             raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to complete this session",
             )
 
@@ -852,9 +866,11 @@ async def complete_session(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error completing session: {e}")
+        logger.error(f"Error completing session: {e}", exc_info=True)
         raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error completing session: {str(e)}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error completing session",
         )

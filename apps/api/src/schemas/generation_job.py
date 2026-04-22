@@ -1,6 +1,6 @@
 """Pydantic schemas for Generation Job endpoints."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -32,6 +32,15 @@ class GenerationJobCreateRequest(BaseModel):
         min_length=1,
         description="Context themes for questions"
     )
+
+    @field_validator("difficulty_levels")
+    @classmethod
+    def validate_difficulty_levels(cls, v):
+        if v:
+            for level in v:
+                if not (1 <= level <= 5):
+                    raise ValueError("Difficulty levels must be between 1 and 5")
+        return v
 
 
 class GenerationJobResponse(BaseModel):

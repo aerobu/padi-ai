@@ -157,11 +157,11 @@ async def get_standard(
         estimated_difficulty=calculate_difficulty(standard.standard_code),  # Based on standard code complexity
         bkt_defaults={
             "p_l0": 0.0,
-            "p_trans": 0.5,
+            "p_transit": 0.5,
             "p_slip": 0.2,
             "p_guess": 0.25,
         },
-        prerequisites=[{"prerequisite_code": p} for p in prerequisites],
+        prerequisites=[{"prerequisite_code": p, "relationship_type": "required", "strength": 1.0} for p in prerequisites],
         dependent_standards=dependents,
         question_count=question_count,
     )

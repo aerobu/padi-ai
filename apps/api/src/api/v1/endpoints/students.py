@@ -104,9 +104,11 @@ async def create_student(
             is_active=True,
             created_at=student.created_at,
         )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating student: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating student: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
