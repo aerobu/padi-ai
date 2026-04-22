@@ -756,10 +756,10 @@ async def complete_session(
             )
 
         # Verify ownership through the plan hierarchy
-        from src.models.models import Lesson, Module, LearningPlan as PlanModel, Student
+        from src.models.models import LearningPlan as PlanModel
 
         lesson_result = await db.execute(
-            select(Lesson).where(Lesson.id == session.lesson_id)
+            select(PlanLesson).where(PlanLesson.id == session.lesson_id)
         )
         lesson = lesson_result.scalar_one_or_none()
 
@@ -767,7 +767,7 @@ async def complete_session(
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Lesson not found")
 
         module_result = await db.execute(
-            select(Module).where(Module.id == lesson.module_id)
+            select(PlanModule).where(PlanModule.id == lesson.module_id)
         )
         module = module_result.scalar_one_or_none()
 
