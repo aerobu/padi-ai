@@ -15,7 +15,7 @@ os.environ.setdefault(
 import pytest
 import pytest_asyncio
 from typing import Generator, AsyncGenerator
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -57,6 +57,7 @@ from src.core.config import get_settings
 from src.models.models import Base
 from src.core.security import verify_jwt
 from src.core.database import get_db
+from src.core.redis_client import get_redis_client
 
 
 @pytest.fixture(scope="session")
@@ -67,25 +68,53 @@ def event_loop():
     loop.close()
 
 
+@pytest.fixture(autouse=True)
+def mock_redis_client():
+    """Mock Redis client and override it in the app."""
+    mock_redis = MagicMock()
+    mock_redis.get = AsyncMock(return_value=None)
+    mock_redis.set = AsyncMock(return_value=True)
+    mock_redis.delete = AsyncMock(return_value=True)
+    mock_redis.exists = AsyncMock(return_value=False)
+    mock_redis.get_active_consent = AsyncMock(return_value=False)
+    mock_redis.set_active_consent = AsyncMock(return_value=True)
+    mock_redis.revoke_active_consent = AsyncMock(return_value=True)
+    mock_redis.connect = AsyncMock(return_value=None)
+    mock_redis.close = AsyncMock(return_value=None)
+    
+    # Specific assessment state methods
+    mock_redis.save_assessment_state = AsyncMock(return_value=None)
+    mock_redis.get_assessment_state = AsyncMock(return_value=None)
+    mock_redis.delete_assessment_state = AsyncMock(return_value=None)
+    mock_redis.set_question_pool = AsyncMock(return_value=None)
+    mock_redis.get_question_pool = AsyncMock(return_value=None)
+    mock_redis.set_current_question = AsyncMock(return_value=None)
+    mock_redis.get_current_question = AsyncMock(return_value=None)
+
+    # Override the dependency in the app
+    app.dependency_overrides[get_redis_client] = lambda: mock_redis
+    
+    # Also patch the module-level singleton instance if it exists
+    with patch("src.core.redis_client._redis_client", mock_redis), \
+         patch("src.core.redis_client.get_redis_client", return_value=mock_redis):
+        yield mock_redis
+    
+    app.dependency_overrides.pop(get_redis_client, None)
+
 
 @pytest_asyncio.fixture
 async def async_client():
     """Create async HTTP client for API tests."""
-    from starlette.testclient import TestClient
+    from httpx import AsyncClient, ASGITransport
 
-    with TestClient(app) as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 
 @pytest_asyncio.fixture
 async def auth_headers(client):
-    """Install verify_jwt override for default parent and return headers.
-
-    Depends on `client` so this override runs AFTER the client fixture's
-    default override — required because the client fixture also sets
-    verify_jwt (async fixtures set up after sync ones, so without this
-    dependency a sync override here would be clobbered).
-    """
+    """Install verify_jwt override for default parent and return headers."""
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -100,7 +129,7 @@ async def auth_headers(client):
 
 @pytest_asyncio.fixture
 async def admin_auth_headers(client):
-    """Install admin verify_jwt override; see auth_headers for ordering."""
+    """Install admin verify_jwt override."""
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -115,7 +144,7 @@ async def admin_auth_headers(client):
 
 @pytest_asyncio.fixture
 async def different_user_headers(client):
-    """Install non-owner verify_jwt override; see auth_headers for ordering."""
+    """Install non-owner verify_jwt override."""
     from src.main import app
     from src.core.security import verify_jwt
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -231,6 +260,12 @@ async def async_db_engine():
 
     # Replace psycopg2 with asyncpg for async operations
     async_db_url = database_url.replace("psycopg2", "asyncpg")
+    # Strip ?options= if present to avoid asyncpg TypeError
+    if "?options=" in async_db_url:
+        async_db_url = async_db_url.split("?options=")[0]
+    elif "&options=" in async_db_url:
+        async_db_url = async_db_url.split("&options=")[0]
+        
     engine = create_async_engine(async_db_url, echo=False)
 
     try:
@@ -265,29 +300,12 @@ async def async_db_session(async_db_engine):
 
 @pytest.fixture(scope="function")
 def test_api_client():
-    """Create TestClient with get_db overridden.
-
-    Yields a tuple of (client, sync_engine) so tests can write data
-    before making requests using the sync engine directly.
-    """
+    """Create TestClient with get_db overridden."""
     from starlette.testclient import TestClient
     import asyncio
     import os
 
     database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
-
-    # Use sync engine for test data writes (outside TestClient)
-    if database_url.startswith("sqlite"):
-        db_path = database_url.replace("sqlite:///./", "")
-        sync_engine = create_engine(
-            f"sqlite:///{db_path}",
-            connect_args={"check_same_thread": False}
-        )
-    else:
-        sync_engine = create_engine(database_url.replace("asyncpg", "psycopg2"))
-
-    Base.metadata.drop_all(sync_engine)
-    Base.metadata.create_all(sync_engine)
 
     # Use async engine for TestClient (FastAPI endpoints are async)
     async_db_url = database_url.replace("psycopg2", "asyncpg")
@@ -305,7 +323,6 @@ def test_api_client():
 
     def cleanup():
         app.dependency_overrides.pop(get_db, None)
-        sync_engine.dispose()
         # Run the async dispose in an event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -317,7 +334,7 @@ def test_api_client():
     app.dependency_overrides[get_db] = _override_get_db
     try:
         with TestClient(app) as client:
-            yield client, sync_engine
+            yield client
     finally:
         cleanup()
 
@@ -326,7 +343,6 @@ def test_api_client():
 def test_api_client_with_base_url():
     """Create TestClient with base_url='http://test' for parent dashboard tests."""
     from starlette.testclient import TestClient
-    from unittest.mock import AsyncMock
 
     async def _override_get_db():
         yield None
@@ -342,11 +358,7 @@ def test_api_client_with_base_url():
 
 @pytest.fixture
 def mock_jwt_as_parent():
-    """Override verify_jwt dependency to return a parent user payload.
-
-    Uses 'parent-1' as sub to match test data, but can be overridden per-test
-    if needed by setting APPARENT_PARENT_ID environment variable.
-    """
+    """Override verify_jwt dependency to return a parent user payload."""
     import os
     sub_id = os.getenv("APPARENT_PARENT_ID", "parent-1")
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
@@ -439,12 +451,7 @@ async def test_student(async_db_session, test_parent_for_student):
 
 @pytest_asyncio.fixture
 async def test_student_without_assessment(async_db_session, test_parent_for_student):
-    """Create a test student with NO completed assessment.
-
-    Distinct from `test_student` so tests that exercise the
-    no-assessment branch can share a student with the default parent
-    without pulling in the `test_assessment` fixture.
-    """
+    """Create a test student with NO completed assessment."""
     from src.models.models import Student
     from uuid import uuid4
 
@@ -462,7 +469,7 @@ async def test_student_without_assessment(async_db_session, test_parent_for_stud
 
 @pytest_asyncio.fixture
 async def seed_grade_4_standards(async_db_session):
-    """Seed three Grade 4 Standard rows for tests that exercise the plan generator."""
+    """Seed three Grade 4 Standard rows."""
     from src.models.models import Standard
 
     standards = [
@@ -513,7 +520,6 @@ async def test_assessment(async_db_session, test_student):
         status=AssessmentStatus.COMPLETED.value,
         total_score=7.5,
         max_score=10.0,
-        created_at=datetime.utcnow(),
     )
     async_db_session.add(assessment)
     await async_db_session.flush()
@@ -521,32 +527,33 @@ async def test_assessment(async_db_session, test_student):
 
 
 @pytest_asyncio.fixture
-async def client(async_db_session):
-    """Create async HTTP client for Stage 2 tests using ASGITransport.
-
-    This fixture applies default JWT mocking (parent role) for Stage 2 tests.
-    Tests requiring different JWT payloads should override with mock_jwt_as_* fixtures.
-    """
+async def client(async_db_session, mock_redis_client):
+    """Create async HTTP client for Stage 2 tests."""
     from httpx import AsyncClient, ASGITransport
 
     async def _override_get_db():
         yield async_db_session
 
     app.dependency_overrides[get_db] = _override_get_db
-    # Apply default JWT mocking for parent role
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "test-parent-id",
-        "email": "test@example.com",
-        "email_verified": True,
-        "role": "parent",
-    })
+    
+    # Apply default JWT mocking for parent role ONLY if not already overridden
+    had_override = verify_jwt in app.dependency_overrides
+    if not had_override:
+        app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+            "sub": "test-parent-id",
+            "email": "test@example.com",
+            "email_verified": True,
+            "role": "parent",
+        })
+    
     try:
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as async_client:
             yield async_client
     finally:
         app.dependency_overrides.pop(get_db, None)
-        app.dependency_overrides.pop(verify_jwt, None)
+        if not had_override:
+            app.dependency_overrides.pop(verify_jwt, None)
 
 
 @pytest.fixture
@@ -572,7 +579,6 @@ async def mock_skill_states_below_par(db_session, test_student):
             student_id=test_student.id,
             standard_id=std,
             mastery_prob=random.uniform(0.1, 0.4),
-            proficiency_level="Below Par",
         )
         db_session.add(state)
         skill_states.append(state)
@@ -597,7 +603,6 @@ async def mock_skill_states_above_par(db_session, test_student):
             student_id=test_student.id,
             standard_id=std,
             mastery_prob=random.uniform(0.80, 0.95),
-            proficiency_level="Above Par",
         )
         db_session.add(state)
         skill_states.append(state)
@@ -622,7 +627,6 @@ async def mock_skill_states_on_track(db_session, test_student):
             student_id=test_student.id,
             standard_id=std,
             mastery_prob=random.uniform(0.45, 0.75),
-            proficiency_level="On Par",
         )
         db_session.add(state)
         skill_states.append(state)

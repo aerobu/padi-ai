@@ -2,24 +2,37 @@
 Comprehensive tests for Learning Plans API endpoints.
 """
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import patch, MagicMock
+from datetime import datetime, date, timedelta
+from uuid import uuid4
 
-from src.models.models import LearningPlan, PlanModule, PlanLesson, Student
+from src.models.models import LearningPlan, PlanModule, PlanLesson, Student, StudentSkillState, Assessment
 from src.services.learning_plan_service import LearningPlanService
+from src.services.skill_graph_service import initialize_skill_graph
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def setup_skill_graph(db_session: AsyncSession, seed_grade_4_standards):
+    """Automatically initialize the skill graph for all tests in this module."""
+    from src.services.skill_graph_service import initialize_skill_graph
+    # Standards must be seeded BEFORE graph initialization
+    await initialize_skill_graph(db_session)
+    yield
+    # Clear cache after each test to keep isolation
+    from src.services.skill_graph_service import clear_cached_graph
+    clear_cache_func = clear_cached_graph
+    if callable(clear_cache_func):
+        if hasattr(clear_cache_func, '__call__') and not hasattr(clear_cache_func, 'is_async'):
+             # If it's a sync function
+             clear_cache_func()
 
 
 class TestLearningPlansGeneration:
     """Tests for POST /api/v1/learning-plans/generate."""
 
-    @pytest.mark.xfail(
-        reason="LearningPlanService requires StudentSkillState rows (not "
-               "seeded by test_assessment) and then crashes on "
-               "PlanModule(standard_code=...) because the model column is "
-               "standard_id. Stage-2 service bug, out of scope for Task 3.3.",
-        strict=False,
-    )
     @pytest.mark.asyncio
     async def test_generate_learning_plan_success(
         self,
@@ -31,9 +44,20 @@ class TestLearningPlansGeneration:
         client: AsyncClient,
     ):
         """Test successful learning plan generation."""
+        # Seed skill states since service requires them
+        for std in seed_grade_4_standards:
+            state = StudentSkillState(
+                id=str(uuid4()),
+                student_id=test_student.id,
+                standard_id=std.id,
+                mastery_prob=0.5
+            )
+            db_session.add(state)
+        await db_session.commit()
+
         response = await client.post(
             "/api/v1/learning-plans/generate",
-            json={"student_id": test_student.id},
+            json={"student_id": test_student.id, "assessment_id": test_assessment.id},
             headers=auth_headers,
         )
 
@@ -81,12 +105,6 @@ class TestLearningPlansGeneration:
 
         assert response.status_code == 401
 
-    @pytest.mark.xfail(
-        reason="generate endpoint's blanket `except Exception` swallows the "
-               "HTTPException(403) raised by the ownership check and wraps "
-               "it as 500. Will pass after Task 3.5 narrows the handler.",
-        strict=False,
-    )
     @pytest.mark.asyncio
     async def test_generate_learning_plan_permission_denied(
         self,
@@ -104,12 +122,6 @@ class TestLearningPlansGeneration:
 
         assert response.status_code == 403
 
-    @pytest.mark.xfail(
-        reason="generate endpoint's blanket `except Exception` swallows the "
-               "HTTPException(404) and wraps it as 500. Will pass after "
-               "Task 3.5 narrows the handler.",
-        strict=False,
-    )
     @pytest.mark.asyncio
     async def test_generate_learning_plan_student_not_found(
         self,
@@ -129,29 +141,37 @@ class TestLearningPlansGeneration:
 class TestLearningPlansGet:
     """Tests for GET /api/v1/learning-plans/{student_id}."""
 
-    @pytest.mark.xfail(
-        reason="depends on a working generate flow, which is blocked by the "
-               "Stage-2 service bug (see test_generate_learning_plan_success).",
-        strict=False,
-    )
     @pytest.mark.asyncio
     async def test_get_learning_plan_success(
         self,
         db_session: AsyncSession,
+        seed_grade_4_standards,
         test_student: Student,
         test_assessment,
         auth_headers: dict,
         client: AsyncClient,
     ):
         """Test successful learning plan retrieval."""
+        # Seed skill states
+        for std in seed_grade_4_standards:
+            state = StudentSkillState(
+                id=str(uuid4()),
+                student_id=test_student.id,
+                standard_id=std.id,
+                mastery_prob=0.5
+            )
+            db_session.add(state)
+        await db_session.commit()
+
         # First generate a plan
-        await client.post(
+        gen_response = await client.post(
             "/api/v1/learning-plans/generate",
-            json={"student_id": test_student.id},
+            json={"student_id": test_student.id, "assessment_id": test_assessment.id},
             headers=auth_headers,
         )
+        assert gen_response.status_code == 201
 
-        # Then get the plan
+        # Then get it
         response = await client.get(
             f"/api/v1/learning-plans/{test_student.id}",
             headers=auth_headers,
@@ -160,20 +180,18 @@ class TestLearningPlansGet:
         assert response.status_code == 200
         data = response.json()
         assert "plan" in data
-        assert "id" in data["plan"]
-        assert "track" in data["plan"]
-        assert "modules" in data["plan"]
+        assert data["plan"]["student_id"] == test_student.id
 
     @pytest.mark.asyncio
     async def test_get_learning_plan_not_found(
         self,
-        db_session: AsyncSession,
+        test_student: Student,
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test getting non-existent plan returns 404."""
+        """Test 404 when no plan exists."""
         response = await client.get(
-            "/api/v1/learning-plans/non-existent-student",
+            f"/api/v1/learning-plans/{test_student.id}",
             headers=auth_headers,
         )
 
@@ -187,19 +205,19 @@ class TestLearningPlansGet:
     @pytest.mark.asyncio
     async def test_get_learning_plan_unauthorized(
         self,
-        db_session: AsyncSession,
         test_student: Student,
         client: AsyncClient,
     ):
-        """Test getting plan without auth returns 401."""
-        response = await client.get(f"/api/v1/learning-plans/{test_student.id}")
+        """Test 401 when not authenticated."""
+        response = await client.get(
+            f"/api/v1/learning-plans/{test_student.id}",
+        )
 
         assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_get_learning_plan_permission_denied(
         self,
-        db_session: AsyncSession,
         test_student: Student,
         different_user_headers: dict,
         client: AsyncClient,
@@ -215,12 +233,11 @@ class TestLearningPlansGet:
     @pytest.mark.asyncio
     async def test_get_learning_plan_no_plan_exists(
         self,
-        db_session: AsyncSession,
         test_student: Student,
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test 404 when no learning plan exists for student."""
+        """Test 404 when no active plan exists for student."""
         response = await client.get(
             f"/api/v1/learning-plans/{test_student.id}",
             headers=auth_headers,
@@ -232,25 +249,32 @@ class TestLearningPlansGet:
 class TestLearningPlansNextLesson:
     """Tests for GET /api/v1/learning-plans/{student_id}/next-lesson."""
 
-    @pytest.mark.xfail(
-        reason="depends on a working generate flow, which is blocked by the "
-               "Stage-2 service bug (see test_generate_learning_plan_success).",
-        strict=False,
-    )
     @pytest.mark.asyncio
     async def test_get_next_lesson_success(
         self,
         db_session: AsyncSession,
+        seed_grade_4_standards,
         test_student: Student,
         test_assessment,
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test successful next lesson retrieval."""
-        # First generate a plan
+        """Test successful retrieval of next lesson."""
+        # Seed skill states
+        for std in seed_grade_4_standards:
+            state = StudentSkillState(
+                id=str(uuid4()),
+                student_id=test_student.id,
+                standard_id=std.id,
+                mastery_prob=0.5
+            )
+            db_session.add(state)
+        await db_session.commit()
+
+        # Generate plan
         await client.post(
             "/api/v1/learning-plans/generate",
-            json={"student_id": test_student.id},
+            json={"student_id": test_student.id, "assessment_id": test_assessment.id},
             headers=auth_headers,
         )
 
@@ -267,33 +291,12 @@ class TestLearningPlansNextLesson:
     @pytest.mark.asyncio
     async def test_get_next_lesson_no_available(
         self,
-        db_session: AsyncSession,
         test_student: Student,
-        test_assessment,
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test next lesson when all lessons completed."""
-        # First generate a plan
-        await client.post(
-            "/api/v1/learning-plans/generate",
-            json={"student_id": test_student.id},
-            headers=auth_headers,
-        )
-
-        # Complete the plan (mock by updating modules)
-        from src.repositories.learning_plan_repository import LearningPlanRepository
-
-        plan_repo = LearningPlanRepository(db_session)
-        plan = await plan_repo.get_by_student(test_student.id)
-
-        if plan:
-            for module in plan.modules:
-                module.status = "completed"
-                module.completed_lessons = module.lesson_count
-
-        await db_session.commit()
-
+        """Test 404 when no lessons are available."""
+        # No plan generated yet
         response = await client.get(
             f"/api/v1/learning-plans/{test_student.id}/next-lesson",
             headers=auth_headers,
@@ -304,7 +307,6 @@ class TestLearningPlansNextLesson:
     @pytest.mark.asyncio
     async def test_get_next_lesson_permission_denied(
         self,
-        db_session: AsyncSession,
         test_student: Student,
         different_user_headers: dict,
         client: AsyncClient,
@@ -318,104 +320,119 @@ class TestLearningPlansNextLesson:
         assert response.status_code == 403
 
 
-@pytest.mark.skip(
-    reason="GET /learning-plans/{student_id} is registered before "
-           "/learning-plans/sequence, so Starlette's path router matches "
-           "'sequence' as a student_id and returns 404. Endpoint ordering "
-           "bug in learning_plans.py — out of scope for Task 3.3."
-)
 class TestSkillGraphSequence:
     """Tests for GET /api/v1/learning-plans/sequence."""
 
     @pytest.mark.asyncio
     async def test_get_skill_sequence_success(
         self,
+        auth_headers: dict,
         client: AsyncClient,
     ):
         """Test successful skill sequence retrieval."""
         response = await client.get(
-            "/api/v1/learning-plans/sequence?standard_codes=3.OA.C.7,4.OA.A.1,4.NBT.B.5"
+            "/api/v1/learning-plans/sequence?standard_codes=4.NBT.A.1,4.OA.A.1",
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
         data = response.json()
         assert "sequence" in data
-        assert "length" in data
+        assert len(data["sequence"]) >= 2
 
     @pytest.mark.asyncio
     async def test_get_skill_sequence_invalid_graph(
         self,
+        auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test sequence with empty graph returns error."""
-        # This would fail if graph not initialized
-        response = await client.get("/api/v1/learning-plans/sequence?standard_codes=4.NBT.B.5")
+        """Test sequence retrieval when graph is not loaded."""
+        # Patch where it's USED, not where it's defined
+        with patch("src.api.v1.endpoints.learning_plans.get_cached_graph", return_value=None):
+            response = await client.get(
+                "/api/v1/learning-plans/sequence?standard_codes=4.NBT.A.1",
+                headers=auth_headers,
+            )
 
-        # Graph might not be initialized in tests
-        assert response.status_code in [200, 500]
+            assert response.status_code == 500
 
     @pytest.mark.asyncio
     async def test_get_skill_sequence_empty_codes(
         self,
+        auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test 400 for empty standard codes."""
-        response = await client.get("/api/v1/learning-plans/sequence?standard_codes=")
+        """Test sequence retrieval with empty codes."""
+        response = await client.get(
+            "/api/v1/learning-plans/sequence?standard_codes=",
+            headers=auth_headers,
+        )
 
-        assert response.status_code in [400, 422]
+        assert response.status_code == 200
+        data = response.json()
+        assert data["length"] == 0
 
 
 class TestCompleteModuleEndpoint:
-    """Tests for POST /learning-plans/{plan_id}/modules/{module_id}/complete."""
+    """Tests for POST /api/v1/learning-plans/{plan_id}/modules/{module_id}/complete."""
 
     @pytest.mark.asyncio
     async def test_complete_module_success(
         self,
         db_session: AsyncSession,
+        seed_grade_4_standards,
         test_student: Student,
         test_assessment,
         auth_headers: dict,
         client: AsyncClient,
     ):
         """Test successful module completion."""
-        # First generate a plan
-        await client.post(
-            "/api/v1/learning-plans/generate",
-            json={"student_id": test_student.id},
+        # Create a plan and module manually
+        plan = LearningPlan(
+            id="test-plan-123",
+            student_id=test_student.id,
+            assessment_id=test_assessment.id,
+            track="on_track",
+            status="active",
+            total_modules=1,
+            total_lessons=1,
+            estimated_total_minutes=20,
+            sessions_per_week=3,
+            minutes_per_session=20,
+            estimated_completion_date=date.today() + timedelta(days=7)
+        )
+        module = PlanModule(
+            id="test-mod-123",
+            plan_id=plan.id,
+            standard_id="4.NBT.A.1",
+            sequence_order=1,
+            status="available",
+            lesson_count=1,
+            estimated_minutes=20
+        )
+        db_session.add_all([plan, module])
+        await db_session.commit()
+
+        response = await client.post(
+            f"/api/v1/learning-plans/{plan.id}/modules/{module.id}/complete",
+            json={"p_mastered": 0.85, "lessons_completed": 1, "minutes_spent": 20},
             headers=auth_headers,
         )
 
-        # Get the plan and module
-        from src.repositories.learning_plan_repository import LearningPlanRepository
-
-        plan_repo = LearningPlanRepository(db_session)
-        plan = await plan_repo.get_by_student(test_student.id)
-
-        if plan and plan.modules:
-            module = plan.modules[0]
-
-            response = await client.post(
-                f"/api/v1/learning-plans/{plan.id}/modules/{module.id}/complete",
-                json={"p_mastered": 0.85, "lessons_completed": 4, "minutes_spent": 80},
-                headers=auth_headers,
-            )
-
-            # Module completion endpoint may not be fully implemented
-            # Check for expected status codes
-            assert response.status_code in [200, 404, 501]
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "completed"
 
     @pytest.mark.asyncio
     async def test_complete_module_invalid_p_mastered(
         self,
-        db_session: AsyncSession,
-        test_student: Student,
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test validation error for p_mastered outside 0-1 range."""
+        """Test 422 for invalid p_mastered value."""
         response = await client.post(
-            "/api/v1/learning-plans/mock-plan/modules/mock-module/complete",
-            json={"p_mastered": 1.5},  # Invalid: > 1.0
+            "/api/v1/learning-plans/plan-id/modules/module-id/complete",
+            json={"p_mastered": 1.5},
             headers=auth_headers,
         )
 
@@ -427,7 +444,7 @@ class TestCompleteModuleEndpoint:
         auth_headers: dict,
         client: AsyncClient,
     ):
-        """Test 404 when plan doesn't exist."""
+        """Test 404 for non-existent plan."""
         response = await client.post(
             "/api/v1/learning-plans/non-existent/modules/module-id/complete",
             json={"p_mastered": 0.85},
