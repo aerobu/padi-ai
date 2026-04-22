@@ -242,14 +242,14 @@ class TestVectorSearchPerformance:
                         standard_code, difficulty, question_type, stem, options,
                         correct_answer, source, status, content_embedding
                     ) VALUES (
-                        '4.DEDUP.SIM{:03d}', 3, 'multiple_choice',
-                        'Similar fraction question {}'.format(i),
+                        '4.DEDUP.SIM{i:03d}', 3, 'multiple_choice',
+                        'Similar fraction question {i}',
                         '[{"key": "A", "text": "1/2"}]',
                         'A', 'ai_generated', 'active',
-                        '[0.5{:d}, 0.5{:d}, 0.5{:d}, 0.5{:d}, 0.5{:d}]'
+                        '[0.5{i:d}, 0.5{i:d}, 0.5{i:d}, 0.5{i:d}, 0.5{i:d}]'
                     )
                     ON CONFLICT (standard_code) DO NOTHING
-                """.format(i=i, i=i, i=i, i=i, i=i)))
+                """.format(i=i)))
             conn.commit()
 
         # Benchmark deduplication

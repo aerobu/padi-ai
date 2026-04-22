@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.models import Student, Assessment, StudentSkillState
-from src.services.learning_plan_service import LearningPlanService, MASTERY_THRESHOLD
+from src.services.learning_plan_service import LearningPlanService
 
 
 class TestLearningPlanGeneration:

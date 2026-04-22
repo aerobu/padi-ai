@@ -25,9 +25,11 @@ from sqlalchemy import text
 
 # Import main app
 import sys
-sys.path.insert(0, 'apps/api/src')
+import os
+# Ensure root of apps/api is in path so 'src' can be imported as a package
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from main import app
+from src.main import app
 
 
 class TestAssessmentAPIPerformance:

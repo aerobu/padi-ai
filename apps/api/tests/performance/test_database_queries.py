@@ -46,7 +46,7 @@ class TestCRUDPerformance:
                     ON CONFLICT (standard_code) DO UPDATE SET
                         difficulty = 3,
                         updated_at = CURRENT_TIMESTAMP
-                """.format(i=)))
+                """.format(i=i)))
                 conn.commit()
 
             end = time.perf_counter()
@@ -273,11 +273,11 @@ class TestJoinQueryPerformance:
                         completed_questions, score
                     ) VALUES (
                         '4.JOIN.STUDENT', 'diagnostic',
-                        CASE WHEN {:d} % 2 = 0 THEN 'in_progress' ELSE 'completed' END,
-                        35, {:d}, 70.0
+                        CASE WHEN {i:d} % 2 = 0 THEN 'in_progress' ELSE 'completed' END,
+                        35, {i:d}, 70.0
                     )
                     ON CONFLICT (id) DO UPDATE SET status = 'in_progress'
-                """.format(i=i, i=i)))
+                """.format(i=i)))
             conn.commit()
 
         # Benchmark
@@ -447,7 +447,7 @@ class TestAggregationPerformance:
                     )
                     ON CONFLICT (student_id, standard_code) DO UPDATE SET
                         p_mastery = 0.{:02d}
-                """.format(i=i, (i * 5) % 100, (i * 5) % 100, (i * 5) % 100, (i * 5) % 100, i, (i * 3) % 100, (i * 5) % 100)))
+                """.format(i, (i * 5) % 100, (i * 5) % 100, (i * 5) % 100, (i * 5) % 100, i, (i * 3) % 100, (i * 5) % 100)))
             conn.commit()
 
         # Benchmark dashboard query
@@ -504,7 +504,7 @@ class TestAggregationPerformance:
                         END
                     )
                     ON CONFLICT (id) DO UPDATE SET score = 70.0
-                """.format(i=i, i, i % 35, i % 100, i % 100)))
+                """.format(i, i, i % 35, i % 100, i % 100)))
             conn.commit()
 
         # Benchmark

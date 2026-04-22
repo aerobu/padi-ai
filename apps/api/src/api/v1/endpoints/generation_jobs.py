@@ -89,13 +89,15 @@ async def create_generation_job(
             "created_at": job.created_at.isoformat() if job.created_at else None,
         }
 
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating generation job: {e}", exc_info=True)
+        logger.error(f"Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error during job creation",
+            detail="Internal server error",
         )
 
 
