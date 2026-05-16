@@ -339,6 +339,11 @@ class Question(Base):
     question_text = Column(Text, nullable=False)
     question_type = Column(String, nullable=False)
     difficulty = Column(Integer, nullable=False)
+    # IRT parameters added in migration 007 (P3-T03). difficulty_b is on the
+    # logit scale (~ -3..+3, 0 = grade level); discrimination_a defaults to
+    # 1.0 (Rasch model).
+    difficulty_b = Column(Float, nullable=True)
+    discrimination_a = Column(Float, nullable=False, default=1.0)
     points = Column(Integer, default=1)
     is_active = Column(Boolean, default=True, index=True)
     metadata_json = Column(JSON, nullable=True)

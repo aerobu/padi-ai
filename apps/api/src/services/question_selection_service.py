@@ -194,28 +194,46 @@ class QuestionSelectionService:
         candidates: List[Dict[str, Any]],
         questions_answered: int,
     ) -> Optional[Dict[str, Any]]:
-        """
-        Select question that maximizes information at current theta.
+        """Select the question with the highest 2PL Fisher information at θ.
 
-        Information function: I(theta, difficulty) = 0.5 * exp(-0.5 * (theta - difficulty)^2)
-        Simplified: select questions where |theta - difficulty| is minimal
+        Uses `src.services.irt_service` (P3-T03). Each candidate is expected
+        to carry a `difficulty_b` (logit-scale) and an optional
+        `discrimination_a`. Falls back to mapping the legacy integer
+        `difficulty` (1..5) to a b-parameter when explicit IRT params are
+        absent.
         """
-        # Estimate current theta based on performance heuristic
+        from src.services.irt_service import (
+            IRTItem,
+            difficulty_integer_to_b,
+            select_max_information,
+        )
+
         estimated_theta = self._estimate_theta(questions_answered)
+        if not candidates:
+            return None
 
-        # Score questions by information
-        scored = []
+        irt_items = []
+        by_id: dict[str, Dict[str, Any]] = {}
         for q in candidates:
-            difficulty = q.get("difficulty", 3)
-            # Information = inverse of distance from theta
-            distance = abs(estimated_theta - difficulty)
-            information = 1.0 / (1.0 + distance)
-            scored.append((information, q))
+            qid = str(q.get("id"))
+            b = q.get("difficulty_b")
+            if b is None:
+                b = difficulty_integer_to_b(int(q.get("difficulty", 3)))
+            a = float(q.get("discrimination_a", 1.0))
+            irt_items.append(IRTItem(id=qid, b=float(b), a=a))
+            by_id[qid] = q
 
-        # Sort by information (descending), then by randomness for tie-breaking
-        scored.sort(key=lambda x: (-x[0], random.random()))
+        pick = select_max_information(estimated_theta, irt_items)
+        if pick is None:
+            return None
+        # Light randomization between the top few (avoid deterministic loops).
+        # Pick from items within 5% of best information.
+        from src.services.irt_service import information
 
-        return scored[0][1] if scored else None
+        top_score = information(estimated_theta, pick)
+        near_top = [it for it in irt_items if information(estimated_theta, it) >= 0.95 * top_score]
+        chosen = random.choice(near_top)
+        return by_id[chosen.id]
 
     def _estimate_theta(
         self,
