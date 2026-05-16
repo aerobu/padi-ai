@@ -1,0 +1,130 @@
+/* ============================================================
+   SOLOSAIL DESIGN TOKENS
+   Extracted from MossRock visual reference — May 2026
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+
+  /* ── SHELL / CHROME ── */
+  --shell-bg:         #1c1008;   /* near-black warm brown — topnav, app shell */
+  --shell-bg-deep:    #130b04;   /* deepest dark, pressed states */
+  --shell-border:     #2e1d0e;   /* subtle divider inside shell */
+
+  /* ── PAGE BACKGROUND ── */
+  --page-bg:          #ede8df;   /* warm cream — main content area */
+  --page-bg-alt:      #f5f1ea;   /* lighter cream — nested surfaces */
+
+  /* ── CARD / SURFACE ── */
+  --surface:          #ffffff;   /* card face */
+  --surface-cream:    #f9f5ef;   /* tinted card — input backgrounds, stat tiles */
+  --surface-border:   #e8e2d8;   /* card border */
+
+  /* ── PRIMARY GREEN (forest) ── */
+  --green-50:         #eef5f1;
+  --green-100:        #d3e7db;
+  --green-200:        #a8cebc;
+  --green-300:        #7ab59d;
+  --green-400:        #559c80;
+  --green-500:        #3d7a62;   /* data viz, slider thumbs, active tabs */
+  --green-600:        #2d5f4a;   /* hero card background, active button fill */
+  --green-700:        #234a39;   /* deepest green, pressed */
+  --green-800:        #1a3629;
+  --green-900:        #112419;
+
+  /* ── ACCENT TERRACOTTA / ORANGE ── */
+  --terra-50:         #fbf2ec;
+  --terra-100:        #f5dece;
+  --terra-200:        #eabfa4;
+  --terra-300:        #dc9f7a;
+  --terra-400:        #cc8055;
+  --terra-500:        #bf6e3c;   /* primary CTA button, highlights in copy */
+  --terra-600:        #a85e2f;   /* pressed CTA */
+  --terra-700:        #8c4d22;
+  --terra-800:        #6e3c18;
+  --terra-900:        #502c10;
+
+  /* ── NEUTRAL ── */
+  --neutral-0:        #ffffff;
+  --neutral-50:       #fafaf9;
+  --neutral-100:      #f5f1ea;
+  --neutral-200:      #e8e2d8;
+  --neutral-300:      #d5cfc4;
+  --neutral-400:      #b0a898;
+  --neutral-500:      #8a8276;
+  --neutral-600:      #635d54;
+  --neutral-700:      #46413a;
+  --neutral-800:      #2c2820;
+  --neutral-900:      #1a1612;
+
+  /* ── SEMANTIC FEEDBACK ── */
+  --status-low-bg:    #1f3d2a;   /* dark green pill */
+  --status-low-text:  #7ecb9a;
+  --status-med-bg:    #f9f3e3;   /* warm amber pill bg */
+  --status-med-text:  #a87c2a;
+  --status-med-dot:   #d4a843;
+  --status-high-bg:   #f7e8e8;   /* muted red pill bg */
+  --status-high-text: #a83030;
+  --status-high-dot:  #d44a4a;
+
+  /* ── DATA VISUALIZATION ── */
+  --data-principal:   #3d7a62;   /* green bars / donut principal */
+  --data-interest:    #c97a4a;   /* orange bars / donut interest */
+  --data-neutral:     #c8bfac;   /* muted appreciation/low-score bars */
+
+  /* ── SHADOWS ── */
+  --shadow-xs:  0 1px 2px rgba(26,14,0,.06);
+  --shadow-sm:  0 1px 4px rgba(26,14,0,.08), 0 1px 2px rgba(26,14,0,.05);
+  --shadow-md:  0 4px 12px rgba(26,14,0,.10), 0 2px 4px rgba(26,14,0,.06);
+  --shadow-lg:  0 10px 24px rgba(26,14,0,.12), 0 4px 8px rgba(26,14,0,.07);
+  --shadow-xl:  0 20px 48px rgba(26,14,0,.16);
+  --shadow-green: 0 8px 24px -4px rgba(45,95,74,.40);
+
+  /* ── RADII ── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+
+  /* ── SPACING (4px base) ── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   32px;
+  --space-8:   40px;
+  --space-9:   48px;
+  --space-10:  56px;
+  --space-11:  64px;
+  --space-12:  80px;
+
+  /* ── TYPOGRAPHY ── */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Type scale */
+  --type-hero:       800 52px/1.1  var(--font-display);
+  --type-display-lg: 700 36px/1.15 var(--font-display);
+  --type-display-md: 700 24px/1.25 var(--font-display);
+  --type-display-sm: 600 18px/1.35 var(--font-sans);
+  --type-body-lg:    400 16px/1.6  var(--font-sans);
+  --type-body-md:    400 14px/1.55 var(--font-sans);
+  --type-body-sm:    400 12px/1.5  var(--font-sans);
+  --type-label-lg:   600 14px/1    var(--font-sans);
+  --type-label-sm:   600 11px/1    var(--font-sans);
+  --type-kpi:        700 32px/1    var(--font-sans);
+  --type-kpi-lg:     700 48px/1    var(--font-sans);
+  --type-mono:       500 14px/1.5  'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── MOTION ── */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --dur-fast:      120ms;
+  --dur-med:       200ms;
+  --dur-slow:      300ms;
+}

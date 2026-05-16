@@ -1,13 +1,10 @@
-/**
- * Create Student page.
- * Parent creates their child&apos;s profile after consent.
- */
-
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@padi/ui";
+import { Button } from "@padi/ui/button";
+import { Input } from "@padi/ui/input";
+import { Divider } from "@padi/ui/divider";
 
 interface FormData {
   firstName: string;
@@ -15,173 +12,76 @@ interface FormData {
   birthYear: number;
 }
 
+const gradeLevels = [
+  { value: 1, label: "1st Grade" },
+  { value: 2, label: "2nd Grade" },
+  { value: 3, label: "3rd Grade" },
+  { value: 4, label: "4th Grade" },
+  { value: 5, label: "5th Grade" },
+];
+
 export default function CreateStudentPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     gradeLevel: 4,
     birthYear: new Date().getFullYear() - 9,
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Create student via API
-      const response = await fetch("/api/v1/students", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          display_name: formData.firstName,
-          grade_level: formData.gradeLevel,
-          birth_year: formData.birthYear,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || "Failed to create student");
-      }
-
-      // Navigate to dashboard
-      router.push("/dashboard");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create student profile"
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    router.push("/dashboard");
   };
 
-  const gradeLevels = [
-    { value: 1, label: "1st Grade" },
-    { value: 2, label: "2nd Grade" },
-    { value: 3, label: "3rd Grade" },
-    { value: 4, label: "4th Grade" },
-    { value: 5, label: "5th Grade" },
-  ];
-
-  const currentYear = new Date().getFullYear();
-  const birthYearOptions = Array.from(
-    { length: 17 },
-    (_, i) => currentYear - (6 + i)
-  );
-
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
-      <h1 className="text-2xl font-bold text-slate-900 mb-2">
-        Create Your Child&apos;s Profile
-      </h1>
-      <p className="text-slate-600 mb-6">
-        Please enter your child&apos;s information to get started with PADI.AI.
-      </p>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="font-display text-display-md text-neutral-900">Create Your Child&apos;s Profile</h1>
+        <p className="mt-2 text-[16px] text-neutral-500">Please enter your child&apos;s information to get started with PADI.AI.</p>
+      </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Input
+          label="First Name"
+          placeholder="Enter first name"
+          value={formData.firstName}
+          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+        />
+        <p className="text-[12px] text-neutral-400 ml-1">We&apos;ll use the first name only to protect your child&apos;s privacy.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* First Name */}
         <div>
-          <label
-            htmlFor="firstName"
-            className="block text-sm font-medium text-slate-700 mb-1"
-          >
-            First Name
-          </label>
-          <input
-            type="text"
-            id="firstName"
-            required
-            value={formData.firstName}
-            onChange={(e) =>
-              setFormData({ ...formData, firstName: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter first name"
-          />
-          <p className="mt-1 text-sm text-slate-500">
-            We&apos;ll use the first name only to protect your child&apos;s privacy.
-          </p>
-        </div>
-
-        {/* Grade Level */}
-        <div>
-          <label
-            htmlFor="gradeLevel"
-            className="block text-sm font-medium text-slate-700 mb-1"
-          >
-            Grade Level
-          </label>
+          <label className="block text-[11px] font-semibold uppercase tracking-[.08em] text-neutral-500 mb-2">Grade Level</label>
           <select
-            id="gradeLevel"
-            required
             value={formData.gradeLevel}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                gradeLevel: parseInt(e.target.value, 10),
-              })
-            }
-            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => setFormData({ ...formData, gradeLevel: parseInt(e.target.value, 10) })}
+            className="w-full h-[44px] rounded-md border-[1.5px] border-neutral-300 bg-surface-cream px-3 text-[14px] text-neutral-800 focus:border-green-500 focus:ring-3 focus:ring-green-500/10 outline-none"
           >
-            {gradeLevels.map((grade) => (
-              <option key={grade.value} value={grade.value}>
-                {grade.label}
-              </option>
+            {gradeLevels.map((g) => (
+              <option key={g.value} value={g.value}>{g.label}</option>
             ))}
           </select>
         </div>
 
-        {/* Birth Year */}
         <div>
-          <label
-            htmlFor="birthYear"
-            className="block text-sm font-medium text-slate-700 mb-1"
-          >
-            Birth Year
-          </label>
+          <label className="block text-[11px] font-semibold uppercase tracking-[.08em] text-neutral-500 mb-2">Birth Year</label>
           <select
-            id="birthYear"
-            required
             value={formData.birthYear}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                birthYear: parseInt(e.target.value, 10),
-              })
-            }
-            className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => setFormData({ ...formData, birthYear: parseInt(e.target.value, 10) })}
+            className="w-full h-[44px] rounded-md border-[1.5px] border-neutral-300 bg-surface-cream px-3 text-[14px] text-neutral-800 focus:border-green-500 focus:ring-3 focus:ring-green-500/10 outline-none"
           >
-            {birthYearOptions.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
+            {Array.from({ length: 17 }, (_, i) => new Date().getFullYear() - (6 + i)).map((y) => (
+              <option key={y} value={y}>{y}</option>
             ))}
           </select>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end space-x-4 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/onboarding/consent")}
-            disabled={isLoading}
-          >
+        <Divider />
+        <div className="flex gap-3">
+          <Button size="sm" variant="outline" onClick={() => router.push("/onboarding/consent")}>
             Back
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Profile"}
+          <Button size="lg" type="submit" className="flex-1">
+            Create Profile
           </Button>
         </div>
       </form>

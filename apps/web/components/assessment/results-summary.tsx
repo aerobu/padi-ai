@@ -1,12 +1,12 @@
 /**
- * Assessment results summary component.
+ * ResultsSummary component for displaying assessment results.
  */
 
 "use client";
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@padi/ui/card";
-import { Badge } from "@padi/ui/badge";
+import { Badge, type BadgeVariant } from "@padi/ui/badge";
 import { Button } from "@padi/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -52,7 +52,12 @@ export function ResultsSummary({
   overallClassification,
   domainResults,
   skillStates,
-  gapAnalysis = {},
+  gapAnalysis = {
+    strengths: [],
+    on_track: [],
+    needs_work: [],
+    recommended_focus_order: [],
+  } as GapAnalysis,
 }: AssessmentResultsProps) {
   const router = useRouter();
 
@@ -61,113 +66,121 @@ export function ResultsSummary({
 
   const getScoreColor = (score: number): string => {
     if (score >= 0.8) return "text-green-600";
-    if (score >= 0.6) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 0.6) return "text-terra-500";
+    return "text-[#a83030]";
   };
 
-  const getClassificationBadge = (classification: string) => {
+  const getBadgeVariant = (classification: string): BadgeVariant => {
     switch (classification) {
       case "above_par":
-        return <Badge className="bg-green-100 text-green-800">Above Par</Badge>;
+        return "green";
       case "on_par":
-        return <Badge className="bg-yellow-100 text-yellow-800">On Par</Badge>;
+        return "terra";
       default:
-        return <Badge className="bg-red-100 text-red-800">Below Par</Badge>;
+        return "high";
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-[896px] mx-auto space-y-8">
       {/* Overall score */}
-      <Card>
+      <Card className="p-6">
         <CardHeader>
-          <CardTitle className="text-2xl">Assessment Results</CardTitle>
+          <CardTitle className="text-display-md">Assessment Results</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Overall Score</p>
-              <p className={`text-4xl font-bold ${getScoreColor(overallScore)}`}>
+              <p className="text-[14px] text-neutral-500 mb-2">Overall Score</p>
+              <p className={`text-kpi font-bold ${getScoreColor(overallScore)}`}>
                 {Math.round(overallScore * 100)}%
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-slate-600">Classification</p>
-              {getClassificationBadge(overallClassification)}
+              <p className="text-[14px] text-neutral-500 mb-2">Classification</p>
+              <Badge variant={getBadgeVariant(overallClassification)} showDot>
+                {overallClassification.replace("_", " ").toUpperCase()}
+              </Badge>
             </div>
           </div>
-          <p className="mt-4 text-sm text-slate-600">
-            You answered {totalCorrect} out of {totalQuestions} questions correctly.
+          <p className="mt-5 text-[14px] text-neutral-500">
+            You answered <span className="font-semibold text-neutral-900">{totalCorrect}</span> out of <span className="font-semibold text-neutral-900">{totalQuestions}</span> questions correctly.
           </p>
         </CardContent>
       </Card>
 
       {/* Domain breakdown */}
-      <Card>
+      <Card className="p-6">
         <CardHeader>
           <CardTitle>Domain Breakdown</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {domainResults.map((domain) => (
-              <div
-                key={domain.domain_code}
-                className="flex items-center justify-between p-3 rounded-lg bg-slate-50"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">{domain.domain_name}</p>
-                  <p className="text-sm text-slate-600">
-                    {domain.correct_count}/{domain.questions_count} correct
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${getScoreColor(domain.score)}`}>
-                    {Math.round(domain.score * 100)}%
-                  </p>
-                  {getClassificationBadge(domain.classification)}
-                </div>
+        <CardContent className="space-y-4">
+          {domainResults.map((domain) => (
+            <div
+              key={domain.domain_code}
+              className="rounded-lg bg-surface-cream border border-surface-border p-4 flex items-center justify-between"
+            >
+              <div>
+                <p className="font-semibold text-neutral-900">{domain.domain_name}</p>
+                <p className="text-[14px] text-neutral-500">
+                  <span className="font-semibold text-neutral-900">{domain.correct_count}</span>/<span className="font-semibold text-neutral-900">{domain.questions_count}</span> correct
+                </p>
               </div>
-            ))}
-          </div>
+              <div className="text-right flex items-center gap-3">
+                <p className={`font-semibold text-[22px] tabular-nums ${getScoreColor(domain.score)}`}>
+                  {Math.round(domain.score * 100)}%
+                </p>
+                <Badge variant={getBadgeVariant(domain.classification)} showDot>
+                  {domain.classification.replace("_", " ").toUpperCase()}
+                </Badge>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
 
       {/* Gap analysis */}
-      <Card>
+      <Card className="p-6">
         <CardHeader>
           <CardTitle>Next Steps</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {getGapArray('needs_work').length > 0 && (
+        <CardContent className="space-y-5">
+          {getGapArray("needs_work").length > 0 && (
             <div>
-              <p className="font-medium text-red-700 mb-2">Focus On:</p>
-              <div className="flex flex-wrap gap-2">
-                {getGapArray('needs_work').map((code) => (
-                  <Badge key={code} variant="outline" className="text-red-700 border-red-300">
+              <p className="text-[12px] font-semibold uppercase tracking-[.08em] text-[#a83030] mb-3">
+                Focus On
+              </p>
+              <div className="flex gap-2">
+                {getGapArray("needs_work").map((code) => (
+                  <Badge key={code} variant="high" showDot>
                     {code}
                   </Badge>
                 ))}
               </div>
             </div>
           )}
-          {getGapArray('on_track').length > 0 && (
+          {getGapArray("on_track").length > 0 && (
             <div>
-              <p className="font-medium text-yellow-700 mb-2">Keep Practicing:</p>
-              <div className="flex flex-wrap gap-2">
-                {getGapArray('on_track').map((code) => (
-                  <Badge key={code} variant="outline" className="text-yellow-700 border-yellow-300">
+              <p className="text-[12px] font-semibold uppercase tracking-[.08em] text-[#a87c2a] mb-3">
+                Keep Practicing
+              </p>
+              <div className="flex gap-2">
+                {getGapArray("on_track").map((code) => (
+                  <Badge key={code} variant="terra" showDot>
                     {code}
                   </Badge>
                 ))}
               </div>
             </div>
           )}
-          {getGapArray('strengths').length > 0 && (
+          {getGapArray("strengths").length > 0 && (
             <div>
-              <p className="font-medium text-green-700 mb-2">Strengths:</p>
-              <div className="flex flex-wrap gap-2">
-                {getGapArray('strengths').map((code) => (
-                  <Badge key={code} variant="outline" className="text-green-700 border-green-300">
+              <p className="text-[12px] font-semibold uppercase tracking-[.08em] text-green-600 mb-3">
+                Strengths
+              </p>
+              <div className="flex gap-2">
+                {getGapArray("strengths").map((code) => (
+                  <Badge key={code} variant="green" showDot>
                     {code}
                   </Badge>
                 ))}
@@ -178,9 +191,11 @@ export function ResultsSummary({
       </Card>
 
       {/* Action buttons */}
-      <div className="flex gap-4 justify-center">
-        <Button onClick={() => router.push("/dashboard")}>Back to Dashboard</Button>
-        <Button variant="outline" onClick={() => window.print()}>
+      <div className="flex gap-4 pt-4">
+        <Button onClick={() => router.push("/dashboard")} size="lg">
+          Back to Dashboard
+        </Button>
+        <Button size="lg" variant="outline" onClick={() => window.print()}>
           Print Results
         </Button>
       </div>

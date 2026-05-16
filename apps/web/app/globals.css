@@ -2,38 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Solosail CSS custom properties (light / dark via [data-theme]) ── */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --shell-bg:        #1c1008;
+  --shell-bg-deep:   #130b04;
+  --shell-border:    #2e1d0e;
+  --shell-text:      rgba(255,255,255,.65);
+  --shell-text-hover:#fff;
+  --page-bg:        #ede8df;
+  --page-bg-alt:    #f5f1ea;
+  --surface:        #ffffff;
+  --surface-cream:  #f9f5ef;
+  --surface-border: #e8e2d8;
+  --green-500:  #3d7a62;
+  --green-600:  #2d5f4a;
+  --green-700:  #234a39;
+  --terra-500:  #bf6e3c;
+  --terra-600:  #a85e2f;
+  --neutral-50:  #fafaf9;
+  --neutral-100: #f5f1ea;
+  --neutral-200: #e8e2d8;
+  --neutral-300: #d5cfc4;
+  --neutral-400: #b0a898;
+  --neutral-500: #8a8276;
+  --neutral-600: #635d54;
+  --neutral-700: #46413a;
+  --neutral-800: #2c2820;
+  --neutral-900: #1a1612;
+  --status-low-bg:   #1f3d2a;
+  --status-low-text: #7ecb9a;
+  --status-med-bg:   #f9f3e3;
+  --status-med-text: #a87c2a;
+  --status-med-dot:  #d4a843;
+  --status-high-bg:  #f7e8e8;
+  --status-high-text: #a83030;
+  --status-high-dot: #d44a4a;
+  --data-principal: #3d7a62;
+  --data-interest:  #c97a4a;
+  --data-neutral:   #c8bfac;
+  --shadow-xs:  0 1px 2px rgba(26,14,0,.06);
+  --shadow-sm:  0 1px 4px rgba(26,14,0,.08), 0 1px 2px rgba(26,14,0,.05);
+  --shadow-md:  0 4px 12px rgba(26,14,0,.10), 0 2px 4px rgba(26,14,0,.06);
+  --shadow-lg:  0 10px 24px rgba(26,14,0,.12), 0 4px 8px rgba(26,14,0,.07);
+  --shadow-xl:  0 20px 48px rgba(26,14,0,.16);
+  --shadow-green: 0 8px 24px -4px rgba(45,95,74,.40);
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --dur-fast:      120ms;
+  --dur-med:       200ms;
+  --dur-slow:      300ms;
+}
+
+[data-theme="dark"] {
+  --shell-bg:        #fafaf9;
+  --shell-bg-deep:   #f5f1ea;
+  --shell-border:    #e8e2d8;
+  --shell-text:      var(--neutral-600);
+  --shell-text-hover:var(--neutral-900);
+  --page-bg:    #fff;
+  --page-bg-alt:#f9f5ef;
+  --surface:    #f9f5ef;
+  --surface-border: #ede8df;
+  --neutral-50:  #1c1008;
+  --neutral-800: #2c2820;
+  --neutral-900: #1a1612;
+  --status-low-bg:   #2d5f4a;
+  --status-low-text: #a8cebc;
+}
+
 @layer base {
-  * {
-    @apply border-neutral-200;
-  }
-
+  * { @apply border-neutral-200; }
   body {
-    @apply bg-neutral-50 text-neutral-900;
-    font-family: var(--font-inter), system-ui, sans-serif;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-display), system-ui, sans-serif;
+    @apply bg-page text-neutral-900;
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums lining-nums;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
 
-/* Reduced motion support (Section 4.6 of 09-design-system.md) */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

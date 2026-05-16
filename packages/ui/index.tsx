@@ -1,8 +1,14 @@
-// Shared UI components for PADI.AI
-// Based on 09-design-system.md
-
-export { Button } from './button';
-export { Input } from './input';
-export { Card } from './card';
-export { Badge } from './badge';
-export { Spinner } from './spinner';
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card";
+export { Progress, type ProgressProps } from "./progress";
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
+export { Badge, type BadgeVariant } from "./badge";
+export { Button, type ButtonProps } from "./button";
+export { Input, type InputProps } from "./input";
+export { Spinner, type SpinnerProps } from "./spinner";
+export { ShellNav, type ShellNavProps } from "./shell";
+export { SegmentControl, type SegmentControlProps } from "./shell";
+export { DataCard, DataTable, LineItemRow } from "./data-card";
+export { type DataCardProps, type DataTableProps, type LineItemRowProps } from "./data-card";
+export { Divider } from "./divider";
+export { HeroCard, RiskRow } from "./hero-card";
+export { type HeroCardProps, type RiskRowProps } from "./hero-card";

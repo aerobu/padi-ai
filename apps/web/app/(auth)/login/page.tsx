@@ -1,42 +1,44 @@
-'use client';
+"use client";
 
-import { Button } from '@padi/ui';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { Button } from "@padi/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  const handleLogin = () => {
-    // Redirect to Auth0 login API route
-    router.push('/api/auth/login');
-  };
+  const handleLogin = () => router.push("/api/auth/login");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md border border-neutral-200">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-neutral-800">
-            Welcome to PADI.AI
-          </h2>
-          <p className="mt-2 text-neutral-600">
+    <div className="min-h-screen bg-page flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex h-12 w-12 rounded-xl bg-green-600 items-center justify-center text-white mb-4">
+            <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+              <path d="M3 12L8 3l5 9" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="8" cy="8" r="2" fill="rgba(255,255,255,.3)" />
+            </svg>
+          </div>
+          <h1 className="font-display text-2xl text-neutral-900">Welcome to PADI.AI</h1>
+          <p className="mt-2 text-body-md text-neutral-500">
             Sign in to continue your adaptive math learning journey
           </p>
         </div>
 
-        <div className="mt-8">
-          <Button onClick={handleLogin} className="w-full">
+        <div className="rounded-xl border border-surface-border bg-white shadow-sm p-6">
+          <Button onClick={handleLogin} className="w-full" size="lg" variant="primary">
             Continue with Auth0
           </Button>
 
-          <div className="mt-6 text-center text-sm text-neutral-500">
-            <p>By continuing, you agree to our</p>
-            <a href="/terms" className="text-teal-600 hover:underline">
-              Terms of Service
-            </a>
-            <span className="mx-1">and</span>
-            <a href="/privacy" className="text-teal-600 hover:underline">
-              Privacy Policy
-            </a>
+          <div className="mt-6 text-center">
+            <p className="text-[14px] text-neutral-500 mb-2">
+              By continuing, you agree to our
+            </p>
+            <div className="flex gap-3 justify-center text-[14px]">
+              <Link href="/terms" className="text-green-600 hover:underline">Terms of Service</Link>
+              <span className="text-neutral-400">and</span>
+              <Link href="/privacy" className="text-terra-500 hover:underline">Privacy Policy</Link>
+            </div>
           </div>
         </div>
       </div>

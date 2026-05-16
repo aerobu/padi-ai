@@ -1,79 +1,85 @@
-/**
- * Dashboard layout.
- * Shared layout for dashboard pages.
- */
+"use client";
 
-import Link from "next/link";
+import { useState } from "react";
+import { useTheme } from "@/providers/ThemeProvider";
+import { cn } from "@/lib/utils";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function ShellNav() {
+  const { theme, toggleTheme } = useTheme();
+  const dark = theme === "dark";
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="container mx-auto max-w-6xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-blue-700">PADI.AI</span>
-              </Link>
-              <nav className="hidden md:flex space-x-4">
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/diagnostic/start"
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Assessment
-                </Link>
-                <Link
-                  href="/diagnostic/results"
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Results
-                </Link>
-              </nav>
-            </div>
-            <nav className="flex items-center space-x-4">
-              <Link
-                href="/"
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                Home
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+    <nav
+      className={cn(
+        "sticky top-0 z-100 flex items-center h-[56px] px-8 bg-shell border-b border-shell-border text-white",
+        dark && "bg-white border-neutral-200 text-neutral-800",
+      )}
+    >
+      <a href="/dashboard" className="flex items-center gap-2 no-underline">
+        <span className="h-7 w-7 rounded-md bg-green-600 flex items-center justify-center text-white">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 12L8 3l5 9" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="8" cy="8" r="2" fill="rgba(255,255,255,.3)" />
+          </svg>
+        </span>
+        <span className="font-bold text-[16px] tracking-[-.01em]">PADI.AI</span>
+      </a>
+      <nav className="flex gap-6 ml-6">
+        {[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Assessment", href: "/diagnostic/start" },
+          { label: "Results", href: "/diagnostic/results" },
+        ].map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            className={cn(
+              "text-[14px] no-underline transition-colors duration-200",
+              dark ? "text-neutral-600 hover:text-neutral-900" : "text-white/65 hover:text-white",
+            )}
+          >
+            {l.label}
+          </a>
+        ))}
+      </nav>
+      <div className="ml-auto flex items-center gap-3">
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            "h-[36px] rounded-md px-4 font-semibold text-[14px] cursor-pointer transition-colors duration-200",
+            "bg-green-600 text-white hover:bg-green-700 active:scale-[.96]",
+            dark && "bg-neutral-200 text-neutral-700 hover:bg-neutral-300",
+          )}
+        >
+          {theme === "light" ? "Light" : "Dark"}
+        </button>
+      </div>
+    </nav>
+  );
+}
 
-      {/* Main content */}
-      <main className="container mx-auto max-w-6xl px-4 py-8">
+function Footer() {
+  return (
+    <footer className="bg-shell text-white border-t border-shell-border">
+      <div className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between text-sm">
+        <span>© 2026 PADI.AI</span>
+        <div className="flex gap-6">
+          <a href="/privacy" className="text-white/65 hover:text-white transition-colors">Privacy</a>
+          <a href="/terms" className="text-white/65 hover:text-white transition-colors">Terms</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return (
+    <div className="min-h-screen bg-page">
+      <ShellNav />
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {children}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-auto">
-        <div className="container mx-auto max-w-6xl px-4 py-6">
-          <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>© 2026 PADI.AI</span>
-            <div className="flex space-x-4">
-              <Link href="/terms" className="hover:text-slate-900">
-                Terms
-              </Link>
-              <Link href="/privacy" className="hover:text-slate-900">
-                Privacy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {theme !== "dark" && <Footer />}
     </div>
   );
 }

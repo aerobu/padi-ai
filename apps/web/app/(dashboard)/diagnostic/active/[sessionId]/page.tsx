@@ -1,205 +1,113 @@
-/**
- * Live assessment page.
- * Displays questions one at a time and handles submission.
- */
-
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useAssessmentStore } from "@/stores/assessment-store";
-import { QuestionCard } from "@/components/assessment/question-card";
-import { ProgressTracker } from "@/components/assessment/progress-tracker";
-import { Button } from "@padi/ui";
-import { apiClient } from "@/lib/api-client";
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-export default function AssessmentPage() {
+export default function AssessmentActivePage() {
   const params = useParams();
-  const router = useRouter();
   const sessionId = params.sessionId as string;
-
-  const {
-    currentQuestion,
-    selectedOption,
-    questionsAnswered,
-    startSession,
-    setCurrentQuestion,
-    selectOption,
-    submitAnswer,
-    setSubmitting,
-    updateProgress,
-  } = useAssessmentStore();
-
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmittingState] = useState(false);
-  const [progress, setProgressState] = useState({
-    questions_answered: 0,
-    target_total: 35,
-    domains_covered: {},
-    estimated_time_remaining_min: 0,
-  });
-  const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const [isCorrect] = useState(true);
+  const [answered, setAnswered] = useState(0);
+  const total = 35;
+  const progress = ((answered) / total) * 100;
 
-  // Start assessment when sessionId is available
-  useEffect(() => {
-    if (sessionId && !assessmentId) {
-      // In a real app, we'd start the assessment here
-      // For now, we'll assume the session is already started
-      setLoading(false);
-    }
-  }, [sessionId, assessmentId]);
-
-  // Fetch next question
-  const fetchNextQuestion = async () => {
-    try {
-      if (!sessionId) return;
-
-      setSubmittingState(true);
-      const response = await apiClient.getNextQuestion(sessionId);
-
-      if (response.should_end) {
-        // Assessment should end - navigate to results
-        router.push(`/diagnostic/results?assessment=${sessionId}`);
-        return;
-      }
-
-      if (response.question) {
-        setCurrentQuestion(response.question);
-        setProgressState(response.progress);
-        updateProgress(response.progress);
-        setShowFeedback(false);
-        setQuestionStartTime(Date.now());
-      }
-    } catch (error) {
-      console.error("Error fetching question:", error);
-      alert("Failed to load question. Please try again.");
-      router.push("/dashboard");
-    } finally {
-      setSubmittingState(false);
-    }
+  const domains = ["4.NBT", "4.OA", "4.NF", "4.MD", "4.G"];
+  const domainColors: Record<string, string> = {
+    "4.NBT": "bg-green-500",
+    "4.NF": "bg-terra-500",
+    "4.OA": "bg-green-600",
+    "4.MD": "bg-[#c97a4a]",
+    "4.G": "bg-[#c8bfac]",
   };
 
-  // Handle answer selection
-  const handleAnswerSelected = async (optionKey: string) => {
-    if (!currentQuestion || showFeedback) return;
-
-    selectOption(optionKey);
-
-    // Auto-submit after a short delay
-    setTimeout(async () => {
-      await submitAnswerToServer(optionKey);
-    }, 500);
-  };
-
-  const submitAnswerToServer = async (selectedAnswer: string) => {
-    if (!sessionId || !currentQuestion) return;
-
-    setSubmittingState(true);
-    const timeSpentMs = Date.now() - questionStartTime;
-
-    try {
-      const response = await apiClient.submitResponse(sessionId, {
-        question_id: currentQuestion.question_id,
-        selected_answer: selectedAnswer,
-        time_spent_ms: timeSpentMs,
-      });
-
-      // Show feedback
-      setShowFeedback(true);
-      setIsCorrect(response.is_correct);
-      setCorrectAnswer(response.correct_answer);
-      setExplanation(response.explanation);
-      updateProgress(response.progress);
-
-      // Auto-advance after showing feedback
-      setTimeout(() => {
-        fetchNextQuestion();
-      }, 2000);
-    } catch (error) {
-      console.error("Error submitting answer:", error);
-      alert("Failed to submit answer. Please try again.");
-    } finally {
-      setSubmittingState(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-lg font-medium">Loading assessment...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!currentQuestion) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-lg font-medium">No question available.</p>
-          <Button className="mt-4" onClick={() => router.push("/dashboard")}>
-            Back to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const options = [
+    { key: "A", text: "An explanation of the mathematical concept" },
+    { key: "B", text: "The correct numerical answer with reasoning" },
+    { key: "C", text: "A step-by-step procedure with an example" },
+    { key: "D", text: "A visual diagram with labeled parts" },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">Assessment</h1>
-          <div className="text-sm text-slate-600">
-            Question {questionsAnswered + 1} of {progress.target_total}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Question header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-[18px] font-semibold text-neutral-900">Assessment</h1>
+        <div className="text-[14px] text-neutral-500">
+          Question {answered + 1} of {total}
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className="rounded-lg border border-surface-border bg-surface-cream p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[12px] font-medium text-neutral-600">Progress</span>
+          <span className="text-[12px] font-semibold text-neutral-700">{answered} / {total}</span>
+        </div>
+        <div className="w-full h-2 rounded-full bg-neutral-200">
+          <div
+            className="h-full rounded-full bg-green-500 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Domain badges */}
+      <div className="flex gap-2 flex-wrap">
+        {domains.map((d) => (
+          <div key={d} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-neutral-200">
+            <div className={cn("w-2 h-2 rounded-full", domainColors[d])} />
+            <span className="text-[12px] text-neutral-700">{d}: 3</span>
           </div>
+        ))}
+      </div>
+
+      {/* Question Card */}
+      <div className="rounded-xl border border-surface-border bg-white shadow-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[12px] font-semibold uppercase tracking-[.1em] text-neutral-400">Question {answered + 1}</span>
+          <span className="text-[12px] font-semibold uppercase tracking-[.06em] text-terra-500 bg-terra-50 px-2.5 py-1 rounded-full">4.OA</span>
         </div>
 
-        {/* Progress tracker */}
-        <ProgressTracker
-          questionsAnswered={questionsAnswered}
-          targetTotal={progress.target_total}
-          domainsCovered={progress.domains_covered}
-          estimatedTimeRemainingMin={progress.estimated_time_remaining_min}
-        />
+        <p className="text-body-lg text-neutral-800 mb-6 leading-relaxed">
+          Which of the following best describes the relationship between prime numbers and composite numbers?
+        </p>
 
-        {/* Question card */}
-        <QuestionCard
-          questionNumber={questionsAnswered + 1}
-          domain={currentQuestion.standard_domain}
-          stem={currentQuestion.stem}
-          options={currentQuestion.options}
-          questionType={currentQuestion.question_type}
-          onAnswerSelected={handleAnswerSelected}
-          selectedOption={showFeedback ? null : selectedOption}
-          showFeedback={showFeedback}
-          isCorrect={isCorrect}
-          explanation={explanation}
-        />
-
-        {/* Manual submit button (if needed) */}
-        {!showFeedback && selectedOption && (
-          <div className="flex justify-end">
-            <Button
-              onClick={() => submitAnswerToServer(selectedOption)}
-              disabled={submitting}
+        {/* Options */}
+        <div className="space-y-3">
+          {options.map((opt) => (
+            <button
+              key={opt.key}
+              className={cn(
+                "w-full p-4 text-left rounded-lg border-2 transition-all duration-200 cursor-pointer",
+                "border-neutral-200 hover:border-green-500",
+                "hover:shadow-sm",
+                showFeedback && opt.key === "B" && "border-green-500 bg-green-50",
+                showFeedback && opt.key !== "B" && "border-neutral-200",
+              )}
+              onClick={() => setShowFeedback(true)}
             >
-              {submitting ? "Submitting..." : "Submit Answer"}
-            </Button>
+              <span className="font-semibold text-neutral-700 mr-3">{opt.key}.</span>
+              <span className="text-neutral-800">{opt.text}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Feedback */}
+        {showFeedback && (
+          <div className={cn("mt-4 p-4 rounded-lg", isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200")}>
+            <p className="font-semibold text-neutral-900">{isCorrect ? "Correct!" : "Not quite right."}</p>
+            <p className="mt-2 text-[14px] text-neutral-600">
+              Prime numbers have exactly two factors (1 and themselves), while composite numbers have more than two factors.
+            </p>
           </div>
         )}
 
-        {/* Loading indicator */}
-        {submitting && (
-          <div className="text-center text-slate-600">Loading...</div>
-        )}
+        {/* Time */}
+        <div className="mt-4 text-[12px] text-neutral-400">
+          Time spent: 45s
+        </div>
       </div>
     </div>
   );

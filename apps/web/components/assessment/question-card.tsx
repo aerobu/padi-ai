@@ -1,21 +1,16 @@
-/**
- * Question card component for displaying assessment questions.
- */
-
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@padi/ui/button";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@padi/ui/card";
-import { Badge } from "@padi/ui/badge";
 
-interface Option {
+export interface Option {
   key: string;
   text: string;
   image_url: string | null;
+  is_correct?: boolean;
 }
 
-interface QuestionCardProps {
+export interface QuestionCardProps {
   questionNumber: number;
   domain: string;
   stem: string;
@@ -42,8 +37,7 @@ export function QuestionCard({
 }: QuestionCardProps) {
   const [timeSpent, setTimeSpent] = useState(0);
 
-  // Track time spent on question
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setTimeSpent((prev) => prev + 1000);
     }, 1000);
@@ -55,83 +49,40 @@ export function QuestionCard({
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full max-w-[600px] mx-auto">
       <CardContent className="p-6">
-        {/* Header with question number and domain */}
-        <div className="flex items-center justify-between mb-4">
-          <Badge variant="outline">Question {questionNumber}</Badge>
-          <Badge variant="secondary">{domain}</Badge>
+        <div className="flex items-center justify-between mb-6">
+          <span className="text-[12px] font-semibold text-neutral-400 uppercase tracking-[.08em]">Question {questionNumber}</span>
+          <span className="text-[12px] font-semibold text-terra-500 bg-terra-50 px-2.5 py-1 rounded-full">{domain}</span>
         </div>
 
-        {/* Question text */}
-        <div className="mb-6">
-          <p className="text-lg font-medium text-slate-900">{stem}</p>
-        </div>
+        <p className="text-display-sm text-neutral-900 mb-6">{stem}</p>
 
-        {/* Options */}
         <div className="space-y-3">
           {options.map((option) => {
             const isSelected = selectedOption === option.key;
-            let buttonVariant: "default" | "outline" | "secondary" = "outline";
-
-            if (showFeedback) {
-              if (option.is_correct) {
-                buttonVariant = "default"; // Correct answer highlighted
-              } else if (isSelected && !isCorrect) {
-                buttonVariant = "secondary"; // Wrong selection
-              } else {
-                buttonVariant = "outline";
-              }
-            } else if (isSelected) {
-              buttonVariant = "default";
-            }
-
             return (
               <button
                 key={option.key}
                 onClick={() => !showFeedback && handleOptionClick(option.key)}
                 disabled={showFeedback}
-                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-slate-200 hover:border-blue-300"
-                } ${
-                  showFeedback && option.is_correct
-                    ? "border-green-500 bg-green-50"
-                    : ""
-                } ${showFeedback && isSelected && !isCorrect ? "border-red-500 bg-red-50" : ""}`}
+                className="w-full text-left p-4 rounded-lg border-[1.5px] bg-surface-cream border-neutral-200 hover:border-green-500 hover:bg-green-50 transition-all duration-200 disabled:opacity-50"
               >
-                <div className="flex items-center">
-                  <span className="font-semibold mr-3 text-slate-700">
-                    {option.key}.
-                  </span>
-                  <span className="text-slate-900">{option.text}</span>
-                </div>
+                <span className="font-semibold mr-3 text-neutral-700">{option.key}.</span>
+                <span className="text-neutral-900">{option.text}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Feedback */}
         {showFeedback && (
-          <div
-            className={`mt-4 p-4 rounded-lg ${
-              isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-            }`}
-          >
-            <p className="font-medium text-slate-900">
-              {isCorrect ? "Correct!" : "Not quite right."}
-            </p>
-            {explanation && (
-              <p className="mt-2 text-sm text-slate-600">{explanation}</p>
-            )}
+          <div className="mt-5 p-4 rounded-lg bg-green-50 border border-green-200">
+            <p className="font-semibold text-neutral-900">{isCorrect ? "Correct!" : "Not quite right."}</p>
+            {explanation && <p className="mt-2 text-[14px] text-neutral-600">{explanation}</p>}
           </div>
         )}
 
-        {/* Time indicator */}
-        <div className="mt-4 text-sm text-slate-500">
-          Time spent: {Math.floor(timeSpent / 1000)}s
-        </div>
+        <div className="mt-5 text-[12px] text-neutral-400">Time spent: {Math.floor(timeSpent / 1000)}s</div>
       </CardContent>
     </Card>
   );

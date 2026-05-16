@@ -1,34 +1,50 @@
-import { ReactNode, HTMLAttributes } from 'react';
+"use client";
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  children: ReactNode;
-  variant?: 'success' | 'warning' | 'error' | 'info' | 'default';
-  size?: 'sm' | 'md';
+import { cn } from "@/lib/utils";
+
+export type BadgeVariant = "low" | "medium" | "high" | "terra" | "default" | "green";
+
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: BadgeVariant;
+  size?: "sm" | "md";
+  showDot?: boolean;
 }
 
+const variantStyles: Record<BadgeVariant, string> = {
+  low:    "bg-status-low-bg text-status-low-text",
+  medium: "bg-status-med-bg text-status-med-text",
+  high:   "bg-status-high-bg text-status-high-text",
+  terra:  "bg-terra-500 text-white",
+  default: "bg-neutral-200 text-neutral-600",
+  green:  "bg-green-600 text-white",
+};
+
+const dotColors: Record<BadgeVariant, string> = {
+  low:    "bg-status-low-text",
+  medium: "bg-status-med-dot",
+  high:   "bg-status-high-dot",
+  terra:  "bg-white/60",
+  default:"bg-neutral-400",
+  green:  "bg-white/60",
+};
+
 export function Badge({
+  variant = "default",
+  size = "md",
+  showDot = false,
+  className,
   children,
-  variant = 'default',
-  size = 'md',
-  className = '',
   ...props
 }: BadgeProps) {
-  const variants = {
-    success: 'bg-success-100 text-success-800',
-    warning: 'bg-warning-100 text-warning-800',
-    error: 'bg-error-100 text-error-800',
-    info: 'bg-padiBlue-100 text-padiBlue-800',
-    default: 'bg-gray-100 text-gray-800',
-  };
-
-  const sizes = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2.5 py-0.5 text-sm',
-  };
-
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full ${variants[variant]} ${sizes[size]} ${className}`}
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full font-semibold uppercase tracking-[.06em]",
+        variantStyles[variant],
+        size === "sm" ? "px-2.5 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
+        showDot && "before:content-[''] before:rounded-full before:block before:w-[7px] before:h-[7px] before:shrink-0 before:bg-current",
+        className,
+      )}
       {...props}
     >
       {children}

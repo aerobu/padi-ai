@@ -11,44 +11,37 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="container mx-auto max-w-4xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-blue-700">PADI.AI</span>
-            </Link>
-            <nav className="flex items-center space-x-4">
-              <Link
-                href="/"
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                Home
-              </Link>
-            </nav>
-          </div>
+    <div className="min-h-screen bg-page">
+      {/* Shell Nav */}
+        <nav className="sticky top-0 z-100 flex items-center h-[56px] px-8 bg-shell border-b border-shell-border text-white">
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <span className="h-7 w-7 rounded-md bg-green-600 flex items-center justify-center text-white">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 12L8 3l5 9" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="8" cy="8" r="2" fill="rgba(255,255,255,.3)" />
+            </svg>
+          </span>
+          <span className="font-bold text-[16px] tracking-[-.01em]">PADI.AI</span>
+        </Link>
+        <div className="ml-auto flex gap-3">
+          <Link href="/dashboard" className="h-[36px] rounded-md px-4 font-semibold text-[14px] text-white cursor-pointer transition-colors duration-200 whitespace-nowrap bg-terra-500 hover:bg-terra-600 active:scale-[.96]">
+            Dashboard
+          </Link>
         </div>
-      </header>
+      </nav>
 
       {/* Main content */}
-      <main className="container mx-auto max-w-2xl px-4 py-8">
+      <main className="max-w-[600px] mx-auto px-6 py-8">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-auto">
-        <div className="container mx-auto max-w-4xl px-4 py-6">
-          <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>© 2026 PADI.AI</span>
-            <div className="flex space-x-4">
-              <Link href="/terms" className="hover:text-slate-900">
-                Terms
-              </Link>
-              <Link href="/privacy" className="hover:text-slate-900">
-                Privacy
-              </Link>
-            </div>
+      <footer className="bg-shell text-white border-t border-shell-border">
+        <div className="max-w-[600px] mx-auto px-6 py-6 flex items-center justify-between">
+          <span className="text-[14px] text-white/65">© 2026 PADI.AI</span>
+          <div className="flex gap-6">
+            <Link href="/terms" className="text-[14px] text-white/65 hover:text-white transition-colors">Terms</Link>
+            <Link href="/privacy" className="text-[14px] text-white/65 hover:text-white transition-colors">Privacy</Link>
           </div>
         </div>
       </footer>
