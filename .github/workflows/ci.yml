@@ -44,6 +44,43 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm type-check
 
+  gen-types-drift:
+    name: Type-gen drift gate
+    runs-on: ubuntu-latest
+    needs: [lint-backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Regenerate types from OpenAPI
+        env:
+          DATABASE_URL: postgresql+asyncpg://localhost/openapi_dump
+          AUTH0_SECRET: ci
+          AUTH0_BASE_URL: http://localhost
+          AUTH0_ISSUER_BASE_URL: http://localhost
+          AUTH0_CLIENT_ID: ci
+          AUTH0_CLIENT_SECRET: ci
+          ENCRYPTION_KEY_PASSPHRASE: ci-test-passphrase-32-characters-ok
+        run: pnpm gen:types
+      - name: Fail on drift
+        run: |
+          if ! git diff --quiet packages/types; then
+            echo "::error::packages/types is out of date. Run 'pnpm gen:types' locally and commit."
+            git diff packages/types
+            exit 1
+          fi
+
   test-frontend:
     name: Test (Frontend)
     runs-on: ubuntu-latest

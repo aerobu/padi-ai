@@ -1,0 +1,3512 @@
+[
+  {
+    "standard_code": "3.OA.A.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is the missing number? 6 \u00d7 ? = 24",
+    "options": [
+      {
+        "key": "A",
+        "text": "3"
+      },
+      {
+        "key": "B",
+        "text": "4"
+      },
+      {
+        "key": "C",
+        "text": "5"
+      },
+      {
+        "key": "D",
+        "text": "6"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "6 \u00d7 4 = 24, so the missing number is 4."
+  },
+  {
+    "standard_code": "3.OA.A.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Find the missing number: 3 \u00d7 ? = 18",
+    "options": [
+      {
+        "key": "A",
+        "text": "4"
+      },
+      {
+        "key": "B",
+        "text": "5"
+      },
+      {
+        "key": "C",
+        "text": "6"
+      },
+      {
+        "key": "D",
+        "text": "7"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3 \u00d7 6 = 18, so the missing factor is 6."
+  },
+  {
+    "standard_code": "3.OA.A.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "? \u00f7 7 = 5. What is the missing dividend?",
+    "options": [
+      {
+        "key": "A",
+        "text": "12"
+      },
+      {
+        "key": "B",
+        "text": "20"
+      },
+      {
+        "key": "C",
+        "text": "28"
+      },
+      {
+        "key": "D",
+        "text": "35"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "If we divide a number by 7 to get 5, the number must be 5 \u00d7 7 = 35."
+  },
+  {
+    "standard_code": "3.OA.A.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Find ?: 9 \u00d7 ? = 54",
+    "options": [
+      {
+        "key": "A",
+        "text": "6"
+      },
+      {
+        "key": "B",
+        "text": "5"
+      },
+      {
+        "key": "C",
+        "text": "7"
+      },
+      {
+        "key": "D",
+        "text": "8"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "9 \u00d7 6 = 54."
+  },
+  {
+    "standard_code": "3.OA.C.7",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "What is 7 \u00d7 8?",
+    "options": [
+      {
+        "key": "A",
+        "text": "48"
+      },
+      {
+        "key": "B",
+        "text": "56"
+      },
+      {
+        "key": "C",
+        "text": "63"
+      },
+      {
+        "key": "D",
+        "text": "72"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "7 \u00d7 8 = 56 is a basic multiplication fact."
+  },
+  {
+    "standard_code": "3.OA.C.7",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "What is 9 \u00d7 6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "48"
+      },
+      {
+        "key": "B",
+        "text": "53"
+      },
+      {
+        "key": "C",
+        "text": "54"
+      },
+      {
+        "key": "D",
+        "text": "63"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "9 \u00d7 6 = 54."
+  },
+  {
+    "standard_code": "3.OA.C.7",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "What is 48 \u00f7 6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "8"
+      },
+      {
+        "key": "B",
+        "text": "6"
+      },
+      {
+        "key": "C",
+        "text": "7"
+      },
+      {
+        "key": "D",
+        "text": "9"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "48 \u00f7 6 = 8 because 6 \u00d7 8 = 48."
+  },
+  {
+    "standard_code": "3.OA.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 63 \u00f7 9?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6"
+      },
+      {
+        "key": "B",
+        "text": "8"
+      },
+      {
+        "key": "C",
+        "text": "9"
+      },
+      {
+        "key": "D",
+        "text": "7"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "63 \u00f7 9 = 7 because 9 \u00d7 7 = 63."
+  },
+  {
+    "standard_code": "3.OA.C.7",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "What is 4 \u00d7 9?",
+    "options": [
+      {
+        "key": "A",
+        "text": "32"
+      },
+      {
+        "key": "B",
+        "text": "36"
+      },
+      {
+        "key": "C",
+        "text": "45"
+      },
+      {
+        "key": "D",
+        "text": "49"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "4 \u00d7 9 = 36."
+  },
+  {
+    "standard_code": "3.OA.D.8",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Liam has 4 bags of marbles with 6 marbles each. He gives away 5 marbles. How many does he have left?",
+    "options": [
+      {
+        "key": "A",
+        "text": "10"
+      },
+      {
+        "key": "B",
+        "text": "24"
+      },
+      {
+        "key": "C",
+        "text": "19"
+      },
+      {
+        "key": "D",
+        "text": "29"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "4 \u00d7 6 = 24 marbles. After giving away 5: 24 \u2212 5 = 19."
+  },
+  {
+    "standard_code": "3.OA.D.8",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "A class has 24 students. They sit in 4 equal rows, then 2 more students join the last row. How many students are in the last row?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6"
+      },
+      {
+        "key": "B",
+        "text": "8"
+      },
+      {
+        "key": "C",
+        "text": "10"
+      },
+      {
+        "key": "D",
+        "text": "12"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "24 \u00f7 4 = 6 students per row. The last row gets 6 + 2 = 8."
+  },
+  {
+    "standard_code": "3.OA.D.8",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Maya saves $5 each week for 6 weeks, then spends $12. How much does she have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "$18"
+      },
+      {
+        "key": "B",
+        "text": "$22"
+      },
+      {
+        "key": "C",
+        "text": "$30"
+      },
+      {
+        "key": "D",
+        "text": "$42"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "5 \u00d7 6 = $30 saved; $30 \u2212 $12 = $18."
+  },
+  {
+    "standard_code": "3.OA.D.8",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "There are 18 cookies shared equally by 3 friends. Then 1 friend gives 2 cookies away. How many cookies does that friend have left?",
+    "options": [
+      {
+        "key": "A",
+        "text": "2"
+      },
+      {
+        "key": "B",
+        "text": "3"
+      },
+      {
+        "key": "C",
+        "text": "4"
+      },
+      {
+        "key": "D",
+        "text": "6"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "18 \u00f7 3 = 6 cookies each; 6 \u2212 2 = 4 left."
+  },
+  {
+    "standard_code": "3.NBT.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 456 + 327?",
+    "options": [
+      {
+        "key": "A",
+        "text": "773"
+      },
+      {
+        "key": "B",
+        "text": "783"
+      },
+      {
+        "key": "C",
+        "text": "793"
+      },
+      {
+        "key": "D",
+        "text": "873"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "456 + 327 = 783."
+  },
+  {
+    "standard_code": "3.NBT.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 802 \u2212 437?",
+    "options": [
+      {
+        "key": "A",
+        "text": "355"
+      },
+      {
+        "key": "B",
+        "text": "375"
+      },
+      {
+        "key": "C",
+        "text": "365"
+      },
+      {
+        "key": "D",
+        "text": "475"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "802 \u2212 437 = 365."
+  },
+  {
+    "standard_code": "3.NBT.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 528 + 199?",
+    "options": [
+      {
+        "key": "A",
+        "text": "727"
+      },
+      {
+        "key": "B",
+        "text": "717"
+      },
+      {
+        "key": "C",
+        "text": "737"
+      },
+      {
+        "key": "D",
+        "text": "827"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "528 + 199 = 727."
+  },
+  {
+    "standard_code": "3.NBT.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 600 \u2212 245?",
+    "options": [
+      {
+        "key": "A",
+        "text": "255"
+      },
+      {
+        "key": "B",
+        "text": "345"
+      },
+      {
+        "key": "C",
+        "text": "445"
+      },
+      {
+        "key": "D",
+        "text": "355"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "600 \u2212 245 = 355."
+  },
+  {
+    "standard_code": "3.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 30 \u00d7 5?",
+    "options": [
+      {
+        "key": "A",
+        "text": "35"
+      },
+      {
+        "key": "B",
+        "text": "150"
+      },
+      {
+        "key": "C",
+        "text": "120"
+      },
+      {
+        "key": "D",
+        "text": "200"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "30 \u00d7 5 = 150."
+  },
+  {
+    "standard_code": "3.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 60 \u00d7 7?",
+    "options": [
+      {
+        "key": "A",
+        "text": "67"
+      },
+      {
+        "key": "B",
+        "text": "400"
+      },
+      {
+        "key": "C",
+        "text": "420"
+      },
+      {
+        "key": "D",
+        "text": "470"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "60 \u00d7 7 = 420."
+  },
+  {
+    "standard_code": "3.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 40 \u00d7 9?",
+    "options": [
+      {
+        "key": "A",
+        "text": "360"
+      },
+      {
+        "key": "B",
+        "text": "49"
+      },
+      {
+        "key": "C",
+        "text": "320"
+      },
+      {
+        "key": "D",
+        "text": "400"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "40 \u00d7 9 = 360."
+  },
+  {
+    "standard_code": "3.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 80 \u00d7 4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "84"
+      },
+      {
+        "key": "B",
+        "text": "280"
+      },
+      {
+        "key": "C",
+        "text": "300"
+      },
+      {
+        "key": "D",
+        "text": "320"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "80 \u00d7 4 = 320."
+  },
+  {
+    "standard_code": "3.NF.A.1",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "A pizza is cut into 8 equal slices. Each slice is what fraction of the whole pizza?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/4"
+      },
+      {
+        "key": "B",
+        "text": "1/8"
+      },
+      {
+        "key": "C",
+        "text": "1/2"
+      },
+      {
+        "key": "D",
+        "text": "8/1"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "When a whole is cut into 8 equal parts, each part is 1/8."
+  },
+  {
+    "standard_code": "3.NF.A.1",
+    "difficulty": 1,
+    "question_type": "multiple_choice",
+    "stem": "A bar is divided into 6 equal pieces. What fraction is 1 piece?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/6"
+      },
+      {
+        "key": "B",
+        "text": "6/1"
+      },
+      {
+        "key": "C",
+        "text": "1/3"
+      },
+      {
+        "key": "D",
+        "text": "1/2"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Each piece is 1 out of 6, written as 1/6."
+  },
+  {
+    "standard_code": "3.NF.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "If a shape is split into 4 equal parts, what is 3 of those parts?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/3"
+      },
+      {
+        "key": "B",
+        "text": "1/4"
+      },
+      {
+        "key": "C",
+        "text": "4/3"
+      },
+      {
+        "key": "D",
+        "text": "3/4"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "3 of 4 equal parts is 3/4."
+  },
+  {
+    "standard_code": "3.NF.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A rectangle has 5 equal stripes. 2 are colored. What fraction is colored?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/5"
+      },
+      {
+        "key": "B",
+        "text": "2/3"
+      },
+      {
+        "key": "C",
+        "text": "2/5"
+      },
+      {
+        "key": "D",
+        "text": "5/2"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "2 colored out of 5 total is 2/5."
+  },
+  {
+    "standard_code": "3.NF.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which fraction is larger: 1/3 or 1/4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/3"
+      },
+      {
+        "key": "B",
+        "text": "1/4"
+      },
+      {
+        "key": "C",
+        "text": "Equal"
+      },
+      {
+        "key": "D",
+        "text": "Cannot tell"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "When numerators match, the fraction with the smaller denominator is larger. 1/3 > 1/4."
+  },
+  {
+    "standard_code": "3.NF.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which fraction equals 1/2?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/4"
+      },
+      {
+        "key": "B",
+        "text": "2/4"
+      },
+      {
+        "key": "C",
+        "text": "2/3"
+      },
+      {
+        "key": "D",
+        "text": "3/4"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "1/2 = 2/4 because both equal 0.5."
+  },
+  {
+    "standard_code": "3.NF.A.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Order from smallest to largest: 1/2, 1/4, 1/3",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/3, 1/4, 1/2"
+      },
+      {
+        "key": "B",
+        "text": "1/2, 1/3, 1/4"
+      },
+      {
+        "key": "C",
+        "text": "1/4, 1/3, 1/2"
+      },
+      {
+        "key": "D",
+        "text": "1/4, 1/2, 1/3"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "With the same numerator (1), larger denominators are smaller. So 1/4 < 1/3 < 1/2."
+  },
+  {
+    "standard_code": "3.NF.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which is equivalent to 3/6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/3"
+      },
+      {
+        "key": "B",
+        "text": "2/3"
+      },
+      {
+        "key": "C",
+        "text": "3/4"
+      },
+      {
+        "key": "D",
+        "text": "1/2"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "3/6 simplifies to 1/2."
+  },
+  {
+    "standard_code": "3.GM.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A rectangle is 4 units wide and 5 units tall. What is its area?",
+    "options": [
+      {
+        "key": "A",
+        "text": "9 square units"
+      },
+      {
+        "key": "B",
+        "text": "20 square units"
+      },
+      {
+        "key": "C",
+        "text": "18 square units"
+      },
+      {
+        "key": "D",
+        "text": "25 square units"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Area = length \u00d7 width = 4 \u00d7 5 = 20 square units."
+  },
+  {
+    "standard_code": "3.GM.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A square has sides of 6 units. What is its area?",
+    "options": [
+      {
+        "key": "A",
+        "text": "12"
+      },
+      {
+        "key": "B",
+        "text": "24"
+      },
+      {
+        "key": "C",
+        "text": "36 square units"
+      },
+      {
+        "key": "D",
+        "text": "42"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Area of a square = side \u00d7 side = 6 \u00d7 6 = 36 square units."
+  },
+  {
+    "standard_code": "3.GM.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A garden is 3 m \u00d7 8 m. What is its area?",
+    "options": [
+      {
+        "key": "A",
+        "text": "24 square meters"
+      },
+      {
+        "key": "B",
+        "text": "11 m"
+      },
+      {
+        "key": "C",
+        "text": "22 m"
+      },
+      {
+        "key": "D",
+        "text": "32 m"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Area = 3 \u00d7 8 = 24 square meters."
+  },
+  {
+    "standard_code": "3.GM.D.8",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A rectangle is 3 ft long and 5 ft wide. What is its perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "8 ft"
+      },
+      {
+        "key": "B",
+        "text": "16 ft"
+      },
+      {
+        "key": "C",
+        "text": "15 ft"
+      },
+      {
+        "key": "D",
+        "text": "30 ft"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Perimeter = 2(length + width) = 2(3 + 5) = 16 ft."
+  },
+  {
+    "standard_code": "3.GM.D.8",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "All sides of a square are 7 cm. What is its perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "14 cm"
+      },
+      {
+        "key": "B",
+        "text": "21 cm"
+      },
+      {
+        "key": "C",
+        "text": "28 cm"
+      },
+      {
+        "key": "D",
+        "text": "49 cm"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Perimeter = 4 \u00d7 7 = 28 cm."
+  },
+  {
+    "standard_code": "3.GM.D.8",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A triangle has sides of 6, 8, and 10 inches. What is its perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "24 inches"
+      },
+      {
+        "key": "B",
+        "text": "18 inches"
+      },
+      {
+        "key": "C",
+        "text": "30 inches"
+      },
+      {
+        "key": "D",
+        "text": "48 inches"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Perimeter = sum of all sides = 6 + 8 + 10 = 24 inches."
+  },
+  {
+    "standard_code": "4.OA.A.1",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "\"35 is 5 times as many as 7.\" Which equation matches?",
+    "options": [
+      {
+        "key": "A",
+        "text": "35 = 5 + 7"
+      },
+      {
+        "key": "B",
+        "text": "35 = 5 \u00d7 7"
+      },
+      {
+        "key": "C",
+        "text": "35 \u00f7 7 = 5"
+      },
+      {
+        "key": "D",
+        "text": "35 = 7 \u00f7 5"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "'X times as many as Y' is multiplication: 35 = 5 \u00d7 7."
+  },
+  {
+    "standard_code": "4.OA.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Carla has 4 times as many stickers as Beth. Beth has 9. How many does Carla have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "13"
+      },
+      {
+        "key": "B",
+        "text": "27"
+      },
+      {
+        "key": "C",
+        "text": "36"
+      },
+      {
+        "key": "D",
+        "text": "40"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "4 times 9 = 36."
+  },
+  {
+    "standard_code": "4.OA.A.1",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "A car travels 6 times as far as a bike. The bike traveled 12 miles. How far did the car go?",
+    "options": [
+      {
+        "key": "A",
+        "text": "18"
+      },
+      {
+        "key": "B",
+        "text": "60"
+      },
+      {
+        "key": "C",
+        "text": "78"
+      },
+      {
+        "key": "D",
+        "text": "72 miles"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "6 \u00d7 12 = 72 miles."
+  },
+  {
+    "standard_code": "4.OA.A.1",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which statement matches 8 \u00d7 3 = 24?",
+    "options": [
+      {
+        "key": "A",
+        "text": "24 is 8 times as many as 3"
+      },
+      {
+        "key": "B",
+        "text": "24 is 8 more than 3"
+      },
+      {
+        "key": "C",
+        "text": "8 is 24 times as many as 3"
+      },
+      {
+        "key": "D",
+        "text": "3 is 8 times as many as 24"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "8 \u00d7 3 = 24 means 24 is 8 times 3."
+  },
+  {
+    "standard_code": "4.OA.A.2",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "Jim has 3 times as many books as Tom. Together they have 28 books. How many books does Tom have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "4"
+      },
+      {
+        "key": "B",
+        "text": "7"
+      },
+      {
+        "key": "C",
+        "text": "8"
+      },
+      {
+        "key": "D",
+        "text": "21"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Tom = t. Jim = 3t. Total = 4t = 28, so t = 7."
+  },
+  {
+    "standard_code": "4.OA.A.2",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "Mara has twice as many shells as Sam. Together they have 18 shells. How many does Mara have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6"
+      },
+      {
+        "key": "B",
+        "text": "9"
+      },
+      {
+        "key": "C",
+        "text": "12"
+      },
+      {
+        "key": "D",
+        "text": "18"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Sam = s. Mara = 2s. Total = 3s = 18, s = 6, Mara = 12."
+  },
+  {
+    "standard_code": "4.OA.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Compare: 24 is how many times as much as 4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "20"
+      },
+      {
+        "key": "B",
+        "text": "5"
+      },
+      {
+        "key": "C",
+        "text": "8"
+      },
+      {
+        "key": "D",
+        "text": "6"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "24 \u00f7 4 = 6."
+  },
+  {
+    "standard_code": "4.OA.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "A book is 3 times as long as a magazine. The magazine has 32 pages. How many pages is the book?",
+    "options": [
+      {
+        "key": "A",
+        "text": "96"
+      },
+      {
+        "key": "B",
+        "text": "35"
+      },
+      {
+        "key": "C",
+        "text": "64"
+      },
+      {
+        "key": "D",
+        "text": "98"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "3 \u00d7 32 = 96 pages."
+  },
+  {
+    "standard_code": "4.OA.A.3",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "A school orders 8 boxes of 24 markers each, then gives 30 to teachers. How many markers are left?",
+    "options": [
+      {
+        "key": "A",
+        "text": "32"
+      },
+      {
+        "key": "B",
+        "text": "162"
+      },
+      {
+        "key": "C",
+        "text": "176"
+      },
+      {
+        "key": "D",
+        "text": "192"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "8 \u00d7 24 = 192; 192 \u2212 30 = 162."
+  },
+  {
+    "standard_code": "4.OA.A.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Books cost $7 each. Mara buys 5 books and pays with $40. How much change does she get?",
+    "options": [
+      {
+        "key": "A",
+        "text": "$3"
+      },
+      {
+        "key": "B",
+        "text": "$4"
+      },
+      {
+        "key": "C",
+        "text": "$5"
+      },
+      {
+        "key": "D",
+        "text": "$7"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "5 \u00d7 $7 = $35; $40 \u2212 $35 = $5."
+  },
+  {
+    "standard_code": "4.OA.A.3",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "There are 6 classes of 28 students. They go to 3 buses equally. How many students per bus?",
+    "options": [
+      {
+        "key": "A",
+        "text": "56"
+      },
+      {
+        "key": "B",
+        "text": "50"
+      },
+      {
+        "key": "C",
+        "text": "60"
+      },
+      {
+        "key": "D",
+        "text": "84"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "6 \u00d7 28 = 168 students; 168 \u00f7 3 = 56."
+  },
+  {
+    "standard_code": "4.OA.A.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Eli runs 5 km on each of 4 days, then 8 km on day 5. Total km?",
+    "options": [
+      {
+        "key": "A",
+        "text": "13"
+      },
+      {
+        "key": "B",
+        "text": "20"
+      },
+      {
+        "key": "C",
+        "text": "25"
+      },
+      {
+        "key": "D",
+        "text": "28"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "5 \u00d7 4 = 20; 20 + 8 = 28."
+  },
+  {
+    "standard_code": "4.OA.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which is a prime number?",
+    "options": [
+      {
+        "key": "A",
+        "text": "9"
+      },
+      {
+        "key": "B",
+        "text": "11"
+      },
+      {
+        "key": "C",
+        "text": "15"
+      },
+      {
+        "key": "D",
+        "text": "21"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "11 has only 1 and itself as factors. 9 = 3\u00d73, 15 = 3\u00d75, 21 = 3\u00d77."
+  },
+  {
+    "standard_code": "4.OA.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What are all the factors of 12?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1, 2, 3, 12"
+      },
+      {
+        "key": "B",
+        "text": "2, 3, 4, 6"
+      },
+      {
+        "key": "C",
+        "text": "1, 2, 3, 4, 6, 12"
+      },
+      {
+        "key": "D",
+        "text": "1, 12 only"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "12 \u00f7 each gives whole numbers for: 1, 2, 3, 4, 6, 12."
+  },
+  {
+    "standard_code": "4.OA.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which is a multiple of 6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "30"
+      },
+      {
+        "key": "B",
+        "text": "20"
+      },
+      {
+        "key": "C",
+        "text": "33"
+      },
+      {
+        "key": "D",
+        "text": "44"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "30 = 6 \u00d7 5. The others are not multiples of 6."
+  },
+  {
+    "standard_code": "4.OA.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Is 24 a multiple of 8?",
+    "options": [
+      {
+        "key": "A",
+        "text": "No"
+      },
+      {
+        "key": "B",
+        "text": "Yes, because 24 \u00f7 4 = 6"
+      },
+      {
+        "key": "C",
+        "text": "Yes, because 8 + 24 = 32"
+      },
+      {
+        "key": "D",
+        "text": "Yes, because 8 \u00d7 3 = 24"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "24 = 8 \u00d7 3, so 24 is a multiple of 8."
+  },
+  {
+    "standard_code": "4.OA.C.5",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Pattern: 4, 8, 12, 16, ___. What's next?",
+    "options": [
+      {
+        "key": "A",
+        "text": "18"
+      },
+      {
+        "key": "B",
+        "text": "20"
+      },
+      {
+        "key": "C",
+        "text": "22"
+      },
+      {
+        "key": "D",
+        "text": "24"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Each term increases by 4. 16 + 4 = 20."
+  },
+  {
+    "standard_code": "4.OA.C.5",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Pattern: 50, 45, 40, 35, ___. What's next?",
+    "options": [
+      {
+        "key": "A",
+        "text": "32"
+      },
+      {
+        "key": "B",
+        "text": "33"
+      },
+      {
+        "key": "C",
+        "text": "30"
+      },
+      {
+        "key": "D",
+        "text": "25"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Each term decreases by 5. 35 \u2212 5 = 30."
+  },
+  {
+    "standard_code": "4.OA.C.5",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Pattern: 3, 6, 12, 24, ___. What's next?",
+    "options": [
+      {
+        "key": "A",
+        "text": "28"
+      },
+      {
+        "key": "B",
+        "text": "30"
+      },
+      {
+        "key": "C",
+        "text": "36"
+      },
+      {
+        "key": "D",
+        "text": "48"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "Each term doubles. 24 \u00d7 2 = 48."
+  },
+  {
+    "standard_code": "4.NBT.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "In 7,777, what is the value of the 7 in the hundreds place?",
+    "options": [
+      {
+        "key": "A",
+        "text": "7"
+      },
+      {
+        "key": "B",
+        "text": "700"
+      },
+      {
+        "key": "C",
+        "text": "70"
+      },
+      {
+        "key": "D",
+        "text": "7,000"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "The hundreds place 7 means 7 \u00d7 100 = 700."
+  },
+  {
+    "standard_code": "4.NBT.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "In 5,432, the 4 represents:",
+    "options": [
+      {
+        "key": "A",
+        "text": "4"
+      },
+      {
+        "key": "B",
+        "text": "40"
+      },
+      {
+        "key": "C",
+        "text": "400"
+      },
+      {
+        "key": "D",
+        "text": "4,000"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "4 is in the hundreds place: 4 \u00d7 100 = 400."
+  },
+  {
+    "standard_code": "4.NBT.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which number has a 9 in the thousands place?",
+    "options": [
+      {
+        "key": "A",
+        "text": "9,254"
+      },
+      {
+        "key": "B",
+        "text": "2,955"
+      },
+      {
+        "key": "C",
+        "text": "29,500"
+      },
+      {
+        "key": "D",
+        "text": "954"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "9,254: the 9 is in the thousands place."
+  },
+  {
+    "standard_code": "4.NBT.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Write 'two thousand fifty-six' as a number.",
+    "options": [
+      {
+        "key": "A",
+        "text": "256"
+      },
+      {
+        "key": "B",
+        "text": "2,056"
+      },
+      {
+        "key": "C",
+        "text": "2,560"
+      },
+      {
+        "key": "D",
+        "text": "20,056"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "2 thousands + 5 tens + 6 ones = 2,056."
+  },
+  {
+    "standard_code": "4.NBT.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which is 3,705 in expanded form?",
+    "options": [
+      {
+        "key": "A",
+        "text": "3,000 + 70 + 5"
+      },
+      {
+        "key": "B",
+        "text": "300 + 70 + 5"
+      },
+      {
+        "key": "C",
+        "text": "3,000 + 700 + 5"
+      },
+      {
+        "key": "D",
+        "text": "3,000 + 7 + 5"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3 thousands, 7 hundreds, 0 tens, 5 ones."
+  },
+  {
+    "standard_code": "4.NBT.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Read: 12,409. Which is correct?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Twelve thousand four hundred nine"
+      },
+      {
+        "key": "B",
+        "text": "One thousand two hundred forty-nine"
+      },
+      {
+        "key": "C",
+        "text": "Twelve thousand forty-nine"
+      },
+      {
+        "key": "D",
+        "text": "One hundred twenty thousand nine"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "12,409 = twelve thousand four hundred nine."
+  },
+  {
+    "standard_code": "4.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Round 4,567 to the nearest hundred.",
+    "options": [
+      {
+        "key": "A",
+        "text": "4,500"
+      },
+      {
+        "key": "B",
+        "text": "4,600"
+      },
+      {
+        "key": "C",
+        "text": "4,570"
+      },
+      {
+        "key": "D",
+        "text": "5,000"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "The tens digit is 6 \u2265 5, so round up: 4,600."
+  },
+  {
+    "standard_code": "4.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Round 2,341 to the nearest thousand.",
+    "options": [
+      {
+        "key": "A",
+        "text": "2,300"
+      },
+      {
+        "key": "B",
+        "text": "2,400"
+      },
+      {
+        "key": "C",
+        "text": "2,000"
+      },
+      {
+        "key": "D",
+        "text": "3,000"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Hundreds digit 3 < 5, so round down: 2,000."
+  },
+  {
+    "standard_code": "4.NBT.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Round 8,649 to the nearest ten.",
+    "options": [
+      {
+        "key": "A",
+        "text": "8,650"
+      },
+      {
+        "key": "B",
+        "text": "8,640"
+      },
+      {
+        "key": "C",
+        "text": "8,600"
+      },
+      {
+        "key": "D",
+        "text": "8,700"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Ones digit 9 \u2265 5, round up: 8,650."
+  },
+  {
+    "standard_code": "4.NBT.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 4,567 + 2,839?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6,406"
+      },
+      {
+        "key": "B",
+        "text": "7,406"
+      },
+      {
+        "key": "C",
+        "text": "7,396"
+      },
+      {
+        "key": "D",
+        "text": "7,506"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "4,567 + 2,839 = 7,406."
+  },
+  {
+    "standard_code": "4.NBT.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 9,000 \u2212 3,476?",
+    "options": [
+      {
+        "key": "A",
+        "text": "5,424"
+      },
+      {
+        "key": "B",
+        "text": "5,624"
+      },
+      {
+        "key": "C",
+        "text": "5,524"
+      },
+      {
+        "key": "D",
+        "text": "6,524"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "9,000 \u2212 3,476 = 5,524."
+  },
+  {
+    "standard_code": "4.NBT.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Lina has 5,238 stamps and gets 1,475 more. How many total?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6,713"
+      },
+      {
+        "key": "B",
+        "text": "6,613"
+      },
+      {
+        "key": "C",
+        "text": "6,813"
+      },
+      {
+        "key": "D",
+        "text": "7,213"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "5,238 + 1,475 = 6,713."
+  },
+  {
+    "standard_code": "4.NBT.B.5",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 27 \u00d7 4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "100"
+      },
+      {
+        "key": "B",
+        "text": "108"
+      },
+      {
+        "key": "C",
+        "text": "112"
+      },
+      {
+        "key": "D",
+        "text": "144"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "27 \u00d7 4 = 108."
+  },
+  {
+    "standard_code": "4.NBT.B.5",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 145 \u00d7 6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "840"
+      },
+      {
+        "key": "B",
+        "text": "850"
+      },
+      {
+        "key": "C",
+        "text": "870"
+      },
+      {
+        "key": "D",
+        "text": "910"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "145 \u00d7 6 = 870."
+  },
+  {
+    "standard_code": "4.NBT.B.5",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "A box holds 36 crayons. How many in 12 boxes?",
+    "options": [
+      {
+        "key": "A",
+        "text": "432"
+      },
+      {
+        "key": "B",
+        "text": "48"
+      },
+      {
+        "key": "C",
+        "text": "360"
+      },
+      {
+        "key": "D",
+        "text": "468"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "36 \u00d7 12 = 432."
+  },
+  {
+    "standard_code": "4.NBT.B.5",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "What is 23 \u00d7 15?",
+    "options": [
+      {
+        "key": "A",
+        "text": "38"
+      },
+      {
+        "key": "B",
+        "text": "230"
+      },
+      {
+        "key": "C",
+        "text": "260"
+      },
+      {
+        "key": "D",
+        "text": "345"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "23 \u00d7 15 = 345."
+  },
+  {
+    "standard_code": "4.NBT.B.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 96 \u00f7 4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "18"
+      },
+      {
+        "key": "B",
+        "text": "24"
+      },
+      {
+        "key": "C",
+        "text": "23"
+      },
+      {
+        "key": "D",
+        "text": "26"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "96 \u00f7 4 = 24."
+  },
+  {
+    "standard_code": "4.NBT.B.6",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 145 \u00f7 5?",
+    "options": [
+      {
+        "key": "A",
+        "text": "27"
+      },
+      {
+        "key": "B",
+        "text": "28"
+      },
+      {
+        "key": "C",
+        "text": "29"
+      },
+      {
+        "key": "D",
+        "text": "30"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "145 \u00f7 5 = 29."
+  },
+  {
+    "standard_code": "4.NBT.B.6",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "What is 87 \u00f7 6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "14 remainder 3"
+      },
+      {
+        "key": "B",
+        "text": "13 r 9"
+      },
+      {
+        "key": "C",
+        "text": "15 r 0"
+      },
+      {
+        "key": "D",
+        "text": "16 r 1"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "6 \u00d7 14 = 84, leaving 87 \u2212 84 = 3."
+  },
+  {
+    "standard_code": "4.NBT.B.6",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Eli puts 78 books equally on 6 shelves. How many per shelf?",
+    "options": [
+      {
+        "key": "A",
+        "text": "11"
+      },
+      {
+        "key": "B",
+        "text": "12"
+      },
+      {
+        "key": "C",
+        "text": "14"
+      },
+      {
+        "key": "D",
+        "text": "13"
+      }
+    ],
+    "correct_answer": "D",
+    "explanation": "78 \u00f7 6 = 13."
+  },
+  {
+    "standard_code": "4.NF.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which is equivalent to 1/2?",
+    "options": [
+      {
+        "key": "A",
+        "text": "2/3"
+      },
+      {
+        "key": "B",
+        "text": "4/8"
+      },
+      {
+        "key": "C",
+        "text": "3/5"
+      },
+      {
+        "key": "D",
+        "text": "5/12"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "1/2 = 4/8 because we multiplied top and bottom by 4."
+  },
+  {
+    "standard_code": "4.NF.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which is equivalent to 3/4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "6/9"
+      },
+      {
+        "key": "B",
+        "text": "10/15"
+      },
+      {
+        "key": "C",
+        "text": "9/12"
+      },
+      {
+        "key": "D",
+        "text": "12/20"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3/4 = 9/12 (\u00d7 3 top and bottom)."
+  },
+  {
+    "standard_code": "4.NF.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which is equivalent to 2/5?",
+    "options": [
+      {
+        "key": "A",
+        "text": "8/20"
+      },
+      {
+        "key": "B",
+        "text": "4/8"
+      },
+      {
+        "key": "C",
+        "text": "6/10"
+      },
+      {
+        "key": "D",
+        "text": "5/12"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "2/5 = 8/20 (\u00d7 4)."
+  },
+  {
+    "standard_code": "4.NF.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which is larger: 3/4 or 5/8?",
+    "options": [
+      {
+        "key": "A",
+        "text": "3/4"
+      },
+      {
+        "key": "B",
+        "text": "5/8"
+      },
+      {
+        "key": "C",
+        "text": "Equal"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "3/4 = 6/8 > 5/8."
+  },
+  {
+    "standard_code": "4.NF.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which is smaller: 2/3 or 5/9?",
+    "options": [
+      {
+        "key": "A",
+        "text": "2/3"
+      },
+      {
+        "key": "B",
+        "text": "5/9"
+      },
+      {
+        "key": "C",
+        "text": "Equal"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "2/3 = 6/9 > 5/9, so 5/9 is smaller."
+  },
+  {
+    "standard_code": "4.NF.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Compare 7/10 and 3/5.",
+    "options": [
+      {
+        "key": "A",
+        "text": "7/10 < 3/5"
+      },
+      {
+        "key": "B",
+        "text": "Equal"
+      },
+      {
+        "key": "C",
+        "text": "7/10 > 3/5"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3/5 = 6/10 < 7/10."
+  },
+  {
+    "standard_code": "4.NF.B.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 1/4 + 2/4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/8"
+      },
+      {
+        "key": "B",
+        "text": "3/4"
+      },
+      {
+        "key": "C",
+        "text": "2/8"
+      },
+      {
+        "key": "D",
+        "text": "1/2"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Add numerators when denominators match: 1+2=3, denominator stays 4."
+  },
+  {
+    "standard_code": "4.NF.B.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 5/6 \u2212 2/6?",
+    "options": [
+      {
+        "key": "A",
+        "text": "3/12"
+      },
+      {
+        "key": "B",
+        "text": "7/6"
+      },
+      {
+        "key": "C",
+        "text": "3/6"
+      },
+      {
+        "key": "D",
+        "text": "1/3"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "5\u22122 = 3; denominator stays 6. (3/6 simplifies to 1/2.)"
+  },
+  {
+    "standard_code": "4.NF.B.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which sum equals 1?",
+    "options": [
+      {
+        "key": "A",
+        "text": "3/4 + 1/4"
+      },
+      {
+        "key": "B",
+        "text": "1/2 + 1/3"
+      },
+      {
+        "key": "C",
+        "text": "2/5 + 2/5"
+      },
+      {
+        "key": "D",
+        "text": "1/4 + 1/2"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "3/4 + 1/4 = 4/4 = 1."
+  },
+  {
+    "standard_code": "4.NF.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 3 \u00d7 1/4?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/12"
+      },
+      {
+        "key": "B",
+        "text": "3/4"
+      },
+      {
+        "key": "C",
+        "text": "4/3"
+      },
+      {
+        "key": "D",
+        "text": "12/4"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Multiply numerator: 3 \u00d7 1 = 3, denominator stays: 3/4."
+  },
+  {
+    "standard_code": "4.NF.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 5 \u00d7 2/3?",
+    "options": [
+      {
+        "key": "A",
+        "text": "2/15"
+      },
+      {
+        "key": "B",
+        "text": "5/6"
+      },
+      {
+        "key": "C",
+        "text": "10/3"
+      },
+      {
+        "key": "D",
+        "text": "15/2"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "5 \u00d7 2/3 = 10/3."
+  },
+  {
+    "standard_code": "4.NF.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "What is 4 \u00d7 3/8?",
+    "options": [
+      {
+        "key": "A",
+        "text": "12/8"
+      },
+      {
+        "key": "B",
+        "text": "12/32"
+      },
+      {
+        "key": "C",
+        "text": "7/8"
+      },
+      {
+        "key": "D",
+        "text": "4/24"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "4 \u00d7 3 = 12 over 8 = 12/8 (= 1 1/2)."
+  },
+  {
+    "standard_code": "4.NF.C.5",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Express 7/10 as hundredths.",
+    "options": [
+      {
+        "key": "A",
+        "text": "7/100"
+      },
+      {
+        "key": "B",
+        "text": "70/100"
+      },
+      {
+        "key": "C",
+        "text": "17/100"
+      },
+      {
+        "key": "D",
+        "text": "100/7"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Multiply top and bottom by 10: 7/10 = 70/100."
+  },
+  {
+    "standard_code": "4.NF.C.5",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "3/10 + 25/100 = ?",
+    "options": [
+      {
+        "key": "A",
+        "text": "28/110"
+      },
+      {
+        "key": "B",
+        "text": "28/100"
+      },
+      {
+        "key": "C",
+        "text": "55/100"
+      },
+      {
+        "key": "D",
+        "text": "55/110"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3/10 = 30/100. 30/100 + 25/100 = 55/100."
+  },
+  {
+    "standard_code": "4.NF.C.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Write 3/10 as a decimal.",
+    "options": [
+      {
+        "key": "A",
+        "text": "3.10"
+      },
+      {
+        "key": "B",
+        "text": "0.3"
+      },
+      {
+        "key": "C",
+        "text": "0.03"
+      },
+      {
+        "key": "D",
+        "text": "3.0"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "3/10 = 0.3."
+  },
+  {
+    "standard_code": "4.NF.C.6",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Write 0.45 as a fraction.",
+    "options": [
+      {
+        "key": "A",
+        "text": "4/5"
+      },
+      {
+        "key": "B",
+        "text": "45/10"
+      },
+      {
+        "key": "C",
+        "text": "45/100"
+      },
+      {
+        "key": "D",
+        "text": "4.5/10"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "0.45 = 45/100."
+  },
+  {
+    "standard_code": "4.NF.C.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which decimal equals 2/10?",
+    "options": [
+      {
+        "key": "A",
+        "text": "0.2"
+      },
+      {
+        "key": "B",
+        "text": "0.02"
+      },
+      {
+        "key": "C",
+        "text": "2.0"
+      },
+      {
+        "key": "D",
+        "text": "20.0"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "2/10 = 0.2."
+  },
+  {
+    "standard_code": "4.NF.C.7",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which is larger: 0.6 or 0.45?",
+    "options": [
+      {
+        "key": "A",
+        "text": "0.6"
+      },
+      {
+        "key": "B",
+        "text": "0.45"
+      },
+      {
+        "key": "C",
+        "text": "Equal"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "0.6 = 0.60. 0.60 > 0.45."
+  },
+  {
+    "standard_code": "4.NF.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Compare 0.5 and 0.50.",
+    "options": [
+      {
+        "key": "A",
+        "text": "0.5 > 0.50"
+      },
+      {
+        "key": "B",
+        "text": "Equal"
+      },
+      {
+        "key": "C",
+        "text": "0.5 < 0.50"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Adding zeros after the last decimal digit doesn't change value."
+  },
+  {
+    "standard_code": "4.NF.C.7",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Order from smallest to largest: 0.7, 0.07, 0.77",
+    "options": [
+      {
+        "key": "A",
+        "text": "0.77, 0.7, 0.07"
+      },
+      {
+        "key": "B",
+        "text": "0.7, 0.77, 0.07"
+      },
+      {
+        "key": "C",
+        "text": "0.07, 0.7, 0.77"
+      },
+      {
+        "key": "D",
+        "text": "0.07, 0.77, 0.7"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "0.07 < 0.7 < 0.77."
+  },
+  {
+    "standard_code": "4.GM.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which has two endpoints?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ray"
+      },
+      {
+        "key": "B",
+        "text": "Line segment"
+      },
+      {
+        "key": "C",
+        "text": "Line"
+      },
+      {
+        "key": "D",
+        "text": "Angle"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "A line segment has two endpoints. A ray has one. A line has none."
+  },
+  {
+    "standard_code": "4.GM.A.1",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which symbol shows a ray from A through B?",
+    "options": [
+      {
+        "key": "A",
+        "text": "AB plain"
+      },
+      {
+        "key": "B",
+        "text": "AB segment"
+      },
+      {
+        "key": "C",
+        "text": "AB with arrow on B"
+      },
+      {
+        "key": "D",
+        "text": "A only"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "A ray starts at one point (A) and extends through another (B) with an arrow."
+  },
+  {
+    "standard_code": "4.GM.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Two rays sharing an endpoint form a(n) ___.",
+    "options": [
+      {
+        "key": "A",
+        "text": "angle"
+      },
+      {
+        "key": "B",
+        "text": "circle"
+      },
+      {
+        "key": "C",
+        "text": "line"
+      },
+      {
+        "key": "D",
+        "text": "polygon"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Two rays sharing a vertex make an angle."
+  },
+  {
+    "standard_code": "4.GM.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A quadrilateral with 4 equal sides and 4 right angles is a:",
+    "options": [
+      {
+        "key": "A",
+        "text": "rectangle"
+      },
+      {
+        "key": "B",
+        "text": "square"
+      },
+      {
+        "key": "C",
+        "text": "rhombus"
+      },
+      {
+        "key": "D",
+        "text": "trapezoid"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "A square has 4 equal sides and 4 right angles."
+  },
+  {
+    "standard_code": "4.GM.A.2",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Which shape has exactly 1 pair of parallel sides?",
+    "options": [
+      {
+        "key": "A",
+        "text": "rectangle"
+      },
+      {
+        "key": "B",
+        "text": "rhombus"
+      },
+      {
+        "key": "C",
+        "text": "trapezoid"
+      },
+      {
+        "key": "D",
+        "text": "square"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "A trapezoid has 1 pair of parallel sides; rectangles and squares have 2."
+  },
+  {
+    "standard_code": "4.GM.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A triangle with all sides equal is called:",
+    "options": [
+      {
+        "key": "A",
+        "text": "equilateral"
+      },
+      {
+        "key": "B",
+        "text": "scalene"
+      },
+      {
+        "key": "C",
+        "text": "isosceles"
+      },
+      {
+        "key": "D",
+        "text": "right"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Equilateral means 'equal sides'."
+  },
+  {
+    "standard_code": "4.GM.A.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "How many lines of symmetry does a square have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1"
+      },
+      {
+        "key": "B",
+        "text": "4"
+      },
+      {
+        "key": "C",
+        "text": "2"
+      },
+      {
+        "key": "D",
+        "text": "8"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "A square has 4: vertical, horizontal, and two diagonals."
+  },
+  {
+    "standard_code": "4.GM.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Which letter has a vertical line of symmetry?",
+    "options": [
+      {
+        "key": "A",
+        "text": "F"
+      },
+      {
+        "key": "B",
+        "text": "G"
+      },
+      {
+        "key": "C",
+        "text": "A"
+      },
+      {
+        "key": "D",
+        "text": "L"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "A is symmetric about a vertical line. F, G, L are not."
+  },
+  {
+    "standard_code": "4.GM.A.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "How many lines of symmetry does a circle have?",
+    "options": [
+      {
+        "key": "A",
+        "text": "infinite"
+      },
+      {
+        "key": "B",
+        "text": "1"
+      },
+      {
+        "key": "C",
+        "text": "4"
+      },
+      {
+        "key": "D",
+        "text": "0"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "A circle has infinitely many lines of symmetry through its center."
+  },
+  {
+    "standard_code": "4.GM.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "How many inches are in 3 feet?",
+    "options": [
+      {
+        "key": "A",
+        "text": "12"
+      },
+      {
+        "key": "B",
+        "text": "36"
+      },
+      {
+        "key": "C",
+        "text": "24"
+      },
+      {
+        "key": "D",
+        "text": "48"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "1 ft = 12 in, so 3 ft = 36 in."
+  },
+  {
+    "standard_code": "4.GM.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "How many cm in 2 meters?",
+    "options": [
+      {
+        "key": "A",
+        "text": "20"
+      },
+      {
+        "key": "B",
+        "text": "100"
+      },
+      {
+        "key": "C",
+        "text": "200"
+      },
+      {
+        "key": "D",
+        "text": "2,000"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "1 m = 100 cm, so 2 m = 200 cm."
+  },
+  {
+    "standard_code": "4.GM.B.4",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "How many ounces are in 2 pounds?",
+    "options": [
+      {
+        "key": "A",
+        "text": "32"
+      },
+      {
+        "key": "B",
+        "text": "16"
+      },
+      {
+        "key": "C",
+        "text": "24"
+      },
+      {
+        "key": "D",
+        "text": "64"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "1 lb = 16 oz, so 2 lb = 32 oz."
+  },
+  {
+    "standard_code": "4.GM.B.5",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "A rope is 5 m long. How many cm is that?",
+    "options": [
+      {
+        "key": "A",
+        "text": "50"
+      },
+      {
+        "key": "B",
+        "text": "500"
+      },
+      {
+        "key": "C",
+        "text": "5,000"
+      },
+      {
+        "key": "D",
+        "text": "0.05"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "5 m \u00d7 100 = 500 cm."
+  },
+  {
+    "standard_code": "4.GM.B.5",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Sara ran 2 km. How many meters?",
+    "options": [
+      {
+        "key": "A",
+        "text": "20"
+      },
+      {
+        "key": "B",
+        "text": "200"
+      },
+      {
+        "key": "C",
+        "text": "2,000"
+      },
+      {
+        "key": "D",
+        "text": "20,000"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "1 km = 1,000 m. So 2 km = 2,000 m."
+  },
+  {
+    "standard_code": "4.GM.C.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "An angle of 90\u00b0 is called:",
+    "options": [
+      {
+        "key": "A",
+        "text": "acute"
+      },
+      {
+        "key": "B",
+        "text": "right"
+      },
+      {
+        "key": "C",
+        "text": "obtuse"
+      },
+      {
+        "key": "D",
+        "text": "straight"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Exactly 90\u00b0 is a right angle."
+  },
+  {
+    "standard_code": "4.GM.C.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "An angle smaller than 90\u00b0 is:",
+    "options": [
+      {
+        "key": "A",
+        "text": "right"
+      },
+      {
+        "key": "B",
+        "text": "obtuse"
+      },
+      {
+        "key": "C",
+        "text": "acute"
+      },
+      {
+        "key": "D",
+        "text": "reflex"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Acute = less than 90\u00b0."
+  },
+  {
+    "standard_code": "4.GM.C.6",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "An angle of 180\u00b0 is:",
+    "options": [
+      {
+        "key": "A",
+        "text": "straight"
+      },
+      {
+        "key": "B",
+        "text": "right"
+      },
+      {
+        "key": "C",
+        "text": "obtuse"
+      },
+      {
+        "key": "D",
+        "text": "reflex"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "180\u00b0 forms a straight line."
+  },
+  {
+    "standard_code": "4.GM.C.7",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "If two angles are 35\u00b0 and 55\u00b0, the larger total angle measures:",
+    "options": [
+      {
+        "key": "A",
+        "text": "20\u00b0"
+      },
+      {
+        "key": "B",
+        "text": "90\u00b0"
+      },
+      {
+        "key": "C",
+        "text": "75\u00b0"
+      },
+      {
+        "key": "D",
+        "text": "180\u00b0"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "35 + 55 = 90, a right angle."
+  },
+  {
+    "standard_code": "4.GM.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "An angle measures 120\u00b0. It is:",
+    "options": [
+      {
+        "key": "A",
+        "text": "acute"
+      },
+      {
+        "key": "B",
+        "text": "right"
+      },
+      {
+        "key": "C",
+        "text": "obtuse"
+      },
+      {
+        "key": "D",
+        "text": "straight"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "120\u00b0 is between 90\u00b0 and 180\u00b0 = obtuse."
+  },
+  {
+    "standard_code": "4.GM.C.8",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Two angles together form a straight line. One is 110\u00b0. The other:",
+    "options": [
+      {
+        "key": "A",
+        "text": "20\u00b0"
+      },
+      {
+        "key": "B",
+        "text": "70\u00b0"
+      },
+      {
+        "key": "C",
+        "text": "90\u00b0"
+      },
+      {
+        "key": "D",
+        "text": "180\u00b0"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Straight line = 180\u00b0. 180 \u2212 110 = 70."
+  },
+  {
+    "standard_code": "4.GM.C.8",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "Three angles meet at a point and total 360\u00b0. Two are 90\u00b0 and 120\u00b0. The third:",
+    "options": [
+      {
+        "key": "A",
+        "text": "60\u00b0"
+      },
+      {
+        "key": "B",
+        "text": "100\u00b0"
+      },
+      {
+        "key": "C",
+        "text": "150\u00b0"
+      },
+      {
+        "key": "D",
+        "text": "180\u00b0"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "360 \u2212 90 \u2212 120 = 150."
+  },
+  {
+    "standard_code": "4.GM.D.9",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Rectangle: 6 m \u00d7 4 m. Area?",
+    "options": [
+      {
+        "key": "A",
+        "text": "10 m\u00b2"
+      },
+      {
+        "key": "B",
+        "text": "24 m\u00b2"
+      },
+      {
+        "key": "C",
+        "text": "20 m\u00b2"
+      },
+      {
+        "key": "D",
+        "text": "26 m\u00b2"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Area = 6 \u00d7 4 = 24 square meters."
+  },
+  {
+    "standard_code": "4.GM.D.9",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Square has side 9 cm. Perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "18 cm"
+      },
+      {
+        "key": "B",
+        "text": "27 cm"
+      },
+      {
+        "key": "C",
+        "text": "36 cm"
+      },
+      {
+        "key": "D",
+        "text": "81 cm"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Perimeter = 4 \u00d7 9 = 36 cm."
+  },
+  {
+    "standard_code": "4.GM.D.9",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Rectangle: 12 ft \u00d7 5 ft. Perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "34 ft"
+      },
+      {
+        "key": "B",
+        "text": "17 ft"
+      },
+      {
+        "key": "C",
+        "text": "30 ft"
+      },
+      {
+        "key": "D",
+        "text": "60 ft"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Perimeter = 2(12 + 5) = 34 ft."
+  },
+  {
+    "standard_code": "4.DR.A.1",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "On a line plot, 3 X's are at 1/2 and 2 X's at 1/4. Total amount?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1"
+      },
+      {
+        "key": "B",
+        "text": "2"
+      },
+      {
+        "key": "C",
+        "text": "2 1/4"
+      },
+      {
+        "key": "D",
+        "text": "5"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "3 \u00d7 1/2 + 2 \u00d7 1/4 = 3/2 + 1/2 = 4/2 = 2."
+  },
+  {
+    "standard_code": "4.DR.A.1",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A line plot shows X's at 0, 1/4, 1/4, 1/2. How many data points?",
+    "options": [
+      {
+        "key": "A",
+        "text": "3"
+      },
+      {
+        "key": "B",
+        "text": "5"
+      },
+      {
+        "key": "C",
+        "text": "4"
+      },
+      {
+        "key": "D",
+        "text": "2"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Count the X's: 4 total."
+  },
+  {
+    "standard_code": "4.DR.B.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A bar graph shows 12 apples, 8 oranges, and 4 pears. How many fruits total?",
+    "options": [
+      {
+        "key": "A",
+        "text": "12"
+      },
+      {
+        "key": "B",
+        "text": "24"
+      },
+      {
+        "key": "C",
+        "text": "20"
+      },
+      {
+        "key": "D",
+        "text": "32"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "12 + 8 + 4 = 24."
+  },
+  {
+    "standard_code": "4.DR.B.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A table shows 3 weeks: 10, 15, 20 books read. Total?",
+    "options": [
+      {
+        "key": "A",
+        "text": "25"
+      },
+      {
+        "key": "B",
+        "text": "35"
+      },
+      {
+        "key": "C",
+        "text": "45"
+      },
+      {
+        "key": "D",
+        "text": "55"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "10 + 15 + 20 = 45."
+  },
+  {
+    "standard_code": "4.DR.C.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Find the mean of 4, 8, 12.",
+    "options": [
+      {
+        "key": "A",
+        "text": "4"
+      },
+      {
+        "key": "B",
+        "text": "8"
+      },
+      {
+        "key": "C",
+        "text": "12"
+      },
+      {
+        "key": "D",
+        "text": "24"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "(4 + 8 + 12) / 3 = 24/3 = 8."
+  },
+  {
+    "standard_code": "4.DR.C.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Find the range of 5, 2, 8, 11, 4.",
+    "options": [
+      {
+        "key": "A",
+        "text": "3"
+      },
+      {
+        "key": "B",
+        "text": "6"
+      },
+      {
+        "key": "C",
+        "text": "9"
+      },
+      {
+        "key": "D",
+        "text": "11"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Range = max \u2212 min = 11 \u2212 2 = 9."
+  },
+  {
+    "standard_code": "4.DR.C.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Find the median of 3, 7, 1, 9, 5.",
+    "options": [
+      {
+        "key": "A",
+        "text": "5"
+      },
+      {
+        "key": "B",
+        "text": "1"
+      },
+      {
+        "key": "C",
+        "text": "7"
+      },
+      {
+        "key": "D",
+        "text": "9"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Sorted: 1, 3, 5, 7, 9. Middle = 5."
+  },
+  {
+    "standard_code": "3.NF.A.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Is 4/8 equivalent to 1/2?",
+    "options": [
+      {
+        "key": "A",
+        "text": "No"
+      },
+      {
+        "key": "B",
+        "text": "Yes"
+      },
+      {
+        "key": "C",
+        "text": "Only sometimes"
+      },
+      {
+        "key": "D",
+        "text": "Cannot tell"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "4/8 simplifies to 1/2."
+  },
+  {
+    "standard_code": "3.GM.D.8",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "A rectangle is 7 ft by 3 ft. What is its perimeter?",
+    "options": [
+      {
+        "key": "A",
+        "text": "10 ft"
+      },
+      {
+        "key": "B",
+        "text": "14 ft"
+      },
+      {
+        "key": "C",
+        "text": "20 ft"
+      },
+      {
+        "key": "D",
+        "text": "21 ft"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "Perimeter = 2(7 + 3) = 20 ft."
+  },
+  {
+    "standard_code": "4.OA.C.5",
+    "difficulty": 4,
+    "question_type": "multiple_choice",
+    "stem": "Pattern: 1, 4, 9, 16, ___ (squares). What's next?",
+    "options": [
+      {
+        "key": "A",
+        "text": "20"
+      },
+      {
+        "key": "B",
+        "text": "25"
+      },
+      {
+        "key": "C",
+        "text": "24"
+      },
+      {
+        "key": "D",
+        "text": "32"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "1\u00b2, 2\u00b2, 3\u00b2, 4\u00b2, 5\u00b2 = 25."
+  },
+  {
+    "standard_code": "4.NF.A.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Compare 1/3 and 2/6.",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/3 > 2/6"
+      },
+      {
+        "key": "B",
+        "text": "Equal"
+      },
+      {
+        "key": "C",
+        "text": "1/3 < 2/6"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "2/6 = 1/3 because 2\u00f72/6\u00f72 = 1/3."
+  },
+  {
+    "standard_code": "4.NF.B.3",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 1/3 + 1/3 + 1/3?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/9"
+      },
+      {
+        "key": "B",
+        "text": "3/9"
+      },
+      {
+        "key": "C",
+        "text": "1"
+      },
+      {
+        "key": "D",
+        "text": "3/3"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "1+1+1 = 3 over 3 = 3/3 = 1."
+  },
+  {
+    "standard_code": "4.NF.B.4",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "What is 6 \u00d7 1/2?",
+    "options": [
+      {
+        "key": "A",
+        "text": "1/12"
+      },
+      {
+        "key": "B",
+        "text": "3"
+      },
+      {
+        "key": "C",
+        "text": "6/2 only"
+      },
+      {
+        "key": "D",
+        "text": "12"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "6 \u00d7 1/2 = 6/2 = 3."
+  },
+  {
+    "standard_code": "4.NF.C.7",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "Compare 0.40 and 0.4.",
+    "options": [
+      {
+        "key": "A",
+        "text": "0.40 > 0.4"
+      },
+      {
+        "key": "B",
+        "text": "Equal"
+      },
+      {
+        "key": "C",
+        "text": "0.40 < 0.4"
+      },
+      {
+        "key": "D",
+        "text": "Can't tell"
+      }
+    ],
+    "correct_answer": "B",
+    "explanation": "Trailing zeros don't change value."
+  },
+  {
+    "standard_code": "4.GM.B.5",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "How many minutes are in 3 hours?",
+    "options": [
+      {
+        "key": "A",
+        "text": "30"
+      },
+      {
+        "key": "B",
+        "text": "120"
+      },
+      {
+        "key": "C",
+        "text": "180"
+      },
+      {
+        "key": "D",
+        "text": "300"
+      }
+    ],
+    "correct_answer": "C",
+    "explanation": "3 \u00d7 60 = 180 minutes."
+  },
+  {
+    "standard_code": "4.DR.B.2",
+    "difficulty": 2,
+    "question_type": "multiple_choice",
+    "stem": "On a bar graph, a bar reaches 14 and another reaches 22. What's the difference?",
+    "options": [
+      {
+        "key": "A",
+        "text": "8"
+      },
+      {
+        "key": "B",
+        "text": "6"
+      },
+      {
+        "key": "C",
+        "text": "10"
+      },
+      {
+        "key": "D",
+        "text": "36"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "22 - 14 = 8."
+  },
+  {
+    "standard_code": "4.DR.C.3",
+    "difficulty": 3,
+    "question_type": "multiple_choice",
+    "stem": "Find the mode of 2, 5, 5, 7, 9.",
+    "options": [
+      {
+        "key": "A",
+        "text": "5"
+      },
+      {
+        "key": "B",
+        "text": "2"
+      },
+      {
+        "key": "C",
+        "text": "7"
+      },
+      {
+        "key": "D",
+        "text": "9"
+      }
+    ],
+    "correct_answer": "A",
+    "explanation": "Mode = most-frequent value. 5 appears twice."
+  }
+]

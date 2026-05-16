@@ -110,37 +110,9 @@ async def health_check() -> dict:
     }
 
 
-@app.get("/api/v1/health", tags=["Health"])
-async def api_health_check() -> dict:
-    """
-    API health check endpoint.
-    More detailed than /health for load balancers.
-    """
-    from .clients.llm_client import get_llm_client
-
-    llm_client = get_llm_client()
-    llm_health = llm_client.get_health()
-
-    return {
-        "status": "healthy",
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "llm": llm_health,
-        "uptime_seconds": 0,  # Would be calculated from startup time
-    }
-
-
-@app.get("/api/v1/health/llm", tags=["Health"])
-async def llm_health_check() -> dict:
-    """
-    LLM-specific health check.
-    Used by monitoring systems to verify LLM connectivity.
-    """
-    from .clients.llm_client import get_llm_client
-
-    llm_client = get_llm_client()
-    return llm_client.get_health()
-
+# /api/v1/health and /api/v1/health/llm are defined in src/api/v1/health.py
+# and mounted via include_router below. Defining duplicates here triggered a
+# FastAPI duplicate-operation-id warning and made OpenAPI export noisy.
 
 # Include API router
 app.include_router(api_router, prefix="/api/v1")

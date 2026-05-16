@@ -11,10 +11,14 @@
     "db:migrate": "cd apps/api && alembic upgrade head",
     "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "gen:openapi": "cd apps/api && python -m scripts.export_openapi > ../../packages/types/openapi.json",
+    "gen:types": "pnpm gen:openapi && cd packages/types && pnpm run generate",
+    "gen:types:check": "pnpm gen:types && git diff --exit-code packages/types/src/api.ts",
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "turbo": "^2.0.0"
+    "turbo": "^2.0.0",
+    "openapi-typescript": "^7.4.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
