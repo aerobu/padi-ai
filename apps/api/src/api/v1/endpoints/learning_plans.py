@@ -718,7 +718,7 @@ async def submit_session_answer(
         next_psq.student_answer = request.answer
         next_psq.is_correct = is_correct
         next_psq.time_spent_ms = request.time_spent_ms
-        next_psq.answered_at = datetime.utcnow()
+        next_psq.answered_at = datetime.now(timezone.utc)
 
         # Update BKT for this skill
         skill_state_result = await db.execute(

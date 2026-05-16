@@ -24,18 +24,15 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
-# pgvector.sqlalchemy import Vector  # Uncomment when pgvector is installed
 from sqlalchemy.orm import RelationshipProperty, relationship
 
 from .base import Base
 from src.core.encryption import EncryptionService
 
-# Import Vector type for pgvector
-try:
-    from pgvector.sqlalchemy import Vector
-except ImportError:
-    from sqlalchemy import ARRAY, Float
-    Vector = lambda dim: ARRAY(Float)  # fallback
+# pgvector is a hard runtime requirement (declared in pyproject.toml). The
+# previous lambda-based fallback meant prod and dev silently used different
+# column types — refuse to start if it's missing instead of papering over.
+from pgvector.sqlalchemy import Vector  # noqa: E402
 
 
 # === User/Student Models ===
@@ -625,8 +622,8 @@ class GeneratedQuestion(Base):
     validation_status = Column(String, default="pending")
     confidence_score = Column(Float, default=0.0)
 
-    # Embedding for dedup
-    content_embedding = Column(ARRAY(Float), nullable=True)
+    # Embedding for dedup. 384 = sentence-transformers/all-MiniLM-L6-v2.
+    content_embedding = Column(Vector(384), nullable=True)
 
     # Promotion tracking
     promoted_to_question_id = Column(String, ForeignKey("questions.id", ondelete="SET NULL"), nullable=True)

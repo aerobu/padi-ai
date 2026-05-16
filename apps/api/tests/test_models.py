@@ -1,7 +1,7 @@
 """Tests for SQLAlchemy models."""
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TestUserModel:
@@ -212,7 +212,7 @@ class TestStudentSkillStateModel:
             slip_prob=0.1,
             learning_rate=0.1,
             times_practiced=5,
-            last_practiced_at=datetime.utcnow()
+            last_practiced_at=datetime.now(timezone.utc)
         )
 
         assert state.student_id == "student-1"
@@ -236,7 +236,7 @@ class TestStudentSkillStateModel:
         # Update state
         state.mastery_prob = 0.9
         state.times_practiced = 10
-        state.last_practiced_at = datetime.utcnow()
+        state.last_practiced_at = datetime.now(timezone.utc)
 
         assert state.mastery_prob == 0.9
         assert state.times_practiced == 10
@@ -268,7 +268,7 @@ class TestConsentRecordModel:
             student_id="student-1",
             consent_type="data_processing",
             status=ConsentStatus.GRANTED.value,
-            consented_at=datetime.utcnow()
+            consented_at=datetime.now(timezone.utc)
         )
 
         assert consent.consent_type == "data_processing"

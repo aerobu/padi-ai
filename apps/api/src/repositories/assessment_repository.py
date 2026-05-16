@@ -2,7 +2,7 @@
 Assessment repository for session and response management.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,7 +61,7 @@ class AssessmentRepository(AsyncRepository[Assessment]):
         session = AssessmentSession(
             assessment_id=assessment_id,
             student_id=student_id,
-            started_at=datetime.utcnow(),
+            started_at=datetime.now(timezone.utc),
             status="in_progress",
         )
         self.session.add(session)

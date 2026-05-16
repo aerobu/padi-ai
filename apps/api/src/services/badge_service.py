@@ -2,7 +2,7 @@
 Badge Service for gamification.
 Handles badge awarding based on student progress and achievements.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from uuid import uuid4
@@ -263,7 +263,7 @@ class BadgeService:
         from src.models.models import StudentBadge
         from datetime import timedelta
 
-        cutoff = datetime.utcnow() - timedelta(days=30)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
 
         result = await self.db_session.execute(
             select(StudentBadge)
@@ -291,9 +291,9 @@ class BadgeService:
             badge_icon_url=definition["icon_url"],
             badge_tier=definition["tier"].value,
             earned_context={
-                "awarded_at": datetime.utcnow().isoformat(),
+                "awarded_at": datetime.now(timezone.utc).isoformat(),
             },
-            earned_at=datetime.utcnow(),
+            earned_at=datetime.now(timezone.utc),
         )
 
         self.db_session.add(badge)

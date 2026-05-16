@@ -4,7 +4,7 @@ Auth0 JWT validation and user authentication.
 """
 
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 from jwt import PyJWKClient
 from jwt.exceptions import InvalidTokenError
@@ -109,7 +109,7 @@ def create_jwt_response(token: str, expires_in: int = 3600) -> dict:
         "access_token": token,
         "token_type": "Bearer",
         "expires_in": expires_in,
-        "expires_at": datetime.utcnow() + timedelta(seconds=expires_in),
+        "expires_at": datetime.now(timezone.utc) + timedelta(seconds=expires_in),
     }
 
 

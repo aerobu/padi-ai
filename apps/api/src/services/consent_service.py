@@ -5,7 +5,7 @@ COPPA consent service for managing parental consent workflows.
 import json
 import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Any
 
 from src.repositories.consent_repository import ConsentRepository
@@ -77,7 +77,7 @@ class ConsentService:
         token = secrets.token_hex(32)
 
         # Calculate expiry
-        expires_at = datetime.utcnow() + timedelta(hours=self.TOKEN_EXPIRY_HOURS)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=self.TOKEN_EXPIRY_HOURS)
 
         # Store token in Redis (for email link verification)
         await self.redis_client.set(
@@ -153,7 +153,7 @@ class ConsentService:
 
         # Check expiry
         expires_at = datetime.fromisoformat(token_data["expires_at"])
-        if datetime.utcnow() > expires_at:
+        if datetime.now(timezone.utc) > expires_at:
             raise ValueError("Consent token has expired")
 
         # Find pending consent record
@@ -162,7 +162,7 @@ class ConsentService:
             raise ValueError("Consent record not found for token")
 
         # Confirm consent
-        confirmed_at = datetime.utcnow()
+        confirmed_at = datetime.now(timezone.utc)
         confirmed_record = await self.consent_repository.confirm_consent(
             record.id, confirmed_at
         )

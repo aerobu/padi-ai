@@ -77,8 +77,8 @@ async def create_generation_job(
             "context_themes": request.context_themes,
             "model": "o3-mini",
             "created_by": user_id,
-            "created_at": __import__("datetime").datetime.utcnow(),
-            "updated_at": __import__("datetime").datetime.utcnow(),
+            "created_at": __import__("datetime").datetime.now(timezone.utc),
+            "updated_at": __import__("datetime").datetime.now(timezone.utc),
         })
 
         return {

@@ -1,7 +1,7 @@
 """
 Parent Dashboard endpoints for viewing children's progress.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from uuid import uuid4
 
@@ -179,7 +179,7 @@ async def get_detailed_report(
             ]
 
             # Get recent practice activity (last 30 days)
-            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
             sessions_result = await db.execute(
                 select(PracticeSession)
                 .where(

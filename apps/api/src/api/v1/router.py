@@ -7,15 +7,16 @@ from fastapi import APIRouter
 
 from . import health
 from .endpoints import (
-    consent_router,
-    students_router,
-    standards_router,
     assessments_router,
     auth_router,
-    learning_plans_router,
+    consent_router,
     generation_jobs_router,
+    learning_plans_router,
     parent,
+    standards_router,
+    students_router,
 )
+from .endpoints import practice_ws
 
 router = APIRouter()
 
@@ -69,4 +70,10 @@ router.include_router(
 router.include_router(
     parent.router,
     tags=["Parent Dashboard"],
+)
+
+# Adaptive-practice WebSocket session (Stage 3)
+router.include_router(
+    practice_ws.router,
+    tags=["Practice Session (WebSocket)"],
 )

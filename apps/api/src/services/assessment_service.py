@@ -496,7 +496,7 @@ class AssessmentService:
             "assessment_id": assessment_id,
             "student_name": student.display_name,
             "assessment_type": assessment.assessment_type,
-            "completed_at": assessment.completed_at or datetime.utcnow(),
+            "completed_at": assessment.completed_at or datetime.now(timezone.utc),
             "duration_minutes": len(responses) * 1.5,
             "overall_score": overall_score,
             "total_questions": len(responses),
