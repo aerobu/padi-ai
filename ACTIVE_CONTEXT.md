@@ -1,47 +1,53 @@
 # Active Project Context
 
-## Current Phase: Stage 2 — Remediation Continuing
-**Status:** Active (rolled back from "Stage 3 ready" on 2026-05-16)
-**Reason:** Code review on 2026-05-16 identified 12 critical (P0) bugs that
-would prevent the diagnostic + practice-session flows from running end-to-end.
-The Stage 2 remediation report (2026-04-21) overstated completeness.
+## Current Phase: Stage 3 — Phase 4-A Ready (Assessment Agent)
+**Status:** Phases 0, 1, 2-partial, and 3 landed 2026-05-16.
+**Up next:** Phase 4-A — implement the real Assessment Agent (15-code
+error taxonomy via `LLMClient(purpose=ASSESSMENT)`).
 
-## Execution Plan
-- **Plan document:** `docs/history/2026-05-16-execution-plan.md`
-- **Phase 0:** CI hardening (in progress — `feat(ci)` PR)
-- **Phase 1:** Fix critical bugs C-1 → C-12 (next)
-- **Phase 2:** True Stage 2 closure (seed bank, Q-gen, dashboards)
-- **Phase 3:** Stage 3 scaffolding (agent skeleton, WebSocket, IRT)
-- **Phase 4:** Stage 3 implementation (5–8 weeks)
+## Latest Reports
+- **Phase 0–3 report:** `docs/history/2026-05-16-phase-0-3-report.md`
+- **Execution plan (still authoritative):** `docs/history/2026-05-16-execution-plan.md`
 
-## Critical Bug Backlog (P0)
-Tracked in `docs/history/2026-05-16-execution-plan.md` § 3.
+## What's Verified Working
+- Diagnostic flow: start → answer → complete (Redis state round-trips).
+- BKT: stateless, concurrent-safe (50-stream test).
+- 4-agent orchestrator (PRD § 3.2 routing) with deterministic stubs.
+- WebSocket `/api/v1/sessions/{id}/ws` endpoint with JWT auth.
+- Real 2PL IRT in `_select_by_information`.
+- 135-question seed bank across all 39 G3/G4 standards.
+- KaTeX rendering in QuestionCard.
+- Parent + Dashboard pages call live API (zero mock data).
+- `apiClient` attaches `Authorization: Bearer` header.
+- CI hardened (ruff, mypy, bandit, detect-secrets, type-drift gate,
+  forbids direct LLM imports outside `llm_client.py`).
 
-| ID | Component | Summary |
-|----|-----------|---------|
-| C-1 | `assessment_service.start_assessment` | `session_id` and `student_id` never persisted to Redis state |
-| C-2 | `assessment_service._save_skill_state` | Wrong kwargs (`p_mastery` etc.) — model uses `mastery_prob` |
-| C-3 | `student_repository.update_skill_summary` | Reads non-existent `state.p_mastery` attribute |
-| C-4 | `bkt_service.BKTService` | Process-wide singleton corrupts state across concurrent students |
-| C-5 | `learning_plans.submit_session_answer` | Calls non-existent `PyBKT.from_db_record` / `to_db_record` |
-| C-6 | `learning_plans.complete_session` | Reads `practice_session_id` (real col is `session_id`); writes missing `accuracy_percentage` |
-| C-7 | `learning_plan_service.generate_learning_plan` | Stores `standard_code` in `PlanModule.standard_id` (FK violation in prod) |
-| C-8 | `llm_question_generator` | `standard_code` kwarg mismatch; `self.session` (real attr is `self.db_session`); direct `litellm` import |
-| C-9 | `auth.register` / `auth.login` | Wrong variable name `request.x`; non-existent model fields; impersonation via body param |
-| C-10 | `assessments.submit_response/complete` | Missing IDOR check (parent ownership) |
-| C-11 | `apps/web/lib/api-client.ts` | Never attaches `Authorization` header |
-| C-12 | `apps/web/app/(dashboard)/*/page.tsx` | Hard-coded mock data; no API integration |
-
-## Core Documentation
-- **Master Index:** `docs/strategy/00-master-index.md`
-- **Engineering Foundations:** `docs/engineering/ENG-000-foundations.md`
-- **Stage 3 PRD (target):** `docs/specs/05-prd-stage3.md`
-- **Code Review:** Conducted 2026-05-16 (in session history)
-- **Execution Plan:** `docs/history/2026-05-16-execution-plan.md`
+## Test Status
+- **92/92 no-DB tests passing** (was 60 pre-session, couldn't even
+  collect in CI).
+- 7 new test files committed (BKT concurrency, assessment state, IRT
+  math, orchestrator round-trip, WS smoke, seed-bank invariants, PII
+  redaction).
+- Legacy `tests/repositories/*` and `tests/core/test_redis_client.py`
+  still red — pre-existing bugs, not introduced.
 
 ## Critical Patterns (non-negotiable)
-1. **Repository pattern:** All DB access via `src/repositories/`. No raw `select()` in routers.
-2. **LLM routing:** All LLM calls via `src/clients/llm_client.py`. CI gate enforced.
-3. **COPPA:** Local Ollama/Qwen2.5 for all student-facing inference.
+1. **Repository pattern:** All DB access via `src/repositories/`. No raw
+   `select()` in routers.
+2. **LLM routing:** All LLM calls via `src/clients/llm_client.py`.
+   CI gate enforces this.
+3. **COPPA:** Local Ollama/Qwen2.5 for student-facing inference.
 4. **Pydantic v2** for every request/response model.
-5. **`datetime.now(timezone.utc)`** — never `datetime.utcnow()` (deprecated in 3.12).
+5. **`datetime.now(timezone.utc)`** — never `datetime.utcnow()`.
+6. **BKT is stateless.** Pass priors through, never cache on the service.
+
+## Backlog (Stage 3 → MVP)
+See `docs/history/2026-05-16-phase-0-3-report.md` § 4 for the full
+carry-forward list. Highlights:
+- **Phase 4-A:** Assessment Agent — real 15-code error taxonomy.
+- **Phase 4-B:** Tutor Agent — FK validator + frustration model.
+- **Phase 4-C:** Question Generator — cache + live + verification.
+- **Phase 4-D:** Progress Tracker LTM writes + session summary.
+- **Phase 4-E:** LangGraph swap; frontend `useSession` hook + practice UI.
+- **Phase 4-G:** Cost + latency observability (`session_llm_costs`).
+- **Phase 4-H:** 100-session load test (<3s P95, <$0.15/session).
