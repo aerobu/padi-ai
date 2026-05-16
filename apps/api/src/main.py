@@ -21,13 +21,11 @@ from .core.security import verify_jwt
 from .core.limiter import limiter
 from .api.v1.router import router as api_router
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+from .core.logging import configure_logging  # noqa: E402
 
-logger = logging.getLogger(__name__)
 settings = get_settings()
+configure_logging(level=settings.LOG_LEVEL, fmt=settings.LOG_FORMAT)
+logger = logging.getLogger(__name__)
 
 # Initialize Sentry
 if settings.SENTRY_DSN:
