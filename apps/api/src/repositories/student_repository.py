@@ -68,16 +68,18 @@ class StudentRepository(AsyncRepository[Student]):
 
         summary = {
             "total_standards": len(skill_states),
-            "mastered": 0,  # p_mastery >= 0.80
-            "on_par": 0,    # 0.60 <= p_mastery < 0.80
-            "below_par": 0, # p_mastery < 0.60
+            "mastered": 0,   # mastery_prob >= 0.80
+            "on_par": 0,     # 0.60 <= mastery_prob < 0.80
+            "below_par": 0,  # mastery_prob < 0.60
             "not_assessed": 0,
         }
 
+        # Model field is `mastery_prob` (see migration 001 line 192). Fix C-3.
         for state in skill_states:
-            if state.p_mastery >= 0.80:
+            mastery = state.mastery_prob or 0.0
+            if mastery >= 0.80:
                 summary["mastered"] += 1
-            elif state.p_mastery >= 0.60:
+            elif mastery >= 0.60:
                 summary["on_par"] += 1
             else:
                 summary["below_par"] += 1
@@ -86,8 +88,10 @@ class StudentRepository(AsyncRepository[Student]):
 
     async def delete(self, id: str) -> bool:
         """Delete a student (cascades to related records)."""
+        from sqlalchemy import delete as sql_delete
+
         result = await self.session.execute(
-            self.session.delete(self.model(id=id))
+            sql_delete(self.model).where(self.model.id == id)
         )
         await self.session.commit()
         return result.rowcount > 0

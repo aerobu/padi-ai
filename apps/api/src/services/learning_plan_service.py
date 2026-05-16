@@ -1,7 +1,7 @@
 """
 Learning Plan Service for generating and managing personalized learning plans.
 """
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional, List, Dict, Any
 
 from sqlalchemy import select
@@ -99,21 +99,25 @@ class LearningPlanService:
             track,
         )
 
-        # Calculate estimates
+        # Calculate estimates. Columns are INTEGER, so round explicitly
+        # rather than letting Postgres silently truncate or 500 (P1).
+        import math
+        import uuid as _uuid
+
         total_modules = len(modules)
-        total_lessons = sum(m["estimated_sessions"] for m in modules) * 1.5  # ~1.5 lessons per session
+        # ~1.5 lessons per session, rounded up so we never under-provision
+        total_lessons = max(1, math.ceil(sum(m["estimated_sessions"] for m in modules) * 1.5))
         total_minutes = total_lessons * 20  # 20 minutes per lesson
 
-        # Calculate estimated completion date
         sessions_per_week = 3
         minutes_per_session = 20
         minutes_per_week = sessions_per_week * minutes_per_session
         total_weeks = total_minutes / minutes_per_week if minutes_per_week > 0 else 0
         estimated_completion_date = date.today() + timedelta(weeks=total_weeks)
 
-        # Create learning plan
+        now = datetime.now(timezone.utc)
         plan = LearningPlan(
-            id=str(__import__("uuid").uuid4()),
+            id=str(_uuid.uuid4()),
             student_id=student_id,
             assessment_id=assessment.id,
             track=track,
@@ -124,28 +128,36 @@ class LearningPlanService:
             sessions_per_week=sessions_per_week,
             minutes_per_session=minutes_per_session,
             estimated_completion_date=estimated_completion_date,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=now,
+            updated_at=now,
         )
 
         self.session.add(plan)
         await self.session.flush()
 
-        # Create plan modules
+        # Create plan modules — `standard_id` MUST be the Standard UUID, not
+        # the code string. Fix C-7 (previous code wrote codes into the FK).
+        import uuid as _uuid
+
+        now = datetime.now(timezone.utc)
         for i, module_def in enumerate(modules):
             module_status = "available" if i == 0 else "locked"
+            standard_fk = module_def.get("standard_id")
+            if not standard_fk:
+                # Defensive: skip orphan rows rather than violating FK.
+                continue
 
             module = PlanModule(
-                id=str(__import__("uuid").uuid4()),
+                id=str(_uuid.uuid4()),
                 plan_id=plan.id,
-                standard_id=module_def["standard_code"],
+                standard_id=standard_fk,
                 sequence_order=i + 1,
                 status=module_status,
                 lesson_count=module_def["estimated_sessions"],
                 estimated_minutes=module_def["estimated_sessions"] * 20,
                 entry_p_mastery=module_def["p_mastered_initial"],
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=now,
+                updated_at=now,
             )
 
             self.session.add(module)
@@ -197,47 +209,50 @@ class LearningPlanService:
         skill_states: list[StudentSkillState],
         track: str,
     ) -> list[dict]:
-        """
-        Generate ordered list of modules for the learning plan.
+        """Generate an ordered list of modules for the learning plan.
 
-        Returns list of module definitions with:
-        - standard_code
+        Returns module definitions with:
+        - standard_id (UUID, FK to standards.id)        ← fix C-7
+        - standard_code (string like '4.NF.A.1', for display)
         - priority_score
         - p_mastered_initial
         - estimated_sessions
         """
-        # Get skill states with proficiency levels, joined with standard codes
         from sqlalchemy.orm import selectinload
+
         result = await self.session.execute(
             select(StudentSkillState)
             .where(StudentSkillState.student_id == student_id)
             .options(selectinload(StudentSkillState.standard))
         )
-        skill_states_joined = result.scalars().all()
+        skill_states_joined = list(result.scalars().all())
 
-        skill_state_dict = {
-            ss.standard.standard_code: {
-                "p_mastered": ss.mastery_prob,
+        # Build a code → (id, p_mastered, proficiency) map. We keep the
+        # standard's UUID alongside its code so the module FK stays correct
+        # even when the test fixtures don't make `id == code`.
+        skill_state_dict: dict[str, dict] = {}
+        for ss in skill_states_joined:
+            if not ss.standard:
+                continue
+            code = ss.standard.standard_code
+            skill_state_dict[code] = {
+                "standard_id": ss.standard.id,
+                "p_mastered": ss.mastery_prob if ss.mastery_prob is not None else 0.0,
                 "proficiency_level": ss.proficiency_level,
             }
-            for ss in skill_states_joined
-        }
 
-        # Identify deficient skills (p_mastered < 0.85)
         non_mastered = {
             code: data["p_mastered"]
             for code, data in skill_state_dict.items()
             if data["p_mastered"] < self.MASTERY_THRESHOLD
         }
 
-        # Import here to avoid circular imports
-        from src.services.skill_graph_service import get_cached_graph, SkillGraphService
+        from src.services.skill_graph_service import SkillGraphService, get_cached_graph
 
         G = get_cached_graph()
         if G is None:
             raise ValueError("Skill graph not initialized. Call initialize_skill_graph() first.")
 
-        # Use SkillGraphService to rank by priority
         skill_graph_service = SkillGraphService(self.session)
         ranked_skills = skill_graph_service.rank_skills_by_priority(
             non_mastered,
@@ -245,19 +260,21 @@ class LearningPlanService:
             self.MASTERY_THRESHOLD,
         )
 
-        # Build module sequence
-        modules = []
+        modules: list[dict] = []
         for standard_code, priority_score in ranked_skills:
-            p_mastered = non_mastered.get(standard_code, 0.5)
+            data = skill_state_dict.get(standard_code, {})
+            p_mastered = data.get("p_mastered", 0.5)
             estimated_sessions = skill_graph_service.estimate_sessions_to_mastery(p_mastered)
-
-            modules.append({
-                "standard_code": standard_code,
-                "priority_score": priority_score,
-                "p_mastered_initial": p_mastered,
-                "estimated_sessions": estimated_sessions,
-                "track": track,
-            })
+            modules.append(
+                {
+                    "standard_id": data.get("standard_id"),
+                    "standard_code": standard_code,
+                    "priority_score": priority_score,
+                    "p_mastered_initial": p_mastered,
+                    "estimated_sessions": estimated_sessions,
+                    "track": track,
+                }
+            )
 
         return modules
 
@@ -308,8 +325,8 @@ class LearningPlanService:
                 difficulty_range_min=difficulty_range[0],
                 difficulty_range_max=difficulty_range[1],
                 status=LessonStatus.AVAILABLE.value,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
             )
 
             self.session.add(lesson)
@@ -391,7 +408,7 @@ class LearningPlanService:
         # Unlock next module
         next_module = modules[completed_idx + 1]
         next_module.status = "available"
-        next_module.started_at = datetime.utcnow()
+        next_module.started_at = datetime.now(timezone.utc)
 
         await self.session.flush()
         await self.session.refresh(next_module)
@@ -429,17 +446,34 @@ class LearningPlanService:
         module.completed_lessons = lessons_completed
         module.actual_minutes = (module.actual_minutes or 0) + minutes_spent
 
-        # Check if module is now mastered
+        just_completed = False
         if p_mastered >= self.MASTERY_THRESHOLD:
+            if module.status != "completed":
+                just_completed = True
             module.status = "completed"
-            module.completed_at = datetime.utcnow()
-
-            # Unlock next module
+            module.completed_at = datetime.now(timezone.utc)
             await self.unlock_next_module(module.plan_id, module_id)
         elif module.status == "locked":
             module.status = "in_progress"
             if not module.started_at:
-                module.started_at = datetime.utcnow()
+                module.started_at = datetime.now(timezone.utc)
+
+        # Fix P2-T04: plan-level counters were never advancing. Now they do.
+        if just_completed:
+            plan_result = await self.session.execute(
+                select(LearningPlan).where(LearningPlan.id == module.plan_id)
+            )
+            plan = plan_result.scalar_one_or_none()
+            if plan is not None:
+                plan.completed_modules = (plan.completed_modules or 0) + 1
+                plan.completed_lessons = (plan.completed_lessons or 0) + (lessons_completed or 0)
+                if plan.total_modules:
+                    plan.overall_progress = round(
+                        plan.completed_modules / plan.total_modules, 4
+                    )
+                if plan.completed_modules >= (plan.total_modules or 0):
+                    plan.status = LearningPlanStatus.COMPLETED.value
+                    plan.completed_at = datetime.now(timezone.utc)
 
         await self.session.flush()
         await self.session.refresh(module)
@@ -475,13 +509,10 @@ class LearningPlanService:
         return round(total_minutes / minutes_per_week, 1)
 
 
-# Singleton pattern for service access
-_service: Optional[LearningPlanService] = None
-
-
 def get_learning_plan_service(db_session: AsyncSession) -> LearningPlanService:
-    """Get or create a LearningPlanService instance."""
-    global _service
-    if _service is None:
-        _service = LearningPlanService(db_session)
-    return _service
+    """Return a fresh `LearningPlanService` bound to the request session.
+
+    The previous module-level singleton captured the *first* request's session
+    and reused it forever — a closed-session bug waiting to happen.
+    """
+    return LearningPlanService(db_session)

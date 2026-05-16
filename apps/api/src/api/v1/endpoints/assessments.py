@@ -203,6 +203,27 @@ async def get_next_question(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+async def _require_assessment_owned_by_user(
+    assessment_id: str,
+    user_payload: dict,
+    assessment_repository: AssessmentRepository,
+    student_repository: StudentRepository,
+):
+    """Shared IDOR guard. Fix C-10.
+
+    Returns the loaded Assessment if the JWT subject owns the underlying
+    student; raises HTTPException(403/404) otherwise.
+    """
+    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
+    assessment = await assessment_repository.get_by_id(assessment_id)
+    if assessment is None:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    student = await student_repository.get_by_id(assessment.student_id)
+    if student is None or student.parent_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this assessment")
+    return assessment
+
+
 @router.post(
     "/assessments/{assessment_id}/responses",
     response_model=ResponseSubmissionResponse,
@@ -215,21 +236,22 @@ async def submit_response(
     request_data: ResponseSubmission,
     user_payload: dict = Depends(verify_jwt),
     service: AssessmentService = Depends(get_assessment_service),
+    assessment_repository: AssessmentRepository = Depends(get_assessment_repository),
+    student_repository: StudentRepository = Depends(get_student_repository),
 ):
-    """
-    Submit response.
+    """Submit a response to the current question.
 
-    - **assessment_id**: Assessment identifier
-    - **question_id**: Question identifier
-    - **selected_answer**: Selected option (A-D) or numeric answer
-    - **time_spent_ms**: Time spent on question in milliseconds
+    IDOR-protected (fix C-10): the authenticated parent must own the
+    assessment's student. `student_id` is derived from the assessment row,
+    not the JWT subject.
     """
-    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
-
+    assessment = await _require_assessment_owned_by_user(
+        assessment_id, user_payload, assessment_repository, student_repository
+    )
     try:
         result = await service.submit_response(
             assessment_id=assessment_id,
-            student_id=user_id,
+            student_id=assessment.student_id,
             question_id=request_data.question_id,
             selected_answer=request_data.selected_answer,
             time_spent_ms=request_data.time_spent_ms,
@@ -257,12 +279,13 @@ async def complete_assessment(
     user_payload: dict = Depends(verify_jwt),
     db: AsyncSession = Depends(get_db),
     service: AssessmentService = Depends(get_assessment_service),
+    assessment_repository: AssessmentRepository = Depends(get_assessment_repository),
+    student_repository: StudentRepository = Depends(get_student_repository),
 ):
-    """
-    Complete assessment.
-
-    - **assessment_id**: Assessment identifier
-    """
+    """Complete assessment. IDOR-protected (fix C-10)."""
+    await _require_assessment_owned_by_user(
+        assessment_id, user_payload, assessment_repository, student_repository
+    )
     user_id = user_payload.get("sub") or user_payload.get("auth0_id")
     ip = request.client.host if request.client else None
     ua = request.headers.get("user-agent")
@@ -313,16 +336,9 @@ async def get_results(
 
     - **assessment_id**: Assessment identifier
     """
-    # IDOR guard: verify the authenticated parent owns the assessment's student.
-    user_id = user_payload.get("sub") or user_payload.get("auth0_id")
-    assessment = await assessment_repository.get_by_id(assessment_id)
-    if assessment is None:
-        raise HTTPException(status_code=404, detail="Assessment not found")
-    
-    student = await student_repository.get_by_id(assessment.student_id)
-    if student is None or student.parent_id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized for this assessment")
-
+    assessment = await _require_assessment_owned_by_user(
+        assessment_id, user_payload, assessment_repository, student_repository
+    )
     try:
         result = await service.get_results(
             assessment_id=assessment_id,

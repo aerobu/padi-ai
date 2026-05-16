@@ -2,7 +2,7 @@
 Learning Plan endpoints for personalized student learning plans.
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 from uuid import uuid4
 
@@ -219,7 +219,25 @@ async def get_learning_plan(
                 detail=f"No active learning plan found for student {student_id}",
             )
 
-        # Build response
+        # Resolve standard codes in bulk so the response carries human-readable
+        # codes ("4.NF.A.1") while the model FK stays UUID. Fix C-7 surface.
+        from src.models.models import Standard
+
+        modules = list(getattr(plan, "modules", []))
+        standard_ids = [m.standard_id for m in modules if m.standard_id]
+        std_rows = (
+            (
+                await db.execute(
+                    select(Standard).where(Standard.id.in_(standard_ids))
+                )
+            )
+            .scalars()
+            .all()
+            if standard_ids
+            else []
+        )
+        std_code_by_id = {s.id: s.standard_code for s in std_rows}
+
         return {
             "plan": {
                 "id": plan.id,
@@ -230,6 +248,7 @@ async def get_learning_plan(
                 "completed_modules": plan.completed_modules,
                 "total_lessons": plan.total_lessons,
                 "completed_lessons": plan.completed_lessons,
+                "overall_progress": plan.overall_progress,
                 "estimated_total_minutes": plan.estimated_total_minutes,
                 "estimated_completion_date": plan.estimated_completion_date.isoformat()
                 if plan.estimated_completion_date
@@ -238,7 +257,8 @@ async def get_learning_plan(
                 "modules": [
                     {
                         "id": m.id,
-                        "standard_code": m.standard_id,
+                        "standard_id": m.standard_id,
+                        "standard_code": std_code_by_id.get(m.standard_id, m.standard_id),
                         "sequence_order": m.sequence_order,
                         "status": m.status,
                         "lesson_count": m.lesson_count,
@@ -248,17 +268,17 @@ async def get_learning_plan(
                         "exit_p_mastery": m.exit_p_mastery,
                         "lessons": [
                             {
-                                "id": l.id,
-                                "sequence_order": l.sequence_order,
-                                "lesson_type": l.lesson_type,
-                                "title": l.title,
-                                "status": l.status,
-                                "question_count": l.question_count,
+                                "id": lsn.id,
+                                "sequence_order": lsn.sequence_order,
+                                "lesson_type": lsn.lesson_type,
+                                "title": lsn.title,
+                                "status": lsn.status,
+                                "question_count": lsn.question_count,
                             }
-                            for l in getattr(m, "lessons", [])
+                            for lsn in getattr(m, "lessons", [])
                         ],
                     }
-                    for m in getattr(plan, "modules", [])
+                    for m in modules
                 ],
             }
         }
@@ -430,13 +450,22 @@ async def get_next_lesson(
                 detail="No available lessons in current module",
             )
 
+        # Resolve standard code from FK
+        from src.models.models import Standard as _Std
+
+        std_row = (
+            await db.execute(select(_Std).where(_Std.id == target_module.standard_id))
+        ).scalar_one_or_none()
+        std_code = std_row.standard_code if std_row else target_module.standard_id
+
         return {
             "module": {
                 "id": target_module.id,
-                "standard_code": target_module.standard_id,
-                "module_name": SkillGraphService(None).get_module_name(target_module.standard_id)
-                if hasattr(SkillGraphService, 'get_module_name')
-                else target_module.standard_id,
+                "standard_id": target_module.standard_id,
+                "standard_code": std_code,
+                "module_name": SkillGraphService(None).get_module_name(std_code)
+                if hasattr(SkillGraphService, "get_module_name")
+                else std_code,
             },
             "lesson": {
                 "id": target_lesson.id,
@@ -702,11 +731,19 @@ async def submit_session_answer(
         skill_state = skill_state_result.scalar_one_or_none()
 
         if skill_state:
-            from src.services.bkt_impl import PyBKT
+            # Fix C-5: previous code called non-existent PyBKT.from_db_record/
+            # to_db_record. Use the centralized helpers in bkt_service.
+            from src.services.bkt_service import (
+                BKTService,
+                apply_bkt_state_to_row,
+                bkt_state_from_row,
+            )
 
-            bkt = PyBKT.from_db_record(skill_state)
-            bkt.forward_inference(1 if is_correct else 0)
-            bkt.to_db_record(skill_state)
+            prior = bkt_state_from_row(skill_state)
+            updated = BKTService().update(prior, is_correct)
+            apply_bkt_state_to_row(skill_state, updated)
+            skill_state.times_practiced = (skill_state.times_practiced or 0) + 1
+            skill_state.last_practiced_at = datetime.now(timezone.utc)
 
         await db.commit()
 
@@ -790,8 +827,13 @@ async def complete_session(
         if not module:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module not found")
 
+        # Eager-load modules to avoid MissingGreenlet on later attribute access
+        from sqlalchemy.orm import selectinload
+
         plan_result = await db.execute(
-            select(PlanModel).where(PlanModel.id == module.plan_id)
+            select(PlanModel)
+            .where(PlanModel.id == module.plan_id)
+            .options(selectinload(PlanModel.modules))
         )
         plan = plan_result.scalar_one_or_none()
 
@@ -814,20 +856,22 @@ async def complete_session(
                 detail="You do not have permission to complete this session",
             )
 
-        # Mark session as complete
-        session.status = PracticeSessionStatus.COMPLETED
-        session.completed_at = datetime.utcnow()
+        # Mark session as complete (fix C-6: was using non-existent column
+        # `practice_session_id`; real column is `session_id`).
+        session.status = PracticeSessionStatus.COMPLETED.value
+        session.completed_at = datetime.now(timezone.utc)
 
-        # Calculate accuracy from responses
         responses_result = await db.execute(
             select(PracticeSessionQuestion)
-            .where(PracticeSessionQuestion.practice_session_id == session_id)
+            .where(PracticeSessionQuestion.session_id == session_id)
         )
-        responses = responses_result.scalars().all()
+        responses = list(responses_result.scalars().all())
 
-        if responses:
-            correct_count = sum(1 for r in responses if r.is_correct)
-            session.accuracy_percentage = (correct_count / len(responses)) * 100
+        answered = [r for r in responses if r.is_correct is not None]
+        if answered:
+            correct_count = sum(1 for r in answered if r.is_correct)
+            session.accuracy_percentage = (correct_count / len(answered)) * 100
+            session.question_count_answered = len(answered)
 
         await db.commit()
 

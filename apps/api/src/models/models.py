@@ -755,6 +755,13 @@ class PracticeSession(Base):
     bkt_state_before = Column(JSON, nullable=True)
     bkt_state_after = Column(JSON, nullable=True)
 
+    # Accuracy tracking (added in migration 006 — fix C-6)
+    accuracy_percentage = Column(Float, nullable=True)
+    question_count_answered = Column(Integer, default=0)
+
+    # Time tracking
+    actual_minutes = Column(Integer, default=0)
+
     # Timestamps
     started_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)

@@ -16,59 +16,93 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class BKTState:
-    """Bayesian Knowledge Tracing state for a skill."""
+    """Bayesian Knowledge Tracing state for a skill.
 
-    p_mastery: float = 0.0  # P(L) - Probability of mastery
-    p_guess: float = 0.25   # P(G) - Probability of guessing correctly
-    p_slip: float = 0.2     # P(S) - Probability of slipping
-    p_learning: float = 0.5 # P(T) - Probability of transitioning to mastered state
+    NOTE: The dataclass uses `p_mastery/p_guess/p_slip/p_learning` while the
+    `StudentSkillState` SQLAlchemy model stores
+    `mastery_prob/guess_prob/slip_prob/learning_rate`. Always go through
+    `bkt_state_from_row` / `apply_bkt_state_to_row` at the boundary; never
+    set kwargs on the model directly.
+    """
+
+    p_mastery: float = 0.0   # P(L) — probability of mastery
+    p_guess: float = 0.25    # P(G) — probability of guessing correctly
+    p_slip: float = 0.2      # P(S) — probability of slipping
+    p_learning: float = 0.5  # P(T) — probability of transitioning to mastered
+
+
+def bkt_state_from_row(row: Any) -> BKTState:
+    """Map a `StudentSkillState` ORM row to a `BKTState` dataclass.
+
+    Centralized to keep field-name translation in one place (fix C-2/C-3).
+    """
+    return BKTState(
+        p_mastery=row.mastery_prob if row.mastery_prob is not None else 0.0,
+        p_guess=row.guess_prob if row.guess_prob is not None else 0.25,
+        p_slip=row.slip_prob if row.slip_prob is not None else 0.20,
+        p_learning=row.learning_rate if row.learning_rate is not None else 0.50,
+    )
+
+
+def apply_bkt_state_to_row(row: Any, state: BKTState) -> None:
+    """Write a `BKTState` back to a `StudentSkillState` ORM row.
+
+    Centralized to keep field-name translation in one place (fix C-2/C-3).
+    """
+    row.mastery_prob = state.p_mastery
+    row.guess_prob = state.p_guess
+    row.slip_prob = state.p_slip
+    row.learning_rate = state.p_learning
 
 
 class BKTService:
-    """Service for Bayesian Knowledge Tracing operations."""
+    """Stateless Bayesian Knowledge Tracing calculator.
 
-    # Default BKT parameters (standard values from Corbett & Anderson 1994)
-    DEFAULT_P_GUESS = 0.25
-    DEFAULT_P_SLIP = 0.20
-    DEFAULT_P_LEARNING = 0.50
-    DEFAULT_P_MASTERY = 0.0  # Start with no mastery assumed
+    All methods are pure functions on inputs; no instance state is mutated.
+    This is a deliberate redesign (fix C-4, 2026-05-16 review) — the previous
+    implementation kept a process-wide `_bkt_instances` dict keyed only by
+    `standard_code`, which caused concurrent students working on the same
+    skill to corrupt each other's mastery state.
+    """
 
-    def __init__(self):
-        """Initialize BKT service."""
-        self._bkt_instances: Dict[str, PyBKT] = {}
-
-    def get_or_create_bkt(
-        self,
-        standard_code: str,
-        p_l0: Optional[float] = None,
-        p_trans: Optional[float] = None,
-        p_slip: Optional[float] = None,
-        p_guess: Optional[float] = None,
-    ) -> PyBKT:
-        """Get or create a BKT instance for a standard."""
-        if standard_code not in self._bkt_instances:
-            self._bkt_instances[standard_code] = PyBKT(
-                p_l0=p_l0 or self.DEFAULT_P_MASTERY,
-                p_trans=p_trans or self.DEFAULT_P_LEARNING,
-                p_slip=p_slip or self.DEFAULT_P_SLIP,
-                p_guess=p_guess or self.DEFAULT_P_GUESS,
-            )
-        return self._bkt_instances[standard_code]
+    # Default BKT parameters (Corbett & Anderson 1994).
+    DEFAULT_P_GUESS: float = 0.25
+    DEFAULT_P_SLIP: float = 0.20
+    DEFAULT_P_LEARNING: float = 0.50
+    DEFAULT_P_MASTERY: float = 0.0
 
     def initialize_state(
         self,
-        standard_code: str,
         p_l0: Optional[float] = None,
         p_trans: Optional[float] = None,
         p_slip: Optional[float] = None,
         p_guess: Optional[float] = None,
     ) -> BKTState:
-        """Initialize BKT state for a standard."""
+        """Return a fresh BKTState with the supplied (or default) parameters."""
         return BKTState(
-            p_mastery=p_l0 or self.DEFAULT_P_MASTERY,
-            p_guess=p_guess or self.DEFAULT_P_GUESS,
-            p_slip=p_slip or self.DEFAULT_P_SLIP,
-            p_learning=p_trans or self.DEFAULT_P_LEARNING,
+            p_mastery=p_l0 if p_l0 is not None else self.DEFAULT_P_MASTERY,
+            p_guess=p_guess if p_guess is not None else self.DEFAULT_P_GUESS,
+            p_slip=p_slip if p_slip is not None else self.DEFAULT_P_SLIP,
+            p_learning=p_trans if p_trans is not None else self.DEFAULT_P_LEARNING,
+        )
+
+    def update(self, prior: BKTState, response_correct: bool) -> BKTState:
+        """Single-step BKT update — pure function.
+
+        Returns a new BKTState; does not mutate `prior`.
+        """
+        bkt = PyBKT(
+            p_l0=prior.p_mastery,
+            p_trans=prior.p_learning,
+            p_slip=prior.p_slip,
+            p_guess=prior.p_guess,
+        )
+        bkt.forward_inference(is_correct=response_correct)
+        return BKTState(
+            p_mastery=bkt.p_l,
+            p_guess=bkt.p_guess,
+            p_slip=bkt.p_slip,
+            p_learning=bkt.p_trans,
         )
 
     def update_state(
@@ -80,76 +114,22 @@ class BKTService:
         p_slip: Optional[float] = None,
         p_guess: Optional[float] = None,
     ) -> BKTState:
-        """
-        Update BKT state based on a student response.
+        """Back-compat wrapper. Prefer `update(prior, response_correct)`.
 
-        Args:
-            standard_code: The standard/skill code
-            response_correct: Whether the response was correct
-            p_l0: Initial mastery probability (optional)
-            p_trans: Transition probability (optional)
-            p_slip: Slip probability (optional)
-            p_guess: Guess probability (optional)
-
-        Returns:
-            Updated BKT state
+        Constructs a transient prior from kwargs and applies one BKT step.
+        `standard_code` is accepted but ignored (no longer used for caching).
         """
-        bkt = self.get_or_create_bkt(
-            standard_code=standard_code,
-            p_l0=p_l0,
-            p_trans=p_trans,
-            p_slip=p_slip,
-            p_guess=p_guess,
+        prior = self.initialize_state(
+            p_l0=p_l0, p_trans=p_trans, p_slip=p_slip, p_guess=p_guess
         )
+        return self.update(prior, response_correct)
 
-        # Run BKT inference
-        bkt.forward_inference(is_correct=response_correct)
-
-        # Extract state
-        state = bkt.get_node(standard_code).state
-
-        return BKTState(
-            p_mastery=state.p_l,
-            p_guess=bkt.p_guess,
-            p_slip=bkt.p_slip,
-            p_learning=bkt.p_trans,
-        )
-
-    def predict_probability(
-        self,
-        standard_code: str,
-        response_correct: bool,
-        p_l0: Optional[float] = None,
-        p_trans: Optional[float] = None,
-        p_slip: Optional[float] = None,
-        p_guess: Optional[float] = None,
-    ) -> float:
-        """
-        Predict probability of correct response.
-
-        P(C) = P(L) * (1 - S) + (1 - P(L)) * G
-
-        Where:
-        - P(L) = probability of mastery
-        - S = slip probability
-        - G = guess probability
-        """
-        state = self.update_state(
-            standard_code=standard_code,
-            response_correct=response_correct,
-            p_l0=p_l0,
-            p_trans=p_trans,
-            p_slip=p_slip,
-            p_guess=p_guess,
-        )
-
-        # P(correct) = P(mastery) * (1 - slip) + (1 - P(mastery)) * guess
-        p_correct = (
+    def predict_probability(self, state: BKTState) -> float:
+        """P(correct | state) = P(L) * (1 - S) + (1 - P(L)) * G."""
+        return (
             state.p_mastery * (1 - state.p_slip)
             + (1 - state.p_mastery) * state.p_guess
         )
-
-        return p_correct
 
     def batch_update(
         self,
@@ -160,44 +140,16 @@ class BKTService:
         p_slip: Optional[float] = None,
         p_guess: Optional[float] = None,
     ) -> BKTState:
-        """
-        Update BKT state with a batch of responses.
-
-        Args:
-            standard_code: The standard/skill code
-            responses: List of correct/incorrect responses (True/False)
-            p_l0: Initial mastery probability (optional)
-            p_trans: Transition probability (optional)
-            p_slip: Slip probability (optional)
-            p_guess: Guess probability (optional)
-
-        Returns:
-            Final BKT state after all responses
-        """
+        """Fold `update` over a response sequence and return the final state."""
         state = self.initialize_state(
-            standard_code=standard_code,
-            p_l0=p_l0,
-            p_trans=p_trans,
-            p_slip=p_slip,
-            p_guess=p_guess,
+            p_l0=p_l0, p_trans=p_trans, p_slip=p_slip, p_guess=p_guess
         )
-
-        for response in responses:
-            state = self.update_state(
-                standard_code=standard_code,
-                response_correct=response,
-                p_l0=state.p_mastery,  # Use updated mastery as new L0
-                p_trans=p_trans or state.p_learning,
-                p_slip=p_slip or state.p_slip,
-                p_guess=p_guess or state.p_guess,
-            )
-
+        for is_correct in responses:
+            state = self.update(state, is_correct)
         return state
 
-    def get_state_dict(
-        self, state: BKTState
-    ) -> Dict[str, float]:
-        """Convert BKTState to dictionary for Redis storage."""
+    def get_state_dict(self, state: BKTState) -> Dict[str, float]:
+        """Serialize a BKTState for Redis (uses BKTState field names)."""
         return {
             "p_mastery": state.p_mastery,
             "p_guess": state.p_guess,
@@ -205,10 +157,8 @@ class BKTService:
             "p_learning": state.p_learning,
         }
 
-    def state_from_dict(
-        self, data: Dict[str, float]
-    ) -> BKTState:
-        """Convert dictionary back to BKTState."""
+    def state_from_dict(self, data: Dict[str, float]) -> BKTState:
+        """Deserialize a BKTState from a dict (Redis or API payload)."""
         return BKTState(
             p_mastery=data.get("p_mastery", 0.0),
             p_guess=data.get("p_guess", 0.25),
@@ -216,42 +166,16 @@ class BKTService:
             p_learning=data.get("p_learning", 0.50),
         )
 
-    def classify_mastery(
-        self, p_mastery: float
-    ) -> str:
-        """
-        Classify mastery level.
-
-        Args:
-            p_mastery: Probability of mastery (0.0 to 1.0)
-
-        Returns:
-            Classification string: 'low', 'medium', 'high'
-        """
+    def classify_mastery(self, p_mastery: float) -> str:
+        """Classify mastery level into 'low' | 'medium' | 'high'."""
         if p_mastery >= 0.80:
             return "high"
-        elif p_mastery >= 0.60:
+        if p_mastery >= 0.60:
             return "medium"
-        else:
-            return "low"
-
-    def clear_instance(self, standard_code: str) -> None:
-        """Clear BKT instance for a standard."""
-        if standard_code in self._bkt_instances:
-            del self._bkt_instances[standard_code]
-
-    def clear_all(self) -> None:
-        """Clear all BKT instances."""
-        self._bkt_instances.clear()
-
-
-# Singleton instance
-_bkt_service: Optional[BKTService] = None
+        return "low"
 
 
 def get_bkt_service() -> BKTService:
-    """Get singleton BKT service instance."""
-    global _bkt_service
-    if _bkt_service is None:
-        _bkt_service = BKTService()
-    return _bkt_service
+    """Return a fresh `BKTService`. The service is stateless, so a new
+    instance per call is cheap and prevents accidental shared-state bugs."""
+    return BKTService()

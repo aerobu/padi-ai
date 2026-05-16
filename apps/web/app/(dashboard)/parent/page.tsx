@@ -1,198 +1,193 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@padi/ui/card";
+
 import { Button } from "@padi/ui/button";
-import { Badge } from "@padi/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@padi/ui/card";
 import { Progress } from "@padi/ui/progress";
-import { HeroCard } from "@padi/ui/hero-card";
-import { Divider } from "@padi/ui/divider";
-import Link from "next/link";
+import { Badge } from "@padi/ui/badge";
 
-interface Student {
-  id: string;
-  display_name: string;
-  grade_level: number;
-  avatar_id: string;
-}
+import { apiClient, ApiRequestError } from "@/lib/api-client";
 
-interface LearningPlan {
-  id: string;
-  student_id: string;
-  track: "catch_up" | "on_track" | "accelerate";
-  status: string;
+interface ChildSummary {
+  child_id: string;
+  name: string;
+  grade: number;
+  track: string | null;
+  plan_start: string | null;
+  estimated_completion: string | null;
+  overall_progress: number;
+  modules_completed: number;
   total_modules: number;
-  completed_modules: number;
-  total_lessons: number;
-  completed_lessons: number;
-  estimated_total_minutes: number;
-  estimated_completion_date: string;
-  created_at: string;
-  modules: Array<{
-    id: string;
-    standard_code: string;
-    status: string;
-    completed_lessons: number;
-    lesson_count: number;
-  }>;
 }
 
-interface ActivityLog {
-  id: string;
-  student_id: string;
-  action: string;
-  timestamp: string;
-  details: string;
+interface DashboardResponse {
+  children: ChildSummary[];
 }
 
-const trackLabels: Record<string, { label: string; description: string }> = {
-  catch_up: { label: "Catch Up", description: "Focusing on foundational skills before moving to grade-level content" },
-  on_track: { label: "On Track", description: "Making steady progress through the curriculum" },
-  accelerate: { label: "Accelerate", description: "Ready for advanced challenges and enrichment" },
+const trackLabels: Record<string, string> = {
+  catch_up: "Catch Up",
+  on_track: "On Track",
+  accelerate: "Accelerate",
 };
 
-export default function ParentDashboard() {
-  const router = useRouter();
-  const [selectedStudentId] = useState<string | null>("demo-student");
-  const [currentPlan] = useState<LearningPlan | null>({
-    id: "demo",
-    student_id: "demo-student",
-    track: "on_track",
-    status: "active",
-    total_modules: 12,
-    completed_modules: 3,
-    total_lessons: 48,
-    completed_lessons: 2,
-    estimated_total_minutes: 3600,
-    estimated_completion_date: "2026-08-15",
-    created_at: "2026-04-01",
-    modules: [
-      { id: "1", standard_code: "4.NBT", status: "completed", completed_lessons: 4, lesson_count: 4 },
-      { id: "2", standard_code: "4.OA", status: "completed", completed_lessons: 3, lesson_count: 3 },
-      { id: "3", standard_code: "4.NF", status: "in_progress", completed_lessons: 2, lesson_count: 5 },
-      { id: "4", standard_code: "4.MD", status: "available", completed_lessons: 0, lesson_count: 4 },
-      { id: "5", standard_code: "4.G", status: "available", completed_lessons: 0, lesson_count: 3 },
-    ],
-  });
-  const [loading] = useState(false);
+function loadUserIdFromCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/padi_user_id=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
-  const progressPercentage = currentPlan ? (currentPlan.completed_modules / currentPlan.total_modules) * 100 : 0;
-  const estimatedWeeks = currentPlan ? Math.round(currentPlan.estimated_total_minutes / (20 * 3 * 5)) : 0;
+export default function ParentDashboardPage() {
+  const router = useRouter();
+  const [children, setChildren] = useState<ChildSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const userId = loadUserIdFromCookie();
+      if (!userId) {
+        setError("Sign in to view your dashboard.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const data = (await apiClient.getParentDashboard(userId)) as DashboardResponse;
+        if (!cancelled) setChildren(data.children ?? []);
+      } catch (e) {
+        if (!cancelled) {
+          if (e instanceof ApiRequestError && e.status === 401) {
+            router.push("/login");
+            return;
+          }
+          setError(e instanceof Error ? e.message : "Failed to load dashboard");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-green-600 mx-auto" />
-          <p className="mt-4 text-[14px] text-neutral-500">Loading dashboard...</p>
+          <p className="mt-4 text-[14px] text-neutral-500">Loading dashboard…</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Student Header */}
-      <HeroCard label="Jordan Smith · Grade 4" value="On Track" sub="Making steady progress through the curriculum" />
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle className="text-[12px] font-semibold uppercase tracking-[.06em] text-neutral-400">Learning Plan Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p className="text-[22px] font-bold tabular-nums text-green-600">25%</p>
-              <p className="text-[14px] text-neutral-500">{currentPlan?.completed_modules} of {currentPlan?.total_modules} modules</p>
-              <Progress value={progressPercentage} className="h-2" color="green" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle className="text-[12px] font-semibold uppercase tracking-[.06em] text-neutral-400">Time to Mastery</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[22px] font-bold tabular-nums text-green-600">{estimatedWeeks}</p>
-            <p className="text-[14px] text-neutral-500 mt-1">weeks at 20 min/day</p>
-          </CardContent>
-        </Card>
-
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle className="text-[12px] font-semibold uppercase tracking-[.06em] text-neutral-400">Current Track</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {currentPlan && (
-              <Badge variant="green" showDot>{trackLabels[currentPlan.track].label}</Badge>
-            )}
-            <p className="text-[14px] text-neutral-500">{trackLabels[currentPlan?.track || "on_track"].description}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Overall Progress */}
+  if (error) {
+    return (
       <Card className="p-6">
         <CardHeader>
-          <CardTitle>Overall Progress</CardTitle>
+          <CardTitle>Couldn&apos;t load your dashboard</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {currentPlan && (
-            <>
-              <Progress value={progressPercentage} className="h-3" color="green" />
-              <p className="text-[14px] text-neutral-500 text-center">
-                {currentPlan.completed_lessons} of {currentPlan.total_lessons} lessons completed
-              </p>
-            </>
-          )}
+          <p className="text-[14px] text-neutral-500">{error}</p>
+          <Button onClick={() => router.refresh()}>Try again</Button>
         </CardContent>
       </Card>
+    );
+  }
 
-      {/* Module Cards */}
+  if (children.length === 0) {
+    return (
+      <Card className="p-6">
+        <CardHeader>
+          <CardTitle>No children yet</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-[14px] text-neutral-500">
+            Add a child profile to start tracking their progress.
+          </p>
+          <Button onClick={() => router.push("/create-student")}>
+            Add a child
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-display-md text-neutral-900">
+            Parent Dashboard
+          </h1>
+          <p className="text-body-md text-neutral-500 mt-1">
+            Welcome back! Here&apos;s how your children are progressing.
+          </p>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        <h2 className="text-display-sm text-neutral-900">Modules</h2>
-        {currentPlan?.modules.map((module) => (
-          <Card key={module.id} className={module.status === "available" ? "ring-2 ring-green-500" : ""}>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-semibold text-neutral-900">{module.standard_code}</span>
-                <Badge
-                  variant={
-                    module.status === "completed" ? "green" :
-                    module.status === "in_progress" ? "terra" :
-                    "default"
-                  }
-                  showDot
-                >
-                  {module.status}
-                </Badge>
+        {children.map((child) => (
+          <Card key={child.child_id} className="p-6">
+            <CardContent className="space-y-4 p-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-[18px] font-semibold text-neutral-900">
+                    {child.name}
+                  </h2>
+                  <p className="text-[14px] text-neutral-500">
+                    Grade {child.grade}
+                    {child.track ? ` · ${trackLabels[child.track] ?? child.track}` : ""}
+                  </p>
+                </div>
+                {child.track && (
+                  <Badge variant="green" showDot>
+                    {trackLabels[child.track] ?? child.track}
+                  </Badge>
+                )}
               </div>
-              <Progress
-                value={(module.completed_lessons / module.lesson_count) * 100}
-                color={module.status === "completed" ? "green" : "neutral"}
-                className="h-2"
-              />
+
+              {child.total_modules > 0 ? (
+                <>
+                  <Progress
+                    value={child.overall_progress * 100}
+                    className="h-2"
+                    color="green"
+                  />
+                  <p className="text-[14px] text-neutral-500">
+                    {child.modules_completed} of {child.total_modules} modules
+                    completed
+                  </p>
+                </>
+              ) : (
+                <p className="text-[14px] text-neutral-500">
+                  No learning plan yet — start the diagnostic to generate one.
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    router.push(`/dashboard/learning-plan/${child.child_id}`)
+                  }
+                >
+                  View plan
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push("/diagnostic/start")}
+                >
+                  Start practice
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      <Divider />
-      <div className="flex gap-4">
-        {currentPlan && (
-          <Button asChild size="lg">
-            <Link href={`/dashboard/learning-plan/${selectedStudentId}`}>
-              View Full Learning Plan
-            </Link>
-          </Button>
-        )}
-        <Button asChild size="lg" variant="outline">
-          <Link href="/diagnostic/start">Start Assessment</Link>
-        </Button>
       </div>
     </div>
   );

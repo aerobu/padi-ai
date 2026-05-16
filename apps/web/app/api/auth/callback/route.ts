@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ACCESS_TOKEN_COOKIE } from '@/lib/auth-token';
 
 /**
  * Auth0 Callback Route
@@ -69,15 +70,20 @@ export async function GET(request: NextRequest) {
 
     const tokenData = await tokenResponse.json();
 
-    // Store tokens in httpOnly cookie (or use session)
+    // Store the access token in an httpOnly cookie. The /api/auth/token
+    // route handler exposes it to client components so apiClient can attach
+    // an Authorization: Bearer header (fix C-11).
     const response = NextResponse.redirect(returnTo);
-    response.cookies.set('auth_token', tokenData.access_token, {
+    const cookieOpts = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 86400, // 24 hours
+      sameSite: 'lax' as const,
+      maxAge: 86400, // 24h
       path: '/',
-    });
+    };
+    response.cookies.set(ACCESS_TOKEN_COOKIE, tokenData.access_token, cookieOpts);
+    // Back-compat for any code still reading 'auth_token'.
+    response.cookies.set('auth_token', tokenData.access_token, cookieOpts);
 
     return response;
   } catch (err) {

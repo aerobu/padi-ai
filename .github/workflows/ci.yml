@@ -11,216 +11,218 @@ env:
   PYTHON_VERSION: "3.12"
 
 jobs:
-  # Lint and type-check for all packages
-  lint:
-    name: Lint
+  # ---------------------------------------------------------------------------
+  # Frontend pipeline
+  # ---------------------------------------------------------------------------
+  lint-frontend:
+    name: Lint (Frontend)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Run lint
-        run: pnpm lint
-
-  # Type-check frontend
   type-check-frontend:
     name: Type Check (Frontend)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm type-check
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Type check
-        run: pnpm type-check
-
-  # Type-check backend
-  type-check-backend:
-    name: Type Check (Backend)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        working-directory: apps/api
-        run: |
-          pip install mypy
-
-      - name: Type check
-        working-directory: apps/api
-        run: |
-          mypy src --ignore-missing-imports
-
-  # Test frontend
   test-frontend:
     name: Test (Frontend)
     runs-on: ubuntu-latest
-    needs: [lint, type-check-frontend]
+    needs: [lint-frontend, type-check-frontend]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps
+        working-directory: apps/web
+      - run: pnpm test --run
+        working-directory: apps/web
+      - run: pnpm test:e2e
         working-directory: apps/web
 
-      - name: Run unit tests
-        run: pnpm test --run
-        working-directory: apps/web
+  # ---------------------------------------------------------------------------
+  # Backend pipeline
+  # ---------------------------------------------------------------------------
+  lint-backend:
+    name: Lint + SAST (Backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+      - name: Install dev deps
+        working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - name: ruff
+        working-directory: apps/api
+        run: ruff check src tests scripts
+      - name: bandit
+        working-directory: apps/api
+        run: bandit -r src -c pyproject.toml -ll
+      - name: detect-secrets
+        run: |
+          pip install detect-secrets
+          detect-secrets scan --baseline .secrets.baseline || \
+            (echo "::error::Secret baseline drift; run detect-secrets scan to update" && exit 1)
+        continue-on-error: true   # baseline may not exist yet on first PR
+      - name: Forbid direct LLM imports outside llm_client
+        run: |
+          OFFENDERS=$(grep -RIn --include='*.py' \
+            -E 'from litellm import (a)?completion|^import litellm$|from anthropic import|from openai import' \
+            apps/api/src 2>/dev/null \
+            | grep -v 'apps/api/src/clients/llm_client.py' || true)
+          if [ -n "$OFFENDERS" ]; then
+            echo "::error::Direct LLM SDK imports found outside clients/llm_client.py:"
+            echo "$OFFENDERS"
+            exit 1
+          fi
 
-      - name: Run E2E tests
-        run: pnpm test:e2e
-        working-directory: apps/web
+  type-check-backend:
+    name: Type Check (Backend)
+    runs-on: ubuntu-latest
+    needs: [lint-backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+      - working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - working-directory: apps/api
+        run: mypy src
 
-  # Test backend
   test-backend:
     name: Test (Backend)
     runs-on: ubuntu-latest
-    needs: [lint, type-check-backend]
+    needs: [lint-backend, type-check-backend]
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: padi_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/padi_test
+      REDIS_URL: redis://localhost:6379/0
+      ENCRYPTION_KEY_PASSPHRASE: ci-test-passphrase-32-characters-ok
+      AUTH0_SECRET: ci-test-secret
+      AUTH0_BASE_URL: http://test.local
+      AUTH0_ISSUER_BASE_URL: https://test.auth0.com
+      AUTH0_CLIENT_ID: test-client-id
+      AUTH0_CLIENT_SECRET: test-client-secret
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
+          cache: "pip"
+      - working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - name: Run tests with coverage
         working-directory: apps/api
-        run: |
-          pip install pytest pytest-asyncio
+        run: pytest -q --strict-markers --strict-config --cov=src --cov-report=term --cov-report=xml --cov-fail-under=70
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: apps/api/coverage.xml
 
-      - name: Run tests
-        working-directory: apps/api
-        run: |
-          pytest tests/ -v
-
-  # Build frontend
+  # ---------------------------------------------------------------------------
+  # Builds
+  # ---------------------------------------------------------------------------
   build-frontend:
     name: Build (Frontend)
     runs-on: ubuntu-latest
-    needs: [lint, type-check-frontend, test-frontend]
+    needs: [test-frontend]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build
-        run: pnpm build
-
-  # Build backend
   build-backend:
     name: Build (Backend)
     runs-on: ubuntu-latest
-    needs: [lint, type-check-backend, test-backend]
+    needs: [test-backend]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Build
-        working-directory: apps/api
+      - working-directory: apps/api
         run: |
           pip install build
           python -m build
 
-  # Deploy to Vercel (main branch only)
+  # ---------------------------------------------------------------------------
+  # Deploy (main branch only)
+  # ---------------------------------------------------------------------------
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [build-frontend, build-backend]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
-
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: pnpm add -g vercel
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
-
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
-
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web

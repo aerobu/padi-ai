@@ -68,37 +68,97 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(autouse=True)
-def mock_redis_client():
-    """Mock Redis client and override it in the app."""
-    mock_redis = MagicMock()
-    mock_redis.get = AsyncMock(return_value=None)
-    mock_redis.set = AsyncMock(return_value=True)
-    mock_redis.delete = AsyncMock(return_value=True)
-    mock_redis.exists = AsyncMock(return_value=False)
-    mock_redis.get_active_consent = AsyncMock(return_value=False)
-    mock_redis.set_active_consent = AsyncMock(return_value=True)
-    mock_redis.revoke_active_consent = AsyncMock(return_value=True)
-    mock_redis.connect = AsyncMock(return_value=None)
-    mock_redis.close = AsyncMock(return_value=None)
-    
-    # Specific assessment state methods
-    mock_redis.save_assessment_state = AsyncMock(return_value=None)
-    mock_redis.get_assessment_state = AsyncMock(return_value=None)
-    mock_redis.delete_assessment_state = AsyncMock(return_value=None)
-    mock_redis.set_question_pool = AsyncMock(return_value=None)
-    mock_redis.get_question_pool = AsyncMock(return_value=None)
-    mock_redis.set_current_question = AsyncMock(return_value=None)
-    mock_redis.get_current_question = AsyncMock(return_value=None)
+class InMemoryRedisClient:
+    """Dict-backed RedisClient that round-trips state like real Redis.
 
-    # Override the dependency in the app
-    app.dependency_overrides[get_redis_client] = lambda: mock_redis
-    
-    # Also patch the module-level singleton instance if it exists
-    with patch("src.core.redis_client._redis_client", mock_redis), \
-         patch("src.core.redis_client.get_redis_client", return_value=mock_redis):
-        yield mock_redis
-    
+    Replaces the previous MagicMock-based fixture which masked the
+    `session_id`-never-persisted bug (C-1). With this fixture, any code
+    that fails to put `session_id` into the saved state will fail downstream.
+    """
+
+    def __init__(self) -> None:
+        self._store: dict[str, object] = {}
+        self._consent: set[str] = set()
+        self._current_question: dict[str, str] = {}
+
+    # --- Assessment state ---
+    async def save_assessment_state(self, assessment_id, state, ttl_seconds=3600):
+        self._store[f"assessment:{assessment_id}:state"] = dict(state)
+
+    async def get_assessment_state(self, assessment_id):
+        value = self._store.get(f"assessment:{assessment_id}:state")
+        return dict(value) if value is not None else None
+
+    async def delete_assessment_state(self, assessment_id):
+        self._store.pop(f"assessment:{assessment_id}:state", None)
+
+    # --- Question pool ---
+    async def set_question_pool(self, assessment_id, questions, ttl_seconds=3600):
+        self._store[f"assessment:{assessment_id}:pool"] = list(questions)
+
+    async def get_question_pool(self, assessment_id):
+        value = self._store.get(f"assessment:{assessment_id}:pool")
+        return list(value) if value is not None else None
+
+    # --- BKT state ---
+    async def save_bkt_state(self, assessment_id, standard_code, bkt_state, ttl_seconds=3600):
+        self._store[f"assessment:{assessment_id}:bkt:{standard_code}"] = dict(bkt_state)
+
+    async def get_bkt_state(self, assessment_id, standard_code):
+        value = self._store.get(f"assessment:{assessment_id}:bkt:{standard_code}")
+        return dict(value) if value is not None else None
+
+    # --- Current question ---
+    async def set_current_question(self, assessment_id, question_id, ttl_seconds=60):
+        self._current_question[assessment_id] = question_id
+
+    async def get_current_question(self, assessment_id):
+        return self._current_question.get(assessment_id)
+
+    # --- Consent ---
+    async def set_active_consent(self, user_id, ttl_seconds=31536000):
+        self._consent.add(user_id)
+
+    async def get_active_consent(self, user_id):
+        return user_id in self._consent
+
+    async def revoke_active_consent(self, user_id):
+        self._consent.discard(user_id)
+
+    # --- Lifecycle ---
+    async def connect(self):
+        return None
+
+    async def close(self):
+        return None
+
+    # --- Generic kv ---
+    async def get(self, key):
+        return self._store.get(key)
+
+    async def set(self, key, value, ex=None):
+        self._store[key] = value
+
+    async def delete(self, key):
+        self._store.pop(key, None)
+
+    async def exists(self, key):
+        return key in self._store
+
+
+@pytest.fixture
+def mock_redis_client():
+    """Opt-in Redis fixture using an in-memory implementation.
+
+    NOTE: This fixture is no longer `autouse=True`. Tests that exercise the
+    assessment flow must explicitly request `mock_redis_client` so state
+    round-trip bugs surface in tests rather than in production.
+    """
+    fake = InMemoryRedisClient()
+    app.dependency_overrides[get_redis_client] = lambda: fake
+    with patch("src.core.redis_client._redis_client", fake), \
+         patch("src.core.redis_client.get_redis_client", return_value=fake):
+        yield fake
     app.dependency_overrides.pop(get_redis_client, None)
 
 

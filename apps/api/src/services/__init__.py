@@ -2,10 +2,16 @@
 Service layer for business logic.
 """
 
-from .bkt_service import BKTService, get_bkt_service, BKTState
+from .bkt_service import (
+    BKTService,
+    BKTState,
+    apply_bkt_state_to_row,
+    bkt_state_from_row,
+    get_bkt_service,
+)
 from .question_selection_service import QuestionSelectionService, get_question_selection_service
 from .consent_service import ConsentService, get_consent_service, initialize_consent_service
-from .assessment_service import AssessmentService, get_assessment_service, initialize_assessment_service
+from .assessment_service import AssessmentService, initialize_assessment_service
 from .skill_graph_service import (
     SkillGraphService,
     get_cached_graph,
@@ -23,15 +29,16 @@ from .llm_question_generator import (
 
 __all__ = [
     "BKTService",
-    "get_bkt_service",
     "BKTState",
+    "apply_bkt_state_to_row",
+    "bkt_state_from_row",
+    "get_bkt_service",
     "QuestionSelectionService",
     "get_question_selection_service",
     "ConsentService",
     "get_consent_service",
     "initialize_consent_service",
     "AssessmentService",
-    "get_assessment_service",
     "initialize_assessment_service",
     "SkillGraphService",
     "get_cached_graph",

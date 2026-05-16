@@ -4,7 +4,7 @@ Integrates BKT and CAT for adaptive testing.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Any, Tuple
 from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -122,17 +122,27 @@ class AssessmentService:
             assessment.id, question_pool, self.TARGET_QUESTION_COUNT
         )
 
-        # Store state in Redis
-        state = {
-            "theta": cat_state.theta,
-            "covered_standards": {},
-            "question_pool_size": len(question_pool),
-        }
-        await self.redis_client.save_assessment_state(assessment.id, state)
+        # Persist typed state — fix C-1 (session_id and student_id were never
+        # written, breaking every downstream call).
+        from src.schemas.internal.assessment_state import AssessmentRedisState
+
+        state = AssessmentRedisState(
+            assessment_id=assessment.id,
+            session_id=session.id,
+            student_id=student_id,
+            theta=cat_state.theta,
+            questions_answered=0,
+            covered_standards={},
+            question_pool_size=len(question_pool),
+        )
+        await self.redis_client.save_assessment_state(
+            assessment.id, state.to_redis_payload()
+        )
 
         logger.info(
-            f"Assessment started: assessment_id={assessment.id}, "
-            f"student_id={student_id}"
+            "Assessment started: assessment_id=%s, student_id=%s",
+            assessment.id,
+            student_id,
         )
 
         return {
@@ -142,7 +152,7 @@ class AssessmentService:
             "assessment_type": assessment_type,
             "target_question_count": self.TARGET_QUESTION_COUNT,
             "status": "in_progress",
-            "started_at": datetime.utcnow(),
+            "started_at": datetime.now(timezone.utc),
         }
 
     async def get_next_question(
@@ -312,33 +322,48 @@ class AssessmentService:
             time_spent_seconds=time_spent_ms // 1000,
         )
 
-        # Update BKT state
-        standard_code = question.standard_id  # Using standard_id as standard_code
-        bkt_state = self.bkt_service.update_state(
-            standard_code=standard_code,
-            response_correct=is_correct,
+        # BKT update — load prior from Redis if present so updates compound
+        # correctly across responses on the same skill (fix C-4: previous
+        # singleton-keyed-by-code caused cross-student contamination).
+        standard_code = question.standard_id
+        prior_dict = await self.redis_client.get_bkt_state(assessment_id, standard_code)
+        prior = (
+            self.bkt_service.state_from_dict(prior_dict)
+            if prior_dict
+            else self.bkt_service.initialize_state()
         )
+        bkt_state = self.bkt_service.update(prior, bool(is_correct))
 
-        # Save BKT state to Redis
         await self.redis_client.save_bkt_state(
             assessment_id, standard_code, self.bkt_service.get_state_dict(bkt_state)
         )
 
-        # Update CAT state
-        covered = state.get("covered_standards", {}).copy()
+        # Update CAT state (still a dict — Redis returns a plain dict)
+        covered = dict(state.get("covered_standards", {}))
         covered[standard_code] = covered.get(standard_code, 0) + 1
-
         state["covered_standards"] = covered
         state["questions_answered"] = state.get("questions_answered", 0) + 1
 
-        # Update theta estimate
-        state["theta"] = bkt_state.p_mastery  # Simplified: use mastery as proxy
+        # Track per-skill BKT in the assessment state for completion-time use
+        bkt_states = dict(state.get("bkt_states", {}))
+        bkt_states[standard_code] = self.bkt_service.get_state_dict(bkt_state)
+        state["bkt_states"] = bkt_states
+
+        # θ updates: map p_mastery ∈ [0, 1] to logit-θ ∈ (-3, 3). Clamp to
+        # avoid extremes when p_mastery is 0 or 1.
+        import math
+
+        eps = 0.01
+        p = max(eps, min(1.0 - eps, bkt_state.p_mastery))
+        state["theta"] = max(-3.0, min(3.0, math.log(p / (1.0 - p))))
 
         await self.redis_client.save_assessment_state(assessment_id, state)
 
         logger.info(
-            f"Response submitted: question={question_id}, correct={is_correct}, "
-            f"bkt_mastery={bkt_state.p_mastery:.3f}"
+            "Response submitted: question=%s, correct=%s, bkt_mastery=%.3f",
+            question_id,
+            is_correct,
+            bkt_state.p_mastery,
         )
 
         return {
@@ -388,7 +413,7 @@ class AssessmentService:
             )
 
         # Complete session
-        completed_at = datetime.utcnow()
+        completed_at = datetime.now(timezone.utc)
         await self.assessment_repository.complete_session(assessment_session.id, completed_at)
 
         # Update assessment
@@ -543,25 +568,30 @@ class AssessmentService:
         )
         state = result.scalar_one_or_none()
 
+        # NOTE: BKTState dataclass uses `p_mastery`/`p_guess`/`p_slip`/`p_learning`
+        # but the SQLAlchemy `StudentSkillState` model uses
+        # `mastery_prob`/`guess_prob`/`slip_prob`/`learning_rate`. Translate
+        # at this boundary — see fix C-2/C-3 (2026-05-16 review).
         if state:
-            # Update existing
-            state.p_mastery = bkt_data.get("p_mastery", 0.0)
-            state.p_guess = bkt_data.get("p_guess", 0.25)
-            state.p_slip = bkt_data.get("p_slip", 0.20)
-            state.p_learning = bkt_data.get("p_learning", 0.50)
-            state.times_practiced += 1
-            state.last_practiced_at = datetime.utcnow()
+            state.mastery_prob = bkt_data.get("p_mastery", 0.0)
+            state.guess_prob = bkt_data.get("p_guess", 0.25)
+            state.slip_prob = bkt_data.get("p_slip", 0.20)
+            state.learning_rate = bkt_data.get("p_learning", 0.50)
+            state.times_practiced = (state.times_practiced or 0) + 1
+            state.last_practiced_at = datetime.now(timezone.utc)
         else:
-            # Create new
+            from uuid import uuid4
+
             state = StudentSkillState(
+                id=str(uuid4()),
                 student_id=student_id,
                 standard_id=standard_id,
-                p_mastery=bkt_data.get("p_mastery", 0.0),
-                p_guess=bkt_data.get("p_guess", 0.25),
-                p_slip=bkt_data.get("p_slip", 0.20),
-                p_learning=bkt_data.get("p_learning", 0.50),
+                mastery_prob=bkt_data.get("p_mastery", 0.0),
+                guess_prob=bkt_data.get("p_guess", 0.25),
+                slip_prob=bkt_data.get("p_slip", 0.20),
+                learning_rate=bkt_data.get("p_learning", 0.50),
                 times_practiced=1,
-                last_practiced_at=datetime.utcnow(),
+                last_practiced_at=datetime.now(timezone.utc),
             )
             db_session.add(state)
 
@@ -694,18 +724,6 @@ class AssessmentService:
         }
 
 
-# Singleton instance
-_assessment_service: Optional[AssessmentService] = None
-
-
-def get_assessment_service() -> AssessmentService:
-    """Get singleton assessment service instance."""
-    global _assessment_service
-    if _assessment_service is None:
-        raise RuntimeError("AssessmentService not initialized")
-    return _assessment_service
-
-
 def initialize_assessment_service(
     assessment_repository: AssessmentRepository,
     session_repository: AssessmentSessionRepository,
@@ -714,11 +732,14 @@ def initialize_assessment_service(
     question_repository: QuestionRepository,
     consent_repository: ConsentRepository,
 ) -> AssessmentService:
+    """Construct a fresh `AssessmentService` for the current request.
+
+    The previous module-level singleton captured the first request's wired
+    repositories and Redis client — a stale-session footgun. Now we build a
+    new instance per request; the underlying repositories are themselves
+    bound to the per-request DB session.
     """
-    Initialize and return assessment service.
-    """
-    global _assessment_service
-    _assessment_service = AssessmentService(
+    return AssessmentService(
         assessment_repository=assessment_repository,
         session_repository=session_repository,
         student_repository=student_repository,
@@ -729,4 +750,3 @@ def initialize_assessment_service(
         cat_service=get_question_selection_service(),
         redis_client=get_redis_client(),
     )
-    return _assessment_service
