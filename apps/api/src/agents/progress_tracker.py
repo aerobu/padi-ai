@@ -26,7 +26,7 @@ class ProgressTrackerAgent:
         self.bkt = BKTService()
 
     async def __call__(self, state: SessionState) -> SessionState:
-        assessment = state.get("last_assessment") or {}  # type: ignore[typeddict-item]
+        assessment = state.get("last_assessment") or {}
         skill_id = state.get("current_skill_id", "unknown")
         is_correct = bool(assessment.get("is_correct"))
 

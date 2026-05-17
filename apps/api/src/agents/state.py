@@ -29,7 +29,7 @@ class QuestionContext(TypedDict, total=False):
     question_id: str
     skill_id: str
     question_text: str
-    question_type: Literal["multiple_choice", "numeric", "fraction", "drag_drop"]
+    question_type: Literal["multiple_choice", "numeric", "fraction", "drag_drop", "multi_step"]
     options: Optional[list[str]]
     correct_answer: str
     solution_steps: list[str]
@@ -49,6 +49,19 @@ class WorkingMemoryEntry(TypedDict, total=False):
     error_type: Optional[str]
     response_time_ms: int
     timestamp: datetime
+
+
+class AssessmentResult(TypedDict, total=False):
+    """Result produced by AssessmentAgent.evaluate()."""
+
+    is_correct: bool
+    normalized_answer: str
+    error_type: Optional[str]
+    error_code: Optional[str]
+    feedback_level: Literal["correct", "minor_error", "major_error", "conceptual_gap"]
+    partial_credit: float
+    confidence: float
+    assessment_reasoning: str
 
 
 SessionMode = Literal["adaptive", "scaffolded", "challenge", "review"]
@@ -109,3 +122,7 @@ class SessionState(TypedDict, total=False):
 
     # Error from any agent (for retry)
     last_error: Optional[str]
+
+    # Last student answer and assessment result
+    last_student_answer: str
+    last_assessment: Optional[AssessmentResult]

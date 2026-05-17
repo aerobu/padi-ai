@@ -33,7 +33,7 @@ def route_after_assessment(state: SessionState) -> str:
         return "end"
     if state.get("frustration_score", 0.0) > 7.0:
         return "tutor"
-    assessment = state.get("last_assessment") or {}  # type: ignore[typeddict-item]
+    assessment = state.get("last_assessment") or {}
     if assessment.get("is_correct"):
         return "progress_tracker"
     if state.get("attempt_count", 0) >= 3:
@@ -109,7 +109,7 @@ class SessionOrchestrator:
         Returns the updated state after at most one round of:
         assessment -> (tutor | progress_tracker -> qgen).
         """
-        state["last_student_answer"] = student_answer  # type: ignore[typeddict-unknown-key]
+        state["last_student_answer"] = student_answer
         state["attempt_count"] = state.get("attempt_count", 0) + 1
 
         state = await self.assessment(state)

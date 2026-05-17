@@ -11,11 +11,9 @@ class TestRedisClientInitialization:
         """RedisClient can be created."""
         from src.core.redis_client import RedisClient
 
-        with patch("redis.asyncio.Redis") as mock_redis:
-            mock_redis.return_value = AsyncMock()
-            client = RedisClient("redis://localhost:6379")
-            assert client is not None
-            assert client._redis is not None
+        client = RedisClient()
+        assert client is not None
+        assert client._redis is None
 
 
 class TestAssessmentStateCache:
@@ -28,7 +26,7 @@ class TestAssessmentStateCache:
         from unittest.mock import AsyncMock, MagicMock
 
         mock_redis = AsyncMock()
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         state = {
@@ -51,7 +49,7 @@ class TestAssessmentStateCache:
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value='{"theta": 0.5, "count": 10}')
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_assessment_state("assessment-123")
@@ -68,7 +66,7 @@ class TestAssessmentStateCache:
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_assessment_state("missing-assessment")
@@ -86,7 +84,7 @@ class TestBKTStateCache:
         from unittest.mock import AsyncMock
 
         mock_redis = AsyncMock()
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         bkt_state = {"p_mastery": 0.85, "p_guess": 0.25}
@@ -107,7 +105,7 @@ class TestBKTStateCache:
         mock_redis.get = AsyncMock(
             return_value='{"p_mastery": 0.85, "p_guess": 0.25}'
         )
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_bkt_state("assessment-123", "4.NBT.A.1")
@@ -127,7 +125,7 @@ class TestQuestionPoolCache:
         from unittest.mock import AsyncMock
 
         mock_redis = AsyncMock()
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         question_pool = [{"id": "q1", "difficulty": 3}]
@@ -146,7 +144,7 @@ class TestQuestionPoolCache:
         mock_redis.get = AsyncMock(
             return_value='[{"id": "q1", "difficulty": 3}]'
         )
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_question_pool("assessment-123")
@@ -166,7 +164,7 @@ class TestActiveConsentCache:
         from unittest.mock import AsyncMock
 
         mock_redis = AsyncMock()
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         await client.set_active_consent("user-123")
@@ -184,7 +182,7 @@ class TestActiveConsentCache:
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value="active")
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_active_consent("user-123")
@@ -200,7 +198,7 @@ class TestActiveConsentCache:
 
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         result = await client.get_active_consent("user-123")
@@ -215,7 +213,7 @@ class TestActiveConsentCache:
 
         mock_redis = AsyncMock()
         mock_redis.delete = AsyncMock(return_value=1)
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         await client.revoke_active_consent("user-123")
@@ -236,7 +234,7 @@ class TestDeleteOperations:
 
         mock_redis = AsyncMock()
         mock_redis.delete = AsyncMock(return_value=1)
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         await client.delete_assessment_state("assessment-123")
@@ -251,7 +249,7 @@ class TestDeleteOperations:
 
         mock_redis = AsyncMock()
         mock_redis.delete = AsyncMock(return_value=1)
-        client = RedisClient("redis://localhost:6379")
+        client = RedisClient()
         client._redis = mock_redis
 
         await client.delete("assessment-123:some_key")

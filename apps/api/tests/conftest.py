@@ -1,234 +1,98 @@
-"""Pytest configuration and fixtures for PADI.AI API tests."""
+"""Pytest configuration and fixtures for PADI.AI backend tests.
+
+Covers:
+- DB fixtures (async PostgreSQL/SQLite; sync SQLite for repositories)
+- JWT mocking (parent, teacher, admin, different-user roles)
+- HTTP clients (sync test client, async client with DB override)
+- LLM mocking (litellm.completion patch)
+- Redis mocking (InMemoryRedisClient)
+- Data seeds (standards, students, assessments, skill states)
+"""
 
 import os
-import sys
-
-# ---------------------------------------------------------------------------
-# Inject required secrets before any src.core.config import is reached.
-# Use setdefault so CI/CD can override by exporting real values.
-# ---------------------------------------------------------------------------
-os.environ.setdefault(
-    "ENCRYPTION_KEY_PASSPHRASE",
-    "test-passphrase-32-characters-long-ok",  # 38 chars — satisfies min_length=32
-)
-
+import asyncio
 import pytest
 import pytest_asyncio
-from typing import Generator, AsyncGenerator
+
+from contextlib import asynccontextmanager
+from sqlalchemy import create_engine, event
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from unittest.mock import MagicMock, patch, AsyncMock
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-import asyncio
-from httpx import AsyncClient
-
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-
-# Import testcontainers for PostgreSQL
-try:
-    from testcontainers.postgres import PostgresContainer
-    TESTCONTAINERS_AVAILABLE = True
-except ImportError:
-    TESTCONTAINERS_AVAILABLE = False
-
-# Global container reference
-_container = None
-
-# Configure test database URL BEFORE importing app
-if TESTCONTAINERS_AVAILABLE:
-    # Start PostgreSQL container
-    _container = PostgresContainer("postgres:17", driver="asyncpg")
-    _container.start()
-    db_url = _container.get_connection_url().replace("psycopg2", "asyncpg")
-else:
-    # Fallback to SQLite
-    db_url = "sqlite:///./test_padi.db"
-
-os.environ["DATABASE_URL"] = db_url
-os.environ["AUTH0_SECRET"] = "test-secret"
-os.environ["AUTH0_BASE_URL"] = "http://test.local"
-os.environ["AUTH0_ISSUER_BASE_URL"] = "https://test.auth0.com"
-
+from src.core.redis_client import InMemoryRedisClient
 from src.main import app
-from src.core.config import get_settings
-from src.models.models import Base
 from src.core.security import verify_jwt
-from src.core.database import get_db
-from src.core.redis_client import get_redis_client
 
 
+# Global event loop for asyncio tests
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create event loop for async tests."""
+    """Create an event loop for the test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-class InMemoryRedisClient:
-    """Dict-backed RedisClient that round-trips state like real Redis.
-
-    Replaces the previous MagicMock-based fixture which masked the
-    `session_id`-never-persisted bug (C-1). With this fixture, any code
-    that fails to put `session_id` into the saved state will fail downstream.
-    """
-
-    def __init__(self) -> None:
-        self._store: dict[str, object] = {}
-        self._consent: set[str] = set()
-        self._current_question: dict[str, str] = {}
-
-    # --- Assessment state ---
-    async def save_assessment_state(self, assessment_id, state, ttl_seconds=3600):
-        self._store[f"assessment:{assessment_id}:state"] = dict(state)
-
-    async def get_assessment_state(self, assessment_id):
-        value = self._store.get(f"assessment:{assessment_id}:state")
-        return dict(value) if value is not None else None
-
-    async def delete_assessment_state(self, assessment_id):
-        self._store.pop(f"assessment:{assessment_id}:state", None)
-
-    # --- Question pool ---
-    async def set_question_pool(self, assessment_id, questions, ttl_seconds=3600):
-        self._store[f"assessment:{assessment_id}:pool"] = list(questions)
-
-    async def get_question_pool(self, assessment_id):
-        value = self._store.get(f"assessment:{assessment_id}:pool")
-        return list(value) if value is not None else None
-
-    # --- BKT state ---
-    async def save_bkt_state(self, assessment_id, standard_code, bkt_state, ttl_seconds=3600):
-        self._store[f"assessment:{assessment_id}:bkt:{standard_code}"] = dict(bkt_state)
-
-    async def get_bkt_state(self, assessment_id, standard_code):
-        value = self._store.get(f"assessment:{assessment_id}:bkt:{standard_code}")
-        return dict(value) if value is not None else None
-
-    # --- Current question ---
-    async def set_current_question(self, assessment_id, question_id, ttl_seconds=60):
-        self._current_question[assessment_id] = question_id
-
-    async def get_current_question(self, assessment_id):
-        return self._current_question.get(assessment_id)
-
-    # --- Consent ---
-    async def set_active_consent(self, user_id, ttl_seconds=31536000):
-        self._consent.add(user_id)
-
-    async def get_active_consent(self, user_id):
-        return user_id in self._consent
-
-    async def revoke_active_consent(self, user_id):
-        self._consent.discard(user_id)
-
-    # --- Lifecycle ---
-    async def connect(self):
-        return None
-
-    async def close(self):
-        return None
-
-    # --- Generic kv ---
-    async def get(self, key):
-        return self._store.get(key)
-
-    async def set(self, key, value, ex=None):
-        self._store[key] = value
-
-    async def delete(self, key):
-        self._store.pop(key, None)
-
-    async def exists(self, key):
-        return key in self._store
+# ============================================================================
+# REDIS FIXTURES
+# ============================================================================
 
 
 @pytest.fixture
 def mock_redis_client():
-    """Opt-in Redis fixture using an in-memory implementation.
+    """Opt-in fixture providing InMemoryRedisClient (dict-backed, no autouse)."""
+    from src.core.redis_client import get_redis_client as _get, _redis_client
 
-    NOTE: This fixture is no longer `autouse=True`. Tests that exercise the
-    assessment flow must explicitly request `mock_redis_client` so state
-    round-trip bugs surface in tests rather than in production.
-    """
-    fake = InMemoryRedisClient()
-    app.dependency_overrides[get_redis_client] = lambda: fake
-    with patch("src.core.redis_client._redis_client", fake), \
-         patch("src.core.redis_client.get_redis_client", return_value=fake):
-        yield fake
-    app.dependency_overrides.pop(get_redis_client, None)
+    client = InMemoryRedisClient()
+    with patch("src.core.redis_client._redis_client", client):
+        yield client
 
 
-@pytest_asyncio.fixture
+# ============================================================================
+# HTTP CLIENT FIXTURES
+# ============================================================================
+
+
+@pytest.fixture
 async def async_client():
-    """Create async HTTP client for API tests."""
+    """Raw AsyncClient without DB/JWT overrides."""
     from httpx import AsyncClient, ASGITransport
-
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 
-@pytest_asyncio.fixture
+def _override_verify_jwt(claims: dict):
+    """Create a verify_jwt override that returns fixed claims."""
+    async def override(token: str = None):
+        return claims
+    return override
+
+
+@pytest.fixture
 async def auth_headers(client):
-    """Install verify_jwt override for default parent and return headers."""
-    from src.main import app
-    from src.core.security import verify_jwt
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "test-parent-id",
-        "email": "p@example.com",
-        "email_verified": True,
-        "role": "parent",
-    })
-    yield {"Authorization": "Bearer test-token"}
-    app.dependency_overrides.pop(verify_jwt, None)
+    """Headers with parent JWT (depends on client fixture)."""
+    return {"Authorization": "Bearer fake-parent-token"}
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def admin_auth_headers(client):
-    """Install admin verify_jwt override."""
-    from src.main import app
-    from src.core.security import verify_jwt
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "admin-user-id",
-        "email": "admin@example.com",
-        "email_verified": True,
-        "role": "admin",
-    })
-    yield {"Authorization": "Bearer admin-token"}
-    app.dependency_overrides.pop(verify_jwt, None)
+    """Headers with admin JWT (depends on client fixture)."""
+    return {"Authorization": "Bearer fake-admin-token"}
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def different_user_headers(client):
-    """Install non-owner verify_jwt override."""
-    from src.main import app
-    from src.core.security import verify_jwt
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "other-user-id",
-        "email": "other@example.com",
-        "email_verified": True,
-        "role": "parent",
-    })
-    yield {"Authorization": "Bearer other-token"}
-    app.dependency_overrides.pop(verify_jwt, None)
-
-
-def _override_verify_jwt(payload: dict):
-    """Return an async callable suitable for app.dependency_overrides[verify_jwt]."""
-    async def _mock_verify_jwt():
-        return payload
-    return _mock_verify_jwt
+    """Headers with different-user JWT (depends on client fixture)."""
+    return {"Authorization": "Bearer fake-other-user-token"}
 
 
 @pytest.fixture
 def mock_jwt_as_admin():
-    """Override verify_jwt dependency to return an admin user payload."""
+    """Override JWT to admin role."""
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "admin-user-id",
+        "sub": "test-admin-id",
         "email": "admin@example.com",
         "email_verified": True,
         "role": "admin",
@@ -239,10 +103,34 @@ def mock_jwt_as_admin():
 
 @pytest.fixture
 def mock_jwt_as_user():
-    """Override verify_jwt dependency to return a regular user payload."""
+    """Override JWT to authenticated user (no role)."""
+    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+        "sub": "test-user-id",
+        "email": "user@example.com",
+        "email_verified": True,
+    })
+    yield
+    app.dependency_overrides.pop(verify_jwt, None)
+
+
+@pytest.fixture
+def mock_jwt_validation():
+    """Override JWT to any authed user."""
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
         "sub": "test-user-id",
         "email": "test@example.com",
+        "email_verified": True,
+    })
+    yield
+    app.dependency_overrides.pop(verify_jwt, None)
+
+
+@pytest.fixture
+def mock_jwt_as_parent():
+    """Override JWT to parent role."""
+    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+        "sub": "test-parent-id",
+        "email": "parent@example.com",
         "email_verified": True,
         "role": "parent",
     })
@@ -251,12 +139,13 @@ def mock_jwt_as_user():
 
 
 @pytest.fixture
-def mock_jwt_validation():
-    """Override verify_jwt dependency for tests that need any authed user."""
+def mock_jwt_as_teacher():
+    """Override JWT to teacher role."""
     app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "test-user-id",
-        "email": "test@example.com",
+        "sub": "test-teacher-id",
+        "email": "teacher@example.com",
         "email_verified": True,
+        "role": "teacher",
     })
     yield
     app.dependency_overrides.pop(verify_jwt, None)
@@ -264,69 +153,33 @@ def mock_jwt_validation():
 
 @pytest.fixture
 def mock_llm_client():
-    """Mock LLM client for tests."""
-    with patch("src.clients.llm_client.litellm.completion") as mock_completion:
-        mock_completion.return_value = {
-            "choices": [{
-                "message": {"content": "Test response"}
-            }]
-        }
+    """Patch litellm.completion to return canned response."""
+    with patch("litellm.completion") as mock_completion:
+        mock_completion.return_value = MagicMock(
+            choices=[MagicMock(message=MagicMock(content="Test response"))]
+        )
         yield mock_completion
 
 
-@pytest.fixture
-def sample_user_data():
-    """Sample user data for testing."""
-    return {
-        "email": "test@example.com",
-        "name": "Test User",
-        "role": "parent"
-    }
+# ============================================================================
+# DATABASE FIXTURES (ASYNC)
+# ============================================================================
 
-
-@pytest.fixture
-def sample_student_data():
-    """Sample student data for testing."""
-    return {
-        "first_name": "John",
-        "last_name": "Doe",
-        "grade": 4,
-        "date_of_birth": "2016-05-15"
-    }
-
-
-@pytest.fixture
-def sample_standard_data():
-    """Sample standard data for testing."""
-    return {
-        "code": "4.NBT.A.1",
-        "description": "Place value relationships",
-        "grade_level": 4,
-        "subject": "math"
-    }
-
-
-# ==========================================================================
-# Async SQLite Fixtures for API Tests
-# ==========================================================================
 
 @pytest_asyncio.fixture(scope="function")
 async def async_db_engine():
-    """
-    Create async PostgreSQL engine for API tests.
-    Uses testcontainers PostgreSQL for full feature compatibility.
-    """
-    database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
+    """Create async PostgreSQL/SQLite engine for each test."""
+    database_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test_padi.db")
+    engine = create_async_engine(
+        database_url,
+        echo=False,
+        future=True,
+        connect_args={"check_same_thread": False} if "sqlite" in database_url else {}
+    )
 
-    # Replace psycopg2 with asyncpg for async operations
-    async_db_url = database_url.replace("psycopg2", "asyncpg")
-    # Strip ?options= if present to avoid asyncpg TypeError
-    if "?options=" in async_db_url:
-        async_db_url = async_db_url.split("?options=")[0]
-    elif "&options=" in async_db_url:
-        async_db_url = async_db_url.split("&options=")[0]
-        
-    engine = create_async_engine(async_db_url, echo=False)
+    async with engine.begin() as conn:
+        from src.models.models import Base
+        await conn.run_sync(Base.metadata.create_all)
 
     try:
         yield engine
@@ -338,7 +191,7 @@ async def async_db_engine():
 def engine():
     """Sync engine for tests that need raw SQL or sync execution."""
     database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
-    
+
     if database_url.startswith("sqlite"):
         db_path = database_url.replace("sqlite:///./", "")
         sync_url = f"sqlite:///{db_path}"
@@ -346,7 +199,7 @@ def engine():
     else:
         sync_url = database_url.replace("asyncpg", "psycopg2")
         engine = create_engine(sync_url)
-        
+
     return engine
 
 
@@ -360,142 +213,169 @@ async def async_db_session(async_db_engine):
         async_db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
+        autoflush=False
     )
 
-    # Drop and recreate tables for fresh state
-    async with async_db_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
-    session = async_session()
-    try:
+    async with async_session() as session:
         yield session
-    finally:
-        await session.close()
 
 
 @pytest.fixture(scope="function")
-def test_api_client():
-    """Create TestClient with get_db overridden."""
-    from starlette.testclient import TestClient
-    import asyncio
-    import os
+def test_api_client(async_db_session):
+    """Create sync TestClient with get_db overridden."""
+    from fastapi.testclient import TestClient
+    from src.core.db import get_db
 
-    database_url = os.getenv("DATABASE_URL", "sqlite:///./test_padi.db")
-
-    # Use async engine for TestClient (FastAPI endpoints are async)
-    async_db_url = database_url.replace("psycopg2", "asyncpg")
-    async_engine = create_async_engine(async_db_url, echo=False)
-
-    AsyncSessionLocal = async_sessionmaker(
-        async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-
-    async def _override_get_db():
-        async with AsyncSessionLocal() as session:
-            yield session
-
-    def cleanup():
-        app.dependency_overrides.pop(get_db, None)
-        # Run the async dispose in an event loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(async_engine.dispose())
-        finally:
-            loop.close()
-
-    app.dependency_overrides[get_db] = _override_get_db
+    app.dependency_overrides[get_db] = lambda: async_db_session
     try:
-        with TestClient(app) as client:
-            yield client
+        yield TestClient(app)
     finally:
-        cleanup()
+        app.dependency_overrides.pop(get_db, None)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def test_api_client_with_base_url():
-    """Create TestClient with base_url='http://test' for parent dashboard tests."""
-    from starlette.testclient import TestClient
+    """Create sync TestClient without DB override."""
+    from fastapi.testclient import TestClient
+    return TestClient(app, base_url="http://test")
+
+
+@pytest.fixture
+def db_session(async_db_session):
+    """Alias for async_db_session (for convenience)."""
+    return async_db_session
+
+
+@pytest_asyncio.fixture
+async def client(async_db_session, mock_redis_client):
+    """Create async HTTP client for Stage 2 tests."""
+    from httpx import AsyncClient, ASGITransport
 
     async def _override_get_db():
-        yield None
+        yield async_db_session
 
+    from src.core.db import get_db
     app.dependency_overrides[get_db] = _override_get_db
+
+    # Apply default JWT mocking for parent role ONLY if not already overridden
+    had_override = verify_jwt in app.dependency_overrides
+    if not had_override:
+        app.dependency_overrides[verify_jwt] = _override_verify_jwt({
+            "sub": "test-parent-id",
+            "email": "test@example.com",
+            "email_verified": True,
+            "role": "parent",
+        })
+
     try:
-        with TestClient(app, base_url="http://test") as client:
-            yield client
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as async_client:
+            yield async_client
     finally:
         app.dependency_overrides.pop(get_db, None)
+        if not had_override:
+            app.dependency_overrides.pop(verify_jwt, None)
 
 
-
-@pytest.fixture
-def mock_jwt_as_parent():
-    """Override verify_jwt dependency to return a parent user payload."""
-    import os
-    sub_id = os.getenv("APPARENT_PARENT_ID", "parent-1")
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": sub_id,
-        "email": "parent@example.com",
-        "email_verified": True,
-        "role": "parent",
-    })
-    yield
-    app.dependency_overrides.pop(verify_jwt, None)
+# ============================================================================
+# REPOSITORY FIXTURES (SYNC)
+# ============================================================================
 
 
 @pytest.fixture
-def mock_jwt_as_teacher():
-    """Override verify_jwt dependency to return a teacher user payload."""
-    app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-        "sub": "teacher-1",
-        "email": "teacher@example.com",
-        "email_verified": True,
-        "role": "teacher",
-    })
-    yield
-    app.dependency_overrides.pop(verify_jwt, None)
+def standards_repo(db_session):
+    """Create a standards repository for testing."""
+    from src.repositories.standard_repository import StandardRepository
+    return StandardRepository(db_session)
+
+
+# ============================================================================
+# SYNC DATABASE FIXTURES (for repositories)
+# ============================================================================
 
 
 @pytest.fixture
-def sample_question_data():
-    """Sample question data for testing."""
-    return {
-        "text": "What is 1234 rounded to the nearest hundred?",
-        "type": "multiple_choice",
-        "difficulty": 2,
-        "standard_id": "1",
-        "points": 1
-    }
+def session(engine):
+    """Synchronous SQLite session for repository unit tests.
+
+    Repository tests use sync session.add() / session.commit() patterns
+    and do not need async. This fixture creates fresh tables per test.
+    """
+    from src.models.models import Base
+
+    Base.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(engine)
 
 
-# Cleanup fixture - uses PostgreSQL which we manage via testcontainers
-@pytest.fixture(autouse=True, scope="session")
-def cleanup_database():
-    """Clean up database after tests."""
-    yield
-    # PostgreSQL container handles cleanup on session end
+@pytest.fixture
+def user(session):
+    """Create a test User for repository tests."""
+    from src.models.models import User
+    u = User(
+        id="user-1",
+        auth0_id="auth0|user_1",
+        first_name="Test",
+        last_name="User",
+        role="parent",
+        is_active=True,
+    )
+    u.set_email("test@example.com")
+    session.add(u)
+    session.commit()
+    return u
 
 
-# === Test Data Fixtures for Stage 2 ===
+@pytest.fixture
+def student(session, user):
+    """Create a test Student for repository tests."""
+    from src.models.models import Student
+    s = Student(
+        id="student-1",
+        parent_id=user.id,
+        grade_level=4,
+        display_name="Test Student",
+        is_active=True,
+    )
+    session.add(s)
+    session.commit()
+    return s
 
-@pytest_asyncio.fixture(scope="function")
-async def db_session(async_db_session):
-    """Provide async db session for Stage 2 tests."""
-    yield async_db_session
+
+@pytest.fixture
+def student2(session, user):
+    """Create a second test Student for repository tests."""
+    from src.models.models import Student
+    s = Student(
+        id="student-2",
+        parent_id=user.id,
+        grade_level=4,
+        display_name="Test Student 2",
+        is_active=True,
+    )
+    session.add(s)
+    session.commit()
+    return s
+
+
+# ============================================================================
+# TEST DATA FIXTURES
+# ============================================================================
 
 
 @pytest_asyncio.fixture
 async def test_parent_for_student(async_db_session):
-    """Create a test parent for test_student."""
+    """Create a parent User for testing."""
     from src.models.models import User
 
     parent = User(
         id="test-parent-id",
-        auth0_id="auth0|test_parent_for_student",
+        auth0_id="auth0|test_parent",
         first_name="Test",
         last_name="Parent",
         role="parent",
@@ -602,43 +482,6 @@ async def test_assessment(async_db_session, test_student):
     return assessment
 
 
-@pytest_asyncio.fixture
-async def client(async_db_session, mock_redis_client):
-    """Create async HTTP client for Stage 2 tests."""
-    from httpx import AsyncClient, ASGITransport
-
-    async def _override_get_db():
-        yield async_db_session
-
-    app.dependency_overrides[get_db] = _override_get_db
-    
-    # Apply default JWT mocking for parent role ONLY if not already overridden
-    had_override = verify_jwt in app.dependency_overrides
-    if not had_override:
-        app.dependency_overrides[verify_jwt] = _override_verify_jwt({
-            "sub": "test-parent-id",
-            "email": "test@example.com",
-            "email_verified": True,
-            "role": "parent",
-        })
-    
-    try:
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as async_client:
-            yield async_client
-    finally:
-        app.dependency_overrides.pop(get_db, None)
-        if not had_override:
-            app.dependency_overrides.pop(verify_jwt, None)
-
-
-@pytest.fixture
-def standards_repo(db_session):
-    """Create a standards repository for testing."""
-    from src.repositories.standard_repository import StandardRepository
-    return StandardRepository(db_session)
-
-
 @pytest.fixture
 async def mock_skill_states_below_par(db_session, test_student):
     """Create mock skill states with Below Par proficiency."""
@@ -709,3 +552,9 @@ async def mock_skill_states_on_track(db_session, test_student):
 
     await db_session.flush()
     return skill_states
+
+
+@pytest.fixture
+def cleanup_database():
+    """Session-scoped no-op; container handles cleanup."""
+    yield
